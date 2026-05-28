@@ -1,4 +1,5 @@
 #import "key-press.h"
+#import <CoreFoundation/CoreFoundation.h>
 #import <mach/mach_time.h>
 #import <unistd.h>
 
