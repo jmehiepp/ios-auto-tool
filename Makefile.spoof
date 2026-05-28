@@ -30,6 +30,10 @@ iosautotool-spoof_FILES = \
 
 iosautotool-spoof_CFLAGS = \
 	-fobjc-arc \
+	-Wno-unused-function \
+	-Wno-unused-variable \
+	-Wno-unused-but-set-variable \
+	-Wno-deprecated-declarations \
 	-Ideps/luajit/include \
 	-Ispoof
 

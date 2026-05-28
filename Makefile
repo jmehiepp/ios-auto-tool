@@ -51,6 +51,10 @@ iosautotool-daemon_FILES = \
 
 iosautotool-daemon_CFLAGS = \
 	-fobjc-arc \
+	-Wno-unused-function \
+	-Wno-unused-variable \
+	-Wno-unused-but-set-variable \
+	-Wno-deprecated-declarations \
 	-Ideps/luajit/include \
 	-Idaemon \
 	-Ilua \
