@@ -42,7 +42,7 @@ echo "   OK: macOS, THEOS=$THEOS, Xcode CLT, ldid"
 # ── step 1: deps ─────────────────────────────────────────────────────
 echo "==> Step 1: Dependencies"
 
-if head -1 deps/mongoose.c 2>/dev/null | grep -q '#error'; then
+if head -5 deps/mongoose.c 2>/dev/null | grep -q '#error'; then
     echo "   Downloading mongoose..."
     bash deps/download-mongoose.sh
 else
