@@ -68,7 +68,7 @@ static void handle_http(struct mg_connection *c, int ev, void *ev_data) {
         struct mg_http_serve_opts opts = {.root_dir = s_web_root};
         mg_http_serve_dir(c, hm, &opts);
 
-    } else if (ev == MG_EV_WS_CLOSE) {
+    } else if (ev == MG_EV_CLOSE) {
         ws_remove(c);
     }
 }
