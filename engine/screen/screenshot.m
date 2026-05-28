@@ -8,7 +8,7 @@ extern size_t IOSurfaceGetWidth(IOSurfaceRef);
 extern size_t IOSurfaceGetHeight(IOSurfaceRef);
 extern void *IOSurfaceGetBaseAddress(IOSurfaceRef);
 extern size_t IOSurfaceGetBytesPerRow(IOSurfaceRef);
-static const uint32_t kIOSurfaceLockReadOnly = 0x00000001;
+#define IOSURFACE_LOCK_READ_ONLY 0x00000001
 
 ScreenCache g_screen_cache = {NULL, 0, 0};
 
@@ -53,7 +53,7 @@ static UIImage *capture_via_iosurface(void) {
     IOSurfaceRef surface = SBGetMainDisplayIOSurface();
     if (!surface) return nil;
 
-    IOSurfaceLock(surface, kIOSurfaceLockReadOnly, NULL);
+    IOSurfaceLock(surface, IOSURFACE_LOCK_READ_ONLY, NULL);
 
     int w = (int)IOSurfaceGetWidth(surface);
     int h = (int)IOSurfaceGetHeight(surface);
@@ -64,11 +64,11 @@ static UIImage *capture_via_iosurface(void) {
     size_t total = bpr * h;
     void *copy = malloc(total);
     if (!copy) {
-        IOSurfaceUnlock(surface, kIOSurfaceLockReadOnly, NULL);
+        IOSurfaceUnlock(surface, IOSURFACE_LOCK_READ_ONLY, NULL);
         return nil;
     }
     memcpy(copy, base, total);
-    IOSurfaceUnlock(surface, kIOSurfaceLockReadOnly, NULL);
+    IOSurfaceUnlock(surface, IOSURFACE_LOCK_READ_ONLY, NULL);
 
     CGColorSpaceRef cs = CGColorSpaceCreateDeviceRGB();
     CGContextRef ctx = CGBitmapContextCreate(
