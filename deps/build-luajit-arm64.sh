@@ -46,7 +46,8 @@ export MACOSX_DEPLOYMENT_TARGET="${MACOSX_DEPLOYMENT_TARGET:-14.0}"
 
 cd luajit-src
 make clean
-make HOST_CC="clang -m64" \
+make DEFAULT_CC=clang \
+     HOST_CC="clang -m64" \
      CROSS="$(dirname "$ICC")/" \
      TARGET_FLAGS="$ISDKF" \
      TARGET_SYS=iOS \
