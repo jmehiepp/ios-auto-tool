@@ -24,10 +24,10 @@ int main(int argc, char *argv[]) {
         log_info("IPC ready at " IPC_SOCKET_PATH);
 
         webide_server_start(WEBIDE_PORT, SCRIPTS_DIR, WEBIDE_ROOT);
-        log_info("Web IDE ready at port " #WEBIDE_PORT);
+        log_info("Web IDE ready at port %d", WEBIDE_PORT);
 
         mcp_server_start(MCP_PORT);
-        log_info("MCP server ready at port " #MCP_PORT);
+        log_info("MCP server ready at port %d", MCP_PORT);
 
         log_info("Daemon ready — waiting for connections");
         CFRunLoopRun();
