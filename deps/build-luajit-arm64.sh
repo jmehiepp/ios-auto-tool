@@ -42,6 +42,8 @@ fi
 ICC="$(xcrun --sdk iphoneos --find clang)"
 ISDKF="-arch arm64 -isysroot $ISDKP -mios-version-min=14.0"
 
+export MACOSX_DEPLOYMENT_TARGET="${MACOSX_DEPLOYMENT_TARGET:-14.0}"
+
 cd luajit-src
 make clean
 make HOST_CC="clang -m64" \
