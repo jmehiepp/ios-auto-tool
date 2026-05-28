@@ -1,6 +1,14 @@
 #import "screenshot.h"
 #import <UIKit/UIKit.h>
-#import <IOSurface/IOSurface.h>
+
+typedef struct __IOSurface *IOSurfaceRef;
+extern int IOSurfaceLock(IOSurfaceRef, uint32_t, uint32_t *);
+extern int IOSurfaceUnlock(IOSurfaceRef, uint32_t, uint32_t *);
+extern size_t IOSurfaceGetWidth(IOSurfaceRef);
+extern size_t IOSurfaceGetHeight(IOSurfaceRef);
+extern void *IOSurfaceGetBaseAddress(IOSurfaceRef);
+extern size_t IOSurfaceGetBytesPerRow(IOSurfaceRef);
+static const uint32_t kIOSurfaceLockReadOnly = 0x00000001;
 
 ScreenCache g_screen_cache = {NULL, 0, 0};
 
