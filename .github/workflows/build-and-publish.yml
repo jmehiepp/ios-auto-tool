@@ -17,12 +17,16 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Set THEOS env
+        run: echo "THEOS=$HOME/theos" >> $GITHUB_ENV
+
       - name: Cache Theos
         id: cache-theos
         uses: actions/cache@v4
         with:
           path: ~/theos
-          key: theos-${{ runner.os }}-v1
+          key: theos-${{ runner.os }}-v2
+          restore-keys: theos-${{ runner.os }}-
 
       - name: Cache LuaJIT ARM64
         uses: actions/cache@v4
@@ -32,9 +36,7 @@ jobs:
 
       - name: Install Theos
         if: steps.cache-theos.outputs.cache-hit != 'true'
-        run: |
-          export THEOS=~/theos
-          bash -c "$(curl -fsSL https://raw.githubusercontent.com/theos/theos/master/bin/install-theos)"
+        run: bash -c "$(curl -fsSL https://raw.githubusercontent.com/theos/theos/master/bin/install-theos)"
 
       - name: Install dpkg
         run: brew install dpkg
@@ -43,8 +45,6 @@ jobs:
         run: chmod +x build.sh deps/download-mongoose.sh deps/build-luajit-arm64.sh spoof/rename-to-xm.sh webide/download-monaco.sh scripts/update-repo.sh
 
       - name: Build
-        env:
-          THEOS: ~/theos
         run: ./build.sh
 
       - name: Copy .deb to repo pool
