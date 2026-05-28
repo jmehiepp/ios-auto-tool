@@ -1,0 +1,56 @@
+THEOS_DEVICE_IP    ?= 192.168.1.100
+THEOS_DEVICE_PORT  ?= 22
+
+TARGET  := iphone:clang:17.0:14.0
+ARCHS   := arm64
+
+include $(THEOS)/makefiles/common.mk
+
+# NOTE: spoof/modules/*.m files that use Logos macros (%hook, %orig, %hookf, %ctor)
+# must be renamed to *.xm before building on macOS so Theos runs the Logos preprocessor.
+# spoof-config.m and spoof-license.m are plain ObjC and keep .m extension.
+
+TWEAK_NAME = iosautotool-spoof
+
+iosautotool-spoof_FILES = \
+	spoof/spoof-config.m \
+	spoof/spoof-license.m \
+	spoof/modules/spoof-device-model.xm \
+	spoof/modules/spoof-network.xm \
+	spoof/modules/spoof-sensors.xm \
+	spoof/modules/spoof-canvas.xm \
+	spoof/modules/spoof-gps.xm \
+	spoof/modules/spoof-ids.xm \
+	spoof/modules/spoof-user-agent.xm \
+	spoof/modules/spoof-locale.xm \
+	spoof/modules/spoof-timezone.xm \
+	spoof/modules/spoof-screen.xm \
+	spoof/modules/spoof-app-list.xm \
+	lua/bindings/bind-spoof.m
+
+iosautotool-spoof_CFLAGS = \
+	-fobjc-arc \
+	-Ideps/luajit/include \
+	-Ispoof
+
+iosautotool-spoof_LDFLAGS = \
+	-Ldeps/luajit/lib \
+	-lluajit-5.1 \
+	-framework Foundation \
+	-framework UIKit \
+	-framework CoreTelephony \
+	-framework CoreMotion \
+	-framework CoreLocation \
+	-framework WebKit \
+	-framework AdSupport \
+	-framework SystemConfiguration \
+	-framework CommonCrypto
+
+iosautotool-spoof_LIBRARIES = substrate
+
+iosautotool-spoof_INSTALL_PATH = /Library/MobileSubstrate/DynamicLibraries
+
+include $(THEOS)/makefiles/tweak.mk
+
+after-install::
+	install.exec "killall -9 SpringBoard"

@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>iOS Auto Tool</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ─── HEADER ─────────────────────────────────────────────── -->
+<header>
+  <span class="logo">
+    <svg viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="3" y="1" width="16" height="20" rx="3" stroke="#4f8ef7" stroke-width="1.5"/>
+      <rect x="8" y="1" width="6" height="2" rx="1" fill="#4f8ef7"/>
+      <circle cx="11" cy="17" r="1.5" fill="#4f8ef7"/>
+      <rect x="6" y="6" width="10" height="1" rx=".5" fill="#4f8ef7" opacity=".6"/>
+      <rect x="6" y="9" width="7" height="1" rx=".5" fill="#4f8ef7" opacity=".4"/>
+    </svg>
+    iOS Auto
+  </span>
+
+  <span class="device-label" id="device-info">—</span>
+
+  <div class="header-tabs">
+    <button class="htab htab-ide active"    onclick="switchTab('ide')">IDE</button>
+    <button class="htab htab-apps"          onclick="switchTab('apps')">Apps</button>
+    <button class="htab htab-device"        onclick="switchTab('device')">Device</button>
+    <button class="htab htab-spoof"         onclick="switchTab('spoof')">Spoof</button>
+  </div>
+
+  <span class="header-spacer"></span>
+
+  <button class="icon-btn" id="btn-funcs-toggle" title="Toggle functions panel" onclick="toggleFuncs()">⚡</button>
+  <button class="icon-btn" title="Settings">⚙</button>
+</header>
+
+<!-- ─── TOOLBAR ────────────────────────────────────────────── -->
+<div class="toolbar">
+  <button id="btn-run"  class="tbtn tbtn-run"  onclick="runScript()">▶ Run</button>
+  <button id="btn-stop" class="tbtn tbtn-stop" onclick="stopScript()" disabled>⏸ Stop</button>
+
+  <span class="toolbar-sep"></span>
+
+  <button class="tbtn tbtn-ghost" onclick="newFile()">+ New</button>
+  <button class="tbtn tbtn-ghost" onclick="deleteCurrentFile()">🗑</button>
+
+  <span class="toolbar-sep"></span>
+
+  <button class="tbtn tbtn-screen" id="btn-capture" onclick="captureOnce()">📷 Capture</button>
+  <button class="tbtn tbtn-live"   id="btn-live"    onclick="toggleLive()">● Live</button>
+
+  <span class="toolbar-spacer"></span>
+
+  <input id="funcs-search" placeholder="Search API…" oninput="filterFuncs(this.value)">
+</div>
+
+<!-- ─── WORKSPACE ───────────────────────────────────────────── -->
+<div class="workspace" id="workspace">
+
+  <!-- Sidebar: file list -->
+  <aside class="sidebar">
+    <div class="panel-hdr">
+      Scripts
+      <span class="phdr-actions">
+        <button class="phdr-btn" onclick="newFile()" title="New">+</button>
+        <button class="phdr-btn" onclick="deleteCurrentFile()" title="Delete">✕</button>
+      </span>
+    </div>
+    <ul id="file-list"></ul>
+  </aside>
+
+  <!-- Content area: panel swap -->
+  <div class="content-area">
+
+    <!-- IDE tab -->
+    <div class="content-panel visible" id="panel-ide">
+      <div id="editor-container"></div>
+    </div>
+
+    <!-- Apps tab -->
+    <div class="content-panel" id="panel-apps">
+      <div class="ap-search-row">
+        <input id="ap-search" placeholder="Search apps…" oninput="filterApps(this.value)">
+      </div>
+      <ul id="ap-list"></ul>
+    </div>
+
+    <!-- Device tab -->
+    <div class="content-panel" id="panel-device">
+      <div class="dv-grid">
+        <div class="dv-card">
+          <h3>Model</h3>
+          <div class="dv-val" id="dv-model">—</div>
+        </div>
+        <div class="dv-card">
+          <h3>iOS</h3>
+          <div class="dv-val" id="dv-ios">—</div>
+        </div>
+        <div class="dv-card">
+          <h3>Screen</h3>
+          <div class="dv-val" id="dv-screen">—</div>
+          <div class="dv-sub">px</div>
+        </div>
+        <div class="dv-card">
+          <h3>MCP Server</h3>
+          <div id="dv-mcp"><span class="badge badge-dim"><span class="badge-dot"></span>—</span></div>
+        </div>
+        <div class="dv-card">
+          <h3>WebIDE</h3>
+          <div id="dv-ide"><span class="badge badge-green"><span class="badge-dot"></span>Online :8888</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Spoof tab -->
+    <div class="content-panel" id="panel-spoof">
+      <div class="sp-toolbar">
+        <span class="sp-status-label">Status:</span>
+        <span id="sp-status"><span class="badge badge-dim"><span class="badge-dot"></span>—</span></span>
+        <select id="sp-preset" onchange="applyPreset(this.value)">
+          <option value="">— Preset —</option>
+          <option value="iPhone 14 Pro Max">iPhone 14 Pro Max</option>
+          <option value="iPhone 13">iPhone 13</option>
+          <option value="Custom">Custom</option>
+        </select>
+        <span class="sp-spacer"></span>
+        <button class="sp-btn sp-btn-save"  onclick="saveSpoof()">Save</button>
+        <button class="sp-btn sp-btn-reset" onclick="resetSpoof()">Reset</button>
+      </div>
+      <div class="sp-table-wrap">
+        <table class="sp-table">
+          <thead><tr><th>Key</th><th>Value</th></tr></thead>
+          <tbody id="sp-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div><!-- /content-area -->
+
+  <!-- Screen mirror -->
+  <div class="screen-panel">
+    <div class="screen-hdr">
+      <span class="dot" id="screen-dot"></span>
+      Screen Mirror
+    </div>
+    <div class="screen-body">
+      <div class="phone-buttons">
+        <div class="phone-btn phone-btn-lock" title="Lock" onclick="pressKey('lock')"></div>
+        <div class="phone-btn phone-btn-vol"  title="Vol+" onclick="pressKey('volume_up')"></div>
+        <div class="phone-btn phone-btn-vol"  title="Vol−" onclick="pressKey('volume_down')"></div>
+        <div class="phone-btn phone-btn-lock" title="Home" onclick="pressKey('home')" style="margin-top:8px"></div>
+      </div>
+      <img id="screen-img" alt="" draggable="false">
+      <div class="screen-placeholder" id="screen-placeholder">
+        <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+          <rect x="8" y="4" width="24" height="32" rx="4" stroke="#5e5e78" stroke-width="1.5"/>
+          <circle cx="20" cy="31" r="2" fill="#5e5e78"/>
+        </svg>
+        <span>Press Capture</span>
+      </div>
+      <div id="screen-coords"></div>
+    </div>
+  </div>
+
+  <!-- Functions reference panel -->
+  <div class="funcs-panel" id="funcs-panel">
+    <div class="funcs-list" id="funcs-list">
+      <div class="funcs-cat funcs-cat-touch">Touch</div>
+      <div class="funcs-fn">tap(x, y)</div>
+      <div class="funcs-fn">swipe(x1,y1,x2,y2)</div>
+      <div class="funcs-fn">longPress(x,y,ms)</div>
+      <div class="funcs-fn">drag(x1,y1,x2,y2)</div>
+
+      <div class="funcs-cat funcs-cat-screen">Screen</div>
+      <div class="funcs-fn">screenshot()</div>
+      <div class="funcs-fn">findImage(tpl)</div>
+      <div class="funcs-fn">waitForImage(tpl,t)</div>
+      <div class="funcs-fn">getPixelColor(x,y)</div>
+
+      <div class="funcs-cat funcs-cat-app">App</div>
+      <div class="funcs-fn">launchApp(bundleId)</div>
+      <div class="funcs-fn">killApp(bundleId)</div>
+      <div class="funcs-fn">getInstalledApps()</div>
+      <div class="funcs-fn">getFrontApp()</div>
+
+      <div class="funcs-cat funcs-cat-key">Keys</div>
+      <div class="funcs-fn">pressKey("home")</div>
+      <div class="funcs-fn">pressKey("volume_up")</div>
+      <div class="funcs-fn">pressKey("volume_down")</div>
+      <div class="funcs-fn">pressKey("lock")</div>
+      <div class="funcs-fn">typeText(str)</div>
+
+      <div class="funcs-cat funcs-cat-device">Device</div>
+      <div class="funcs-fn">getDeviceInfo()</div>
+      <div class="funcs-fn">getBatteryLevel()</div>
+      <div class="funcs-fn">getOrientation()</div>
+
+      <div class="funcs-cat funcs-cat-system">System</div>
+      <div class="funcs-fn">runShell(cmd)</div>
+      <div class="funcs-fn">readFile(path)</div>
+      <div class="funcs-fn">writeFile(path,data)</div>
+      <div class="funcs-fn">sleep(ms)</div>
+
+      <div class="funcs-cat funcs-cat-spoof">Spoof</div>
+      <div class="funcs-fn">getSpoofConfig()</div>
+      <div class="funcs-fn">setSpoofKey(k,v)</div>
+      <div class="funcs-fn">applyPreset(name)</div>
+      <div class="funcs-fn">resetSpoof()</div>
+    </div>
+  </div>
+
+</div><!-- /workspace -->
+
+<!-- ─── CONSOLE ──────────────────────────────────────────────── -->
+<div class="console">
+  <div class="console-hdr">
+    <span class="console-title">Log</span>
+    <button class="console-copy" onclick="copyLog()">COPY</button>
+    <span class="console-spacer"></span>
+    <button class="console-clear" onclick="clearLog()">Clear ✕</button>
+  </div>
+  <div id="log-output"></div>
+</div>
+
+<!-- ─── SCRIPTS ──────────────────────────────────────────────── -->
+<script src="monaco/loader.js"></script>
+<script>
+  require.config({ paths: { 'vs': 'monaco/editor' } });
+  require(['vs/editor/editor.main'], function() {
+    window._monacoReady = true;
+    initEditor();
+  });
+</script>
+<script src="file-manager.js"></script>
+<script src="log-viewer.js"></script>
+<script src="editor.js"></script>
+<script src="app.js"></script>
+
+</body>
+</html>

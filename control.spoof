@@ -1,0 +1,9 @@
+Package: com.iosautotool.spoof
+Name: IOSAutoTool Device Spoof
+Version: 1.0.0
+Architecture: iphoneos-arm64
+Description: Device fingerprint spoofing add-on for IOSAutoTool (26 modules)
+Maintainer: IOSAutoTool
+Author: IOSAutoTool
+Section: Tweaks
+Depends: mobilesubstrate, com.iosautotool (>= 1.0.0)

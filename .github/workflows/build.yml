@@ -1,0 +1,56 @@
+name: Build
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Cache Theos
+        uses: actions/cache@v4
+        with:
+          path: ~/theos
+          key: theos-${{ runner.os }}-${{ hashFiles('.github/workflows/build.yml') }}
+          restore-keys: theos-${{ runner.os }}-
+
+      - name: Cache LuaJIT ARM64
+        uses: actions/cache@v4
+        with:
+          path: deps/luajit
+          key: luajit-arm64-${{ runner.os }}-v2.1-${{ hashFiles('deps/build-luajit-arm64.sh') }}
+
+      - name: Install Theos
+        if: steps.cache-theos.outputs.cache-hit != 'true'
+        run: |
+          export THEOS=~/theos
+          bash -c "$(curl -fsSL https://raw.githubusercontent.com/theos/theos/master/bin/install-theos)"
+
+      - name: Set permissions
+        run: chmod +x build.sh deps/download-mongoose.sh deps/build-luajit-arm64.sh spoof/rename-to-xm.sh webide/download-monaco.sh
+
+      - name: Build
+        env:
+          THEOS: ~/theos
+        run: ./build.sh
+
+      - name: Upload daemon .deb
+        uses: actions/upload-artifact@v4
+        with:
+          name: iosautotool-daemon
+          path: packages/iosautotool-daemon_*.deb
+          if-no-files-found: error
+
+      - name: Upload spoof .deb
+        uses: actions/upload-artifact@v4
+        with:
+          name: iosautotool-spoof
+          path: packages/iosautotool-spoof_*.deb
+          if-no-files-found: warn

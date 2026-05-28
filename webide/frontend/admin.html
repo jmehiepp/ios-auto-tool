@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>iOS Auto Tool — Admin</title>
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="admin.css">
+</head>
+<body>
+
+<header>
+  <a href="/" class="a-back">&#8592; IDE</a>
+  <span class="title">Admin</span>
+  <span id="a-device-info" class="device-info"></span>
+</header>
+
+<nav class="a-nav">
+  <button onclick="switchTab('dashboard')" id="tab-btn-dashboard" class="active">Dashboard</button>
+  <button onclick="switchTab('apps')"      id="tab-btn-apps">Apps</button>
+  <button onclick="switchTab('screen')"    id="tab-btn-screen">Screen</button>
+  <button onclick="switchTab('spoof')"     id="tab-btn-spoof">Spoof</button>
+</nav>
+
+<!-- ── Dashboard ── -->
+<section id="tab-dashboard" class="a-tab visible">
+  <div class="card-row" id="dashboard-cards">
+    <div class="card">
+      <h3>Device</h3>
+      <p id="d-model">—</p>
+      <p id="d-ios">iOS —</p>
+    </div>
+    <div class="card">
+      <h3>Screen</h3>
+      <p id="d-screen">— × —</p>
+    </div>
+    <div class="card">
+      <h3>Services</h3>
+      <p>MCP &nbsp;<span id="svc-mcp" class="badge badge-gray">8765</span></p>
+      <p style="margin-top:6px">IDE &nbsp;<span id="svc-ide" class="badge badge-gray">8888</span></p>
+    </div>
+  </div>
+  <p style="color:#666;font-size:12px">Click <strong>Screen</strong> tab to take a screenshot,
+     <strong>Apps</strong> to manage apps, <strong>Spoof</strong> to configure device fingerprint.</p>
+</section>
+
+<!-- ── Apps ── -->
+<section id="tab-apps" class="a-tab">
+  <input id="app-search" type="search" placeholder="Search apps…" oninput="filterApps(this.value)">
+  <ul id="app-list"><li style="color:#666;padding:10px">Loading…</li></ul>
+</section>
+
+<!-- ── Screen ── -->
+<section id="tab-screen" class="a-tab">
+  <div class="screen-toolbar">
+    <button class="btn-primary" onclick="captureOnce()">&#128247; Capture</button>
+    <button class="btn-secondary" id="live-btn" onclick="toggleLive()">Live: OFF</button>
+    <button class="btn-hw" onclick="sendKey('home')">Home</button>
+    <button class="btn-hw" onclick="sendKey('volume_up')">Vol+</button>
+    <button class="btn-hw" onclick="sendKey('volume_down')">Vol−</button>
+  </div>
+  <div id="screen-wrap">
+    <div id="screen-placeholder">Press Capture to take a screenshot</div>
+    <img id="screen-img" style="display:none" alt="Device screen"
+         draggable="false">
+    <span id="screen-coords"></span>
+  </div>
+</section>
+
+<!-- ── Spoof ── -->
+<section id="tab-spoof" class="a-tab">
+  <div class="spoof-toolbar">
+    <span>Status: <span id="spoof-status" class="badge badge-gray">unknown</span></span>
+    <label>Preset:
+      <select id="spoof-preset" onchange="applyPreset(this.value)">
+        <option value="">— choose preset —</option>
+        <option value="iphone14_pro_max">iPhone 14 Pro Max</option>
+        <option value="iphone13">iPhone 13</option>
+      </select>
+    </label>
+  </div>
+  <table class="spoof-table">
+    <thead>
+      <tr><th>On</th><th>Key</th><th>Value</th></tr>
+    </thead>
+    <tbody id="spoof-tbody">
+      <tr><td colspan="3" style="color:#666;padding:10px">Loading…</td></tr>
+    </tbody>
+  </table>
+  <div class="spoof-actions">
+    <button class="btn-save"  onclick="saveSpoof()">Save</button>
+    <button class="btn-reset" onclick="resetSpoof()">Reset All</button>
+  </div>
+</section>
+
+<script src="admin.js"></script>
+</body>
+</html>

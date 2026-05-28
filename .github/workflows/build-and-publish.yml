@@ -1,0 +1,63 @@
+name: Build & Publish Sileo Repo
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build-and-publish:
+    runs-on: macos-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Cache Theos
+        id: cache-theos
+        uses: actions/cache@v4
+        with:
+          path: ~/theos
+          key: theos-${{ runner.os }}-v1
+
+      - name: Cache LuaJIT ARM64
+        uses: actions/cache@v4
+        with:
+          path: deps/luajit
+          key: luajit-arm64-${{ runner.os }}-v2.1-${{ hashFiles('deps/build-luajit-arm64.sh') }}
+
+      - name: Install Theos
+        if: steps.cache-theos.outputs.cache-hit != 'true'
+        run: |
+          export THEOS=~/theos
+          bash -c "$(curl -fsSL https://raw.githubusercontent.com/theos/theos/master/bin/install-theos)"
+
+      - name: Install dpkg
+        run: brew install dpkg
+
+      - name: Set permissions
+        run: chmod +x build.sh deps/download-mongoose.sh deps/build-luajit-arm64.sh spoof/rename-to-xm.sh webide/download-monaco.sh scripts/update-repo.sh
+
+      - name: Build
+        env:
+          THEOS: ~/theos
+        run: ./build.sh
+
+      - name: Copy .deb to repo pool
+        run: |
+          mkdir -p repo/pool/main
+          cp packages/*.deb repo/pool/main/
+
+      - name: Update repo index
+        run: ./scripts/update-repo.sh
+
+      - name: Deploy to GitHub Pages
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: repo
+          branch: gh-pages
+          commit-message: "chore: update repo"
