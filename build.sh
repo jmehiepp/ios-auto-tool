@@ -70,20 +70,20 @@ fi
 
 # ── step 4: daemon build ─────────────────────────────────────────────
 echo "==> Step 4: Daemon build"
-MAKE_ARGS=()
-[[ "$DEBUG_BUILD" -eq 1 ]] && MAKE_ARGS+=(DEBUG=1)
+MAKE_DEBUG=""
+[[ "$DEBUG_BUILD" -eq 1 ]] && MAKE_DEBUG="DEBUG=1"
 
 if [[ "$DO_CLEAN" -eq 1 ]]; then
-    make clean "${MAKE_ARGS[@]}"
+    make clean $MAKE_DEBUG
 fi
-make package "${MAKE_ARGS[@]}"
+make package $MAKE_DEBUG
 
 # ── step 5: spoof tweak build ─────────────────────────────────────────
 echo "==> Step 5: Spoof tweak build"
 if [[ "$DO_CLEAN" -eq 1 ]]; then
-    make -f Makefile.spoof clean "${MAKE_ARGS[@]}"
+    make -f Makefile.spoof clean $MAKE_DEBUG
 fi
-make -f Makefile.spoof package "${MAKE_ARGS[@]}"
+make -f Makefile.spoof package $MAKE_DEBUG
 
 # ── summary ───────────────────────────────────────────────────────────
 echo ""
