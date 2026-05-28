@@ -66,6 +66,8 @@ iosautotool-daemon_LDFLAGS = \
 	-framework Foundation \
 	-framework UIKit \
 	-framework IOKit \
+	-framework IOSurface \
+	-framework CoreGraphics \
 	-framework Accelerate \
 	-framework Vision \
 	-framework CoreLocation \
