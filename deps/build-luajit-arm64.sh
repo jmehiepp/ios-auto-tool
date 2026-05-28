@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-LUAJIT_REPO="${LUAJIT_REPO:-https://luajit.org/git/luajit.git}"
+LUAJIT_REPO="${LUAJIT_REPO:-https://github.com/LuaJIT/LuaJIT.git}"
 LUAJIT_BRANCH="v2.1"
 DIR="$(cd "$(dirname "$0")" && pwd)"
 cd "$DIR"
