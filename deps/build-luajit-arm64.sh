@@ -57,10 +57,10 @@ make DEFAULT_CC=clang \
 cd ..
 
 # Stage outputs
-mkdir -p luajit/lib luajit/include
+mkdir -p luajit/lib luajit/include/lua
 cp luajit-src/src/libluajit.a luajit/lib/libluajit-5.1.a
 cp luajit-src/src/lua.h luajit-src/src/lualib.h luajit-src/src/lauxlib.h \
-   luajit-src/src/luaconf.h luajit-src/src/luajit.h luajit/include/
+   luajit-src/src/luaconf.h luajit-src/src/luajit.h luajit/include/lua/
 
 # Sanity checks
 echo "Verifying output..."
