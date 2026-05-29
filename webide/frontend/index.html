@@ -26,6 +26,7 @@
   <div class="header-tabs">
     <button class="htab htab-ide active"    onclick="switchTab('ide')">IDE</button>
     <button class="htab htab-chat"          onclick="switchTab('chat')">✨ Chat</button>
+    <button class="htab htab-schedule"      onclick="switchTab('schedule');refreshSchedule()">⏰ Schedule</button>
     <button class="htab htab-apps"          onclick="switchTab('apps')">Apps</button>
     <button class="htab htab-device"        onclick="switchTab('device')">Device</button>
     <button class="htab htab-spoof"         onclick="switchTab('spoof')">Spoof</button>
@@ -95,6 +96,46 @@
         <textarea id="chat-input" placeholder="Bạn muốn iPhone làm gì?" rows="2"
                   onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChat();}"></textarea>
         <button class="chat-send" id="chat-send" onclick="sendChat()">Gửi</button>
+      </div>
+    </div>
+
+    <!-- Schedule tab -->
+    <div class="content-panel" id="panel-schedule">
+      <div class="sched-form">
+        <div class="sched-row">
+          <label>Script</label>
+          <select id="sched-script"></select>
+        </div>
+        <div class="sched-row">
+          <label>Loại</label>
+          <select id="sched-type" onchange="updateSchedFields()">
+            <option value="daily">Mỗi ngày lúc...</option>
+            <option value="interval">Lặp lại mỗi...</option>
+            <option value="once">Chạy 1 lần lúc...</option>
+          </select>
+        </div>
+        <div class="sched-row" id="sched-daily-row">
+          <label>Giờ</label>
+          <input type="number" id="sched-hour" min="0" max="23" value="8" style="width:60px">
+          <label style="margin-left:8px">Phút</label>
+          <input type="number" id="sched-minute" min="0" max="59" value="0" style="width:60px">
+        </div>
+        <div class="sched-row" id="sched-interval-row" style="display:none">
+          <label>Mỗi</label>
+          <input type="number" id="sched-interval" min="1" value="60" style="width:80px">
+          <span>phút</span>
+        </div>
+        <div class="sched-row" id="sched-once-row" style="display:none">
+          <label>Thời điểm</label>
+          <input type="datetime-local" id="sched-at">
+        </div>
+        <div class="sched-row">
+          <button class="sched-add-btn" onclick="addSchedule()">+ Thêm lịch</button>
+        </div>
+      </div>
+      <div class="sched-list-wrap">
+        <div class="sched-list-hdr">Lịch đang có</div>
+        <ul class="sched-list" id="sched-list"></ul>
       </div>
     </div>
 
@@ -257,6 +298,7 @@
 <script src="editor.js"></script>
 <script src="chat.js"></script>
 <script src="recorder.js"></script>
+<script src="scheduler.js"></script>
 <script src="app.js"></script>
 
 </body>

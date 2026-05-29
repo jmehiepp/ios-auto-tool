@@ -1,5 +1,6 @@
 #import "api-handler.h"
 #import "claude-handler.h"
+#import "../../daemon/scheduler.h"
 #import "../../daemon/script-runner.h"
 #import "../../deps/mongoose.h"
 #import "../../engine/touch/recorder.h"
@@ -252,6 +253,34 @@ static void handle_recorder_events(struct mg_connection *c) {
     json_reply(c, 200, json.UTF8String);
 }
 
+static void handle_schedule_list(struct mg_connection *c) {
+    NSArray *list = scheduler_list();
+    NSData *data = [NSJSONSerialization dataWithJSONObject:list options:0 error:nil];
+    NSString *json = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+    json_reply(c, 200, json.UTF8String);
+}
+
+static void handle_schedule_add(struct mg_connection *c, struct mg_http_message *hm) {
+    NSDictionary *body = parse_json_body(hm);
+    if (!body) { json_reply(c, 400, "{\"error\":\"invalid body\"}"); return; }
+    NSString *jid = scheduler_add(body);
+    if (!jid) { json_reply(c, 400, "{\"error\":\"invalid job spec\"}"); return; }
+    NSString *json = [NSString stringWithFormat:@"{\"ok\":true,\"id\":\"%@\"}", jid];
+    json_reply(c, 200, json.UTF8String);
+}
+
+static void handle_schedule_delete(struct mg_connection *c, struct mg_http_message *hm) {
+    NSDictionary *body = parse_json_body(hm);
+    BOOL ok = scheduler_delete(body[@"id"]);
+    json_reply(c, ok ? 200 : 404, ok ? "{\"ok\":true}" : "{\"error\":\"not found\"}");
+}
+
+static void handle_schedule_toggle(struct mg_connection *c, struct mg_http_message *hm) {
+    NSDictionary *body = parse_json_body(hm);
+    BOOL ok = scheduler_toggle(body[@"id"]);
+    json_reply(c, ok ? 200 : 404, ok ? "{\"ok\":true}" : "{\"error\":\"not found\"}");
+}
+
 // POST /api/key {"key":"home"|"lock"|"volume_up"|"volume_down"|"mute"}
 static void handle_key(struct mg_connection *c, struct mg_http_message *hm) {
     NSDictionary *body = parse_json_body(hm);
@@ -399,6 +428,22 @@ void api_handle(struct mg_connection *c, struct mg_http_message *hm,
     } else if (mg_match(hm->uri, mg_str("/api/recorder/events"), NULL) &&
                mg_match(hm->method, mg_str("GET"), NULL)) {
         handle_recorder_events(c);
+
+    } else if (mg_match(hm->uri, mg_str("/api/schedule"), NULL) &&
+               mg_match(hm->method, mg_str("GET"), NULL)) {
+        handle_schedule_list(c);
+
+    } else if (mg_match(hm->uri, mg_str("/api/schedule/add"), NULL) &&
+               mg_match(hm->method, mg_str("POST"), NULL)) {
+        handle_schedule_add(c, hm);
+
+    } else if (mg_match(hm->uri, mg_str("/api/schedule/delete"), NULL) &&
+               mg_match(hm->method, mg_str("POST"), NULL)) {
+        handle_schedule_delete(c, hm);
+
+    } else if (mg_match(hm->uri, mg_str("/api/schedule/toggle"), NULL) &&
+               mg_match(hm->method, mg_str("POST"), NULL)) {
+        handle_schedule_toggle(c, hm);
 
     } else if (mg_match(hm->uri, mg_str("/api/key"), NULL) &&
                mg_match(hm->method, mg_str("POST"), NULL)) {

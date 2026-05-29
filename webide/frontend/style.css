@@ -786,3 +786,81 @@ button { cursor: pointer; }
 .chat-send:disabled { opacity: 0.5; cursor: not-allowed; }
 .chat-send:hover:not(:disabled) { filter: brightness(1.1); }
 
+/* ═══════════════════════════════════════════════════════════
+   SCHEDULE PANEL
+═══════════════════════════════════════════════════════════ */
+#panel-schedule { display: flex; flex-direction: column; gap: 16px; padding: 16px; overflow: auto; }
+.sched-form {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.sched-row { display: flex; align-items: center; gap: 8px; }
+.sched-row label { color: var(--text-dim); font-size: 12px; min-width: 80px; }
+.sched-row select, .sched-row input {
+  background: var(--surface-3);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 6px 8px;
+  font-size: 13px;
+}
+.sched-row select:focus, .sched-row input:focus { outline: 1px solid var(--accent); }
+.sched-add-btn {
+  background: var(--accent);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.sched-add-btn:hover { filter: brightness(1.1); }
+
+.sched-list-wrap {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px;
+}
+.sched-list-hdr {
+  color: var(--text-dim);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 10px;
+}
+.sched-list { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+.sched-item {
+  background: var(--surface-3);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.sched-item.disabled { opacity: 0.5; }
+.sched-item-main { flex: 1; }
+.sched-item-name { font-size: 13px; color: var(--text-bright); font-weight: 600; }
+.sched-item-when { font-size: 12px; color: var(--accent); margin-top: 2px; }
+.sched-item-meta { font-size: 11px; color: var(--text-dim); margin-top: 4px; }
+.sched-item-actions { display: flex; gap: 6px; }
+.sched-btn {
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 4px 10px;
+  font-size: 12px;
+  cursor: pointer;
+}
+.sched-btn:hover { background: var(--border); }
+.sched-btn-del { color: var(--red); }
+.sched-empty { color: var(--text-dim); font-size: 12px; padding: 8px 0; text-align: center; }
+

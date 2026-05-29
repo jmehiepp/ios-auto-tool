@@ -2,6 +2,7 @@
 #import <CoreFoundation/CoreFoundation.h>
 #import "logger.h"
 #import "ipc-server.h"
+#import "scheduler.h"
 #import "../lua/lua-bridge.h"
 #import "../webide/server/webide-server.h"
 #import "../mcp/mcp-server.h"
@@ -28,6 +29,9 @@ int main(int argc, char *argv[]) {
 
         mcp_server_start(MCP_PORT);
         log_info("MCP server ready at port %d", MCP_PORT);
+
+        scheduler_start(SCRIPTS_DIR);
+        log_info("Scheduler ready");
 
         log_info("Daemon ready — waiting for connections");
         CFRunLoopRun();

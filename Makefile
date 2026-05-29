@@ -13,6 +13,7 @@ iosautotool-daemon_FILES = \
 	daemon/ipc-server.m \
 	daemon/script-runner.m \
 	daemon/logger.m \
+	daemon/scheduler.m \
 	lua/lua-bridge.m \
 	lua/bindings/bind-touch.m \
 	lua/bindings/bind-screen.m \
