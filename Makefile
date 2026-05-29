@@ -82,8 +82,6 @@ iosautotool-daemon_LDFLAGS = \
 	-framework NetworkExtension \
 	-Wl,-undefined,dynamic_lookup
 
-iosautotool-daemon_PRIVATE_FRAMEWORKS = SpringBoardServices FrontBoardServices
-
 iosautotool-daemon_INSTALL_PATH = /Library/IOSAutoTool
 
 iosautotool-daemon_CODESIGN_FLAGS = -Siosautotool-daemon.entitlements
