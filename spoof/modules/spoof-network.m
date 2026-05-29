@@ -25,5 +25,5 @@
     NSMutableDictionary *d = [NSMutableDictionary dictionary];
     if (cfg[@"ssid"])  d[(__bridge id)kCNNetworkInfoKeySSID]     = cfg[@"ssid"];
     if (cfg[@"bssid"]) d[(__bridge id)kCNNetworkInfoKeyBSSID]    = cfg[@"bssid"];
-    return CFBridgingRetain(d);
+    return (CFDictionaryRef)CFBridgingRetain(d);
 }
