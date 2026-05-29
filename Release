@@ -1,0 +1,17 @@
+Origin: iOS Auto Tool
+Label: iOS Auto Tool
+Suite: stable
+Version: 1.0
+Codename: ios
+Architectures: iphoneos-arm64
+Components: main
+Description: iOS automation tool with Lua scripting and Web IDE
+
+MD5Sum:
+ c027cdd0637037b47ea5fc31dddf949a             1302 Packages
+ ca519f7a55ddd5d828db3340c60b3432              561 Packages.gz
+ f6301374356065965f43fce8631fa902              671 Packages.bz2
+SHA256:
+ f4b25afbc8b0d3d3b169b3e1d331c59b7111cc6ed5988be9e4ce200ac8422c09             1302 Packages
+ c3d994fa0f9fbe229a7a8be67483254edcb9df4bd3e3a4b7026d88bc150a4bba              561 Packages.gz
+ 55fb13b2729f9faa2ceeb215634b03359f756583be84d1017a4c3b71f8936e08              671 Packages.bz2
