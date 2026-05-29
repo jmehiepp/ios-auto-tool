@@ -80,10 +80,15 @@ make package $MAKE_DEBUG
 
 # ── step 5: spoof tweak build ─────────────────────────────────────────
 echo "==> Step 5: Spoof tweak build"
+cp control control.daemon.bak
+cp control.spoof control
+trap 'mv control.daemon.bak control 2>/dev/null || true' EXIT
 if [[ "$DO_CLEAN" -eq 1 ]]; then
     make -f Makefile.spoof clean $MAKE_DEBUG
 fi
 make -f Makefile.spoof package $MAKE_DEBUG
+mv control.daemon.bak control
+trap - EXIT
 
 # ── summary ───────────────────────────────────────────────────────────
 echo ""
