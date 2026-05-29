@@ -12,25 +12,22 @@ Architecture: iphoneos-arm64
 Version: 1.0.0-1+debug
 Installed-Size: 752
 Filename: pool/main/com.iosautotool_1.0.0-1+debug_iphoneos-arm64.deb
-Size: 254168
-MD5sum: 6fef2f9866451ed9acc17c46044bf960
-SHA256: ec141e49b8b783e757e65eba4ac9075588a368daae4f01c4726e598e5279d8e4
+Size: 254166
+MD5sum: d9dbdd937074346d3676c5251f55ddb7
+SHA256: 2d3eef748cc4498677b0e100fea41231a6b36784d484ef378e9edb0021d824eb
 
-Package: com.iosautotool
-Name: iOS Auto Tool
-Description: iOS automation tool with Lua scripting.
- Write Lua scripts in your browser and automate your jailbroken iPhone.
- Features: touch injection, screen OCR/image-match, Web IDE, MCP server.
-Maintainer: dev
-Author: dev
+Package: com.iosautotool.spoof
+Name: IOSAutoTool Device Spoof
+Description: Device fingerprint spoofing add-on for IOSAutoTool (26 modules)
+Maintainer: IOSAutoTool
+Author: IOSAutoTool
 Section: Tweaks
-Tag: purpose::automation, compatible_min::ios14.0
-Depends: firmware (>= 14.0), cy+model.iphone
+Depends: mobilesubstrate, com.iosautotool (>= 1.0.0)
 Architecture: iphoneos-arm64
-Version: 1.0.0-2+debug
+Version: 1.0.0-1+debug
 Installed-Size: 496
-Filename: pool/main/com.iosautotool_1.0.0-2+debug_iphoneos-arm64.deb
-Size: 153466
-MD5sum: 569754811bf31c6a6520e2ea87c5046f
-SHA256: 2075aa26ff89fdd50e8614b8acc912a4f6c2a254defe007a7515d659904564ed
+Filename: pool/main/com.iosautotool.spoof_1.0.0-1+debug_iphoneos-arm64.deb
+Size: 153364
+MD5sum: a42e1f14eabd7ecbf38dd962169c3fd3
+SHA256: 38f64174589cd8b3908164c4923f77f439912028b4218e3e05eca5114277e2bf
 
