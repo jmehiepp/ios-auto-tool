@@ -10,11 +10,11 @@ Tag: purpose::automation, compatible_min::ios14.0
 Depends: firmware (>= 14.0), cy+model.iphone
 Architecture: iphoneos-arm64
 Version: 1.0.0-1+debug
-Installed-Size: 752
+Installed-Size: 788
 Filename: pool/main/com.iosautotool_1.0.0-1+debug_iphoneos-arm64.deb
-Size: 257462
-MD5sum: a25324b5da6b096c13e49c0b3e2f9648
-SHA256: 4f84c9244a6a183b60fb00d749e5ee56843cd9a16f7f98d9f1ac236f71dfb8e7
+Size: 260438
+MD5sum: d6f4c6fd51bec84053936869a26a6335
+SHA256: 1b16c64d4c0fc04a9ad8a5b0ce7872d33dee986a52b68c273d0e5063412f1aed
 
 Package: com.iosautotool.spoof
 Name: IOSAutoTool Device Spoof
@@ -25,9 +25,9 @@ Section: Tweaks
 Depends: mobilesubstrate, com.iosautotool (>= 1.0.0)
 Architecture: iphoneos-arm64
 Version: 1.0.0-1+debug
-Installed-Size: 504
+Installed-Size: 508
 Filename: pool/main/com.iosautotool.spoof_1.0.0-1+debug_iphoneos-arm64.deb
-Size: 154978
-MD5sum: 2f80c0a6c2d51f00637560ac74098cd1
-SHA256: c128b15defb5d6edf824b4da6667fc572d1a834315391baec619b149e6282547
+Size: 155684
+MD5sum: e631971c3094644bf419f92b2878b357
+SHA256: 17fec55fb60d696e8effea0a9b3123b848bffb7c82f939910b5ff7c9d8a265f1
 
