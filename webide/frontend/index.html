@@ -51,6 +51,8 @@
 
   <button class="tbtn tbtn-screen" id="btn-capture" onclick="captureOnce()">📷 Capture</button>
   <button class="tbtn tbtn-live"   id="btn-live"    onclick="toggleLive()">● Live</button>
+  <button class="tbtn tbtn-record" id="btn-record"  onclick="toggleRecord()">● Record</button>
+  <span class="rec-indicator" id="rec-indicator">REC <span id="rec-count">0</span></span>
 
   <span class="toolbar-spacer"></span>
 
@@ -254,6 +256,7 @@
 <script src="log-viewer.js"></script>
 <script src="editor.js"></script>
 <script src="chat.js"></script>
+<script src="recorder.js"></script>
 <script src="app.js"></script>
 
 </body>

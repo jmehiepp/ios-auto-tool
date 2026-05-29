@@ -2,6 +2,7 @@
 #import "claude-handler.h"
 #import "../../daemon/script-runner.h"
 #import "../../deps/mongoose.h"
+#import "../../engine/touch/recorder.h"
 #import "../../mcp/mcp-tools.h"
 #import "../../spoof/spoof-config.h"
 #import <Foundation/Foundation.h>
@@ -216,12 +217,39 @@ static void handle_touch(struct mg_connection *c, struct mg_http_message *hm) {
     if ([type isEqualToString:@"swipe"]) {
         double dx = [body[@"dx"] doubleValue];
         double dy = [body[@"dy"] doubleValue];
+        if (recorder_is_recording()) recorder_log_swipe(x, y, x + dx, y + dy);
         r = tool_swipe(@{@"x1": @(x), @"y1": @(y), @"x2": @(x + dx), @"y2": @(y + dy)});
     } else {
+        if (recorder_is_recording()) recorder_log_tap(x, y);
         r = tool_tap(@{@"x": @(x), @"y": @(y)});
     }
     json_reply(c, [r[@"isError"] boolValue] ? 500 : 200,
                [r[@"isError"] boolValue] ? "{\"error\":\"touch failed\"}" : "{\"ok\":true}");
+}
+
+static void handle_recorder_start(struct mg_connection *c) {
+    recorder_start();
+    json_reply(c, 200, "{\"ok\":true,\"recording\":true}");
+}
+
+static void handle_recorder_stop(struct mg_connection *c) {
+    NSString *code = recorder_stop_and_codegen();
+    NSArray *events = recorder_get_events();
+    recorder_clear();
+    NSDictionary *body = @{@"ok": @YES, @"code": code ?: @"", @"count": @(events.count)};
+    NSData *data = [NSJSONSerialization dataWithJSONObject:body options:0 error:nil];
+    NSString *json = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+    json_reply(c, 200, json.UTF8String);
+}
+
+static void handle_recorder_events(struct mg_connection *c) {
+    NSDictionary *body = @{
+        @"recording": @(recorder_is_recording()),
+        @"events":    recorder_get_events(),
+    };
+    NSData *data = [NSJSONSerialization dataWithJSONObject:body options:0 error:nil];
+    NSString *json = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+    json_reply(c, 200, json.UTF8String);
 }
 
 // POST /api/key {"key":"home"|"lock"|"volume_up"|"volume_down"|"mute"}
@@ -359,6 +387,18 @@ void api_handle(struct mg_connection *c, struct mg_http_message *hm,
     } else if (mg_match(hm->uri, mg_str("/api/touch"), NULL) &&
                mg_match(hm->method, mg_str("POST"), NULL)) {
         handle_touch(c, hm);
+
+    } else if (mg_match(hm->uri, mg_str("/api/recorder/start"), NULL) &&
+               mg_match(hm->method, mg_str("POST"), NULL)) {
+        handle_recorder_start(c);
+
+    } else if (mg_match(hm->uri, mg_str("/api/recorder/stop"), NULL) &&
+               mg_match(hm->method, mg_str("POST"), NULL)) {
+        handle_recorder_stop(c);
+
+    } else if (mg_match(hm->uri, mg_str("/api/recorder/events"), NULL) &&
+               mg_match(hm->method, mg_str("GET"), NULL)) {
+        handle_recorder_events(c);
 
     } else if (mg_match(hm->uri, mg_str("/api/key"), NULL) &&
                mg_match(hm->method, mg_str("POST"), NULL)) {

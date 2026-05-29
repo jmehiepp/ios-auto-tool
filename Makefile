@@ -21,6 +21,7 @@ iosautotool-daemon_FILES = \
 	lua/bindings/bind-system.m \
 	engine/touch/touch-inject.m \
 	engine/touch/gesture.m \
+	engine/touch/recorder.m \
 	engine/screen/screenshot.m \
 	engine/screen/color-find.m \
 	engine/screen/image-match.m \
