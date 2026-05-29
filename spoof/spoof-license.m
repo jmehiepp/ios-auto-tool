@@ -27,9 +27,9 @@ BOOL spoof_license_verify(void) {
 
     // Format: "<key>:<expected_sig>"
     // expected_sig = HMAC-SHA256(secret_server_key, key + ":" + device_id)
-    NSArray *parts = [contents.stringByTrimmingCharactersInSet:
-                      [NSCharacterSet whitespaceAndNewlineCharacterSet]
-                      componentsSeparatedByString:@":"];
+    NSString *trimmed = [contents stringByTrimmingCharactersInSet:
+                         [NSCharacterSet whitespaceAndNewlineCharacterSet]];
+    NSArray *parts = [trimmed componentsSeparatedByString:@":"];
     if (parts.count < 2) return NO;
 
     NSString *licenseKey = parts[0];
