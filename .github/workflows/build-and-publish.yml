@@ -41,8 +41,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: bash -c "$(curl -fsSL https://raw.githubusercontent.com/theos/theos/master/bin/install-theos)"
 
-      - name: Install dpkg
-        run: brew install dpkg
+      - name: Install brew tools
+        run: brew install dpkg ldid
 
       - name: Set permissions
         run: chmod +x build.sh deps/download-mongoose.sh deps/build-luajit-arm64.sh spoof/rename-to-xm.sh webide/download-monaco.sh scripts/update-repo.sh
