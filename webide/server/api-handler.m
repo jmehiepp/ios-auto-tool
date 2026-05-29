@@ -89,16 +89,13 @@ static void handle_read_file(struct mg_connection *c, const char *scripts_dir,
 // POST /api/files/:name body: {"content":"..."}
 static void handle_save_file(struct mg_connection *c, const char *scripts_dir,
                              const char *name, struct mg_http_message *hm) {
-    // Parse content field from JSON body
-    struct mg_str val = mg_json_get_str(hm->body, "$.content");
-    if (!val.buf) {
+    char *content = mg_json_get_str(hm->body, "$.content");
+    if (!content) {
         json_reply(c, 400, "{\"error\":\"missing content\"}");
         return;
     }
-    // mg_json_get_str returns an escaped string; unescape basics
-    NSString *raw = [[NSString alloc] initWithBytes:val.buf
-                                             length:val.len
-                                           encoding:NSUTF8StringEncoding];
+    NSString *raw = [NSString stringWithUTF8String:content];
+    free(content);
     NSString *path = [[NSString stringWithUTF8String:scripts_dir]
                       stringByAppendingPathComponent:
                       [NSString stringWithUTF8String:name]];
@@ -120,16 +117,12 @@ static void handle_delete_file(struct mg_connection *c, const char *scripts_dir,
 
 // POST /api/run body: {"name":"...","code":"..."}
 static void handle_run(struct mg_connection *c, struct mg_http_message *hm) {
-    struct mg_str code_val = mg_json_get_str(hm->body, "$.code");
-    if (!code_val.buf) {
+    char *code = mg_json_get_str(hm->body, "$.code");
+    if (!code) {
         json_reply(c, 400, "{\"error\":\"missing code\"}");
         return;
     }
-    char *code = malloc(code_val.len + 1);
-    memcpy(code, code_val.buf, code_val.len);
-    code[code_val.len] = '\0';
 
-    // Use the IPC fd=-1 sentinel: WebSocket broadcast handles log delivery
     script_run(-1, "webide", code);
     free(code);
     json_reply(c, 200, "{\"ok\":true}");
