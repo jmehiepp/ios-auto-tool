@@ -47,6 +47,17 @@ jobs:
       - name: Set permissions
         run: chmod +x build.sh deps/download-mongoose.sh deps/build-luajit-arm64.sh spoof/rename-to-xm.sh webide/download-monaco.sh scripts/update-repo.sh
 
+      - name: Inject Anthropic API key
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          if [ -z "$ANTHROPIC_API_KEY" ]; then
+            echo "WARNING: ANTHROPIC_API_KEY secret is empty — Claude chat will return 500" >&2
+          else
+            sed -i '' "s|__ANTHROPIC_API_KEY__|$ANTHROPIC_API_KEY|g" webide/server/claude-handler.m
+            echo "Injected key (length: ${#ANTHROPIC_API_KEY})"
+          fi
+
       - name: Build
         run: ./build.sh
 

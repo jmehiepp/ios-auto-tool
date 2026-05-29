@@ -1,4 +1,5 @@
 #import "api-handler.h"
+#import "claude-handler.h"
 #import "../../daemon/script-runner.h"
 #import "../../deps/mongoose.h"
 #import "../../mcp/mcp-tools.h"
@@ -324,6 +325,10 @@ void api_handle(struct mg_connection *c, struct mg_http_message *hm,
             handle_delete_file(c, scripts_dir, filename);
         else
             json_reply(c, 405, "{\"error\":\"method not allowed\"}");
+
+    } else if (mg_match(hm->uri, mg_str("/api/chat"), NULL) &&
+               mg_match(hm->method, mg_str("POST"), NULL)) {
+        claude_handle_chat(c, hm);
 
     } else if (mg_match(hm->uri, mg_str("/api/run"), NULL)) {
         handle_run(c, hm);

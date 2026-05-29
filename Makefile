@@ -34,6 +34,7 @@ iosautotool-daemon_FILES = \
 	engine/system/http-client.m \
 	webide/server/webide-server.m \
 	webide/server/api-handler.m \
+	webide/server/claude-handler.m \
 	deps/mongoose.c \
 	mcp/mcp-server.m \
 	mcp/mcp-tools-common.m \
