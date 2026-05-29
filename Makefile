@@ -79,7 +79,10 @@ iosautotool-daemon_LDFLAGS = \
 	-framework CoreTelephony \
 	-framework WebKit \
 	-framework AdSupport \
-	-framework NetworkExtension
+	-framework NetworkExtension \
+	-Wl,-undefined,dynamic_lookup
+
+iosautotool-daemon_PRIVATE_FRAMEWORKS = SpringBoardServices FrontBoardServices
 
 iosautotool-daemon_INSTALL_PATH = /Library/IOSAutoTool
 
