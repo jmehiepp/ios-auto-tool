@@ -302,9 +302,9 @@ static void handle_mcp(struct mg_connection *c, struct mg_http_message *hm) {
                 // production integration; this dispatch captures the result correctly.
             }
         });
-        // Placeholder synchronous path (works when tool finishes fast)
-        NSDictionary *result = dispatch_sync(s_tool_q, ^NSDictionary *{
-            return handler(args);
+        __block NSDictionary *result = nil;
+        dispatch_sync(s_tool_q, ^{
+            result = handler(args);
         });
         send_json(c, jsonrpc_response(req_id,
                                       result ?: mcp_error_result(@"Tool error"), nil));
