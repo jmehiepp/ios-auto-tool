@@ -48,7 +48,7 @@ iosautotool-spoof_LDFLAGS = \
 	-framework WebKit \
 	-framework AdSupport \
 	-framework SystemConfiguration \
-	-framework CommonCrypto
+	-Wl,-undefined,dynamic_lookup
 
 iosautotool-spoof_LIBRARIES = substrate
 
