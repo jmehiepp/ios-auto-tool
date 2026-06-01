@@ -1,0 +1,9 @@
+Package: com.iosautotool.widget
+Name: IOSAutoTool Floating Widget
+Version: 1.0.0
+Architecture: iphoneos-arm64
+Description: AssistiveTouch-style floating widget — tap to run any Lua macro instantly without opening Web IDE.
+Maintainer: IOSAutoTool
+Author: IOSAutoTool
+Section: Tweaks
+Depends: mobilesubstrate, com.iosautotool (>= 1.0.0)

@@ -1,0 +1,36 @@
+THEOS_DEVICE_IP    ?= 192.168.1.100
+THEOS_DEVICE_PORT  ?= 22
+
+TARGET  := iphone:clang:latest:14.0
+ARCHS   := arm64
+
+include $(THEOS)/makefiles/common.mk
+
+TWEAK_NAME = iosautotool-widget
+
+iosautotool-widget_FILES = \
+	widget/widget-tweak.xm \
+	widget/floating-widget.m \
+	widget/widget-ipc.m
+
+iosautotool-widget_CFLAGS = \
+	-fobjc-arc \
+	-Wno-unused-function \
+	-Wno-unused-variable \
+	-Wno-deprecated-declarations \
+	-Iwidget
+
+iosautotool-widget_LDFLAGS = \
+	-framework Foundation \
+	-framework UIKit \
+	-framework QuartzCore \
+	-Wl,-undefined,dynamic_lookup
+
+iosautotool-widget_LIBRARIES = substrate
+
+iosautotool-widget_INSTALL_PATH = /Library/MobileSubstrate/DynamicLibraries
+
+include $(THEOS)/makefiles/tweak.mk
+
+after-install::
+	install.exec "killall -9 SpringBoard"

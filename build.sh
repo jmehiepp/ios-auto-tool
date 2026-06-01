@@ -90,6 +90,18 @@ make -f Makefile.spoof package $MAKE_DEBUG
 mv control.daemon.bak control
 trap - EXIT
 
+# ── step 6: widget tweak build ───────────────────────────────────────
+echo "==> Step 6: Widget tweak build"
+cp control control.daemon.bak
+cp control.widget control
+trap 'mv control.daemon.bak control 2>/dev/null || true' EXIT
+if [[ "$DO_CLEAN" -eq 1 ]]; then
+    make -f Makefile.widget clean $MAKE_DEBUG
+fi
+make -f Makefile.widget package $MAKE_DEBUG
+mv control.daemon.bak control
+trap - EXIT
+
 # ── summary ───────────────────────────────────────────────────────────
 echo ""
 echo "==> Build complete. Packages:"
