@@ -12,9 +12,9 @@ Architecture: iphoneos-arm64
 Version: 1.0.0-1+debug
 Installed-Size: 796
 Filename: pool/main/com.iosautotool_1.0.0-1+debug_iphoneos-arm64.deb
-Size: 265344
-MD5sum: ac3892b0074409875c9ce7092ea2f740
-SHA256: b6cb7af3d57cac9b85edf6dc26e46001012d9973ea1e17b8cdbf7bbd4e677732
+Size: 265352
+MD5sum: 2a16c0f65c4962d749afa9b0e7ac69e4
+SHA256: 417a902ed85f3b1d29e3bb7a18aa338d4ccd53d91e3d374cd2b2bf43981b7bef
 
 Package: com.iosautotool.spoof
 Name: IOSAutoTool Device Spoof
@@ -27,7 +27,22 @@ Architecture: iphoneos-arm64
 Version: 1.0.0-1+debug
 Installed-Size: 528
 Filename: pool/main/com.iosautotool.spoof_1.0.0-1+debug_iphoneos-arm64.deb
-Size: 158230
-MD5sum: 63d4ded6bb3a844f2b89c2c3214217da
-SHA256: 39f84209ec7712bde09a82c6c8f27000a2e6f08045eae668f4deb9259c041659
+Size: 158228
+MD5sum: db681e427abf29f82d9e4acfdceab093
+SHA256: 4f6288f263e1398d25d07099718e56d872eaa6438a0bf0a3dcfa2d6b50185f65
+
+Package: com.iosautotool.widget
+Name: IOSAutoTool Floating Widget
+Description: AssistiveTouch-style floating widget — tap to run any Lua macro instantly without opening Web IDE.
+Maintainer: IOSAutoTool
+Author: IOSAutoTool
+Section: Tweaks
+Depends: mobilesubstrate, com.iosautotool (>= 1.0.0)
+Architecture: iphoneos-arm64
+Version: 1.0.0-1+debug
+Installed-Size: 220
+Filename: pool/main/com.iosautotool.widget_1.0.0-1+debug_iphoneos-arm64.deb
+Size: 32254
+MD5sum: 61c95be40d4968aa1c49ebba2c9c6e62
+SHA256: 06a0cde8b9c0dd141f7d29342a80caf706404ca63232e9f533f329011a4467b7
 
