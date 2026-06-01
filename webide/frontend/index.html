@@ -53,6 +53,7 @@
   <button class="tbtn tbtn-screen" id="btn-capture" onclick="captureOnce()">📷 Capture</button>
   <button class="tbtn tbtn-live"   id="btn-live"    onclick="toggleLive()">● Live</button>
   <button class="tbtn tbtn-record" id="btn-record"  onclick="toggleRecord()">● Record</button>
+  <button class="tbtn tbtn-inspect" id="btn-inspect" onclick="toggleInspect()">🔍 Inspect</button>
   <span class="rec-indicator" id="rec-indicator">REC <span id="rec-count">0</span></span>
 
   <span class="toolbar-spacer"></span>
@@ -213,6 +214,7 @@
         <div class="phone-btn phone-btn-lock" title="Home" onclick="pressKey('home')" style="margin-top:8px"></div>
       </div>
       <img id="screen-img" alt="" draggable="false">
+      <div class="inspect-overlay" id="inspect-overlay"></div>
       <div class="screen-placeholder" id="screen-placeholder">
         <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
           <rect x="8" y="4" width="24" height="32" rx="4" stroke="#5e5e78" stroke-width="1.5"/>
@@ -299,6 +301,7 @@
 <script src="chat.js"></script>
 <script src="recorder.js"></script>
 <script src="scheduler.js"></script>
+<script src="inspect.js"></script>
 <script src="app.js"></script>
 
 </body>

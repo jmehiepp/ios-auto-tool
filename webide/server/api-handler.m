@@ -3,6 +3,8 @@
 #import "../../daemon/scheduler.h"
 #import "../../daemon/script-runner.h"
 #import "../../deps/mongoose.h"
+#import "../../engine/screen/ocr.h"
+#import "../../engine/screen/screenshot.h"
 #import "../../engine/touch/recorder.h"
 #import "../../mcp/mcp-tools.h"
 #import "../../spoof/spoof-config.h"
@@ -281,6 +283,38 @@ static void handle_schedule_toggle(struct mg_connection *c, struct mg_http_messa
     json_reply(c, ok ? 200 : 404, ok ? "{\"ok\":true}" : "{\"error\":\"not found\"}");
 }
 
+static void handle_inspect(struct mg_connection *c) {
+    UIImage *img = capture_screen(CGRectZero);
+    if (!img) { json_reply(c, 500, "{\"error\":\"screenshot failed\"}"); return; }
+
+    int count = 0;
+    OcrObservation *obs = ocr_image_detailed(img, NULL, &count);
+    NSMutableArray *items = [NSMutableArray arrayWithCapacity:count];
+    for (int i = 0; i < count; i++) {
+        NSString *text = obs[i].text ? [NSString stringWithUTF8String:obs[i].text] : @"";
+        [items addObject:@{
+            @"text":       text,
+            @"confidence": @(obs[i].confidence),
+            @"x":          @((int)obs[i].x),
+            @"y":          @((int)obs[i].y),
+            @"w":          @((int)obs[i].w),
+            @"h":          @((int)obs[i].h),
+        }];
+        free(obs[i].text);
+    }
+    free(obs);
+
+    CGSize sz = img.size;
+    NSDictionary *body = @{
+        @"width":  @((int)sz.width),
+        @"height": @((int)sz.height),
+        @"items":  items,
+    };
+    NSData *data = [NSJSONSerialization dataWithJSONObject:body options:0 error:nil];
+    NSString *json = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+    json_reply(c, 200, json.UTF8String);
+}
+
 // POST /api/key {"key":"home"|"lock"|"volume_up"|"volume_down"|"mute"}
 static void handle_key(struct mg_connection *c, struct mg_http_message *hm) {
     NSDictionary *body = parse_json_body(hm);
@@ -444,6 +478,10 @@ void api_handle(struct mg_connection *c, struct mg_http_message *hm,
     } else if (mg_match(hm->uri, mg_str("/api/schedule/toggle"), NULL) &&
                mg_match(hm->method, mg_str("POST"), NULL)) {
         handle_schedule_toggle(c, hm);
+
+    } else if (mg_match(hm->uri, mg_str("/api/inspect"), NULL) &&
+               mg_match(hm->method, mg_str("GET"), NULL)) {
+        handle_inspect(c);
 
     } else if (mg_match(hm->uri, mg_str("/api/key"), NULL) &&
                mg_match(hm->method, mg_str("POST"), NULL)) {
