@@ -12,9 +12,9 @@ Architecture: iphoneos-arm64
 Version: 1.0.0-1+debug
 Installed-Size: 796
 Filename: pool/main/com.iosautotool_1.0.0-1+debug_iphoneos-arm64.deb
-Size: 264430
-MD5sum: e8f3c8ad3912ec971ef8526bdb36f976
-SHA256: 024136191f4b9e46b5a421c955cea43dadda9c28e4a38ef96a896afcfb3c2f14
+Size: 265344
+MD5sum: ac3892b0074409875c9ce7092ea2f740
+SHA256: b6cb7af3d57cac9b85edf6dc26e46001012d9973ea1e17b8cdbf7bbd4e677732
 
 Package: com.iosautotool.spoof
 Name: IOSAutoTool Device Spoof
@@ -25,9 +25,9 @@ Section: Tweaks
 Depends: mobilesubstrate, com.iosautotool (>= 1.0.0)
 Architecture: iphoneos-arm64
 Version: 1.0.0-1+debug
-Installed-Size: 520
+Installed-Size: 528
 Filename: pool/main/com.iosautotool.spoof_1.0.0-1+debug_iphoneos-arm64.deb
-Size: 157366
-MD5sum: 09ee28ec4b2fc966bbf4ec9966cd9409
-SHA256: 309c0d9849d9fa7ad3b50fdf743562633a8a4ce4924f1aaf7e62b6680c94c44b
+Size: 158230
+MD5sum: 63d4ded6bb3a844f2b89c2c3214217da
+SHA256: 39f84209ec7712bde09a82c6c8f27000a2e6f08045eae668f4deb9259c041659
 
