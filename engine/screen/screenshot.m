@@ -1,7 +1,17 @@
 #import "screenshot.h"
 #import <UIKit/UIKit.h>
-#import <IOSurface/IOSurface.h>
 #include <dlfcn.h>
+
+typedef struct __IOSurface *IOSurfaceRef;
+extern IOSurfaceRef IOSurfaceCreate(CFDictionaryRef properties);
+extern int IOSurfaceLock(IOSurfaceRef surface, uint32_t options, uint32_t *seed);
+extern int IOSurfaceUnlock(IOSurfaceRef surface, uint32_t options, uint32_t *seed);
+extern size_t IOSurfaceGetWidth(IOSurfaceRef surface);
+extern size_t IOSurfaceGetHeight(IOSurfaceRef surface);
+extern size_t IOSurfaceGetBytesPerRow(IOSurfaceRef surface);
+extern void *IOSurfaceGetBaseAddress(IOSurfaceRef surface);
+extern const CFStringRef kIOSurfaceWidth, kIOSurfaceHeight, kIOSurfaceBytesPerElement;
+extern const CFStringRef kIOSurfaceBytesPerRow, kIOSurfaceAllocSize, kIOSurfacePixelFormat;
 
 #define IOSURFACE_LOCK_READ_ONLY 0x00000001
 

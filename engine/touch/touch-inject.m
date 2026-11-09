@@ -2,6 +2,7 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 #import <mach/mach_time.h>
+#include <math.h>
 
 // IOHIDEvent private API declarations
 typedef struct __IOHIDEventSystemClient *IOHIDEventSystemClientRef;
@@ -32,6 +33,10 @@ extern IOHIDEventRef IOHIDEventCreateDigitizerFingerEvent(
     IOOptionBits options
 );
 extern void IOHIDEventSystemClientDispatchEvent(IOHIDEventSystemClientRef client, IOHIDEventRef event);
+extern IOHIDEventRef IOHIDEventCreateDigitizerEvent(CFAllocatorRef, uint64_t, uint32_t,
+    uint32_t, uint32_t, uint32_t, uint32_t, double, double, double, double, double, Boolean, Boolean, IOOptionBits);
+extern void IOHIDEventAppendEvent(IOHIDEventRef parent, IOHIDEventRef child);
+extern void IOHIDEventSetIntegerValue(IOHIDEventRef event, IOHIDEventField field, int value);
 
 static IOHIDEventSystemClientRef hid_client = NULL;
 
@@ -39,20 +44,34 @@ void touch_inject_init(void) {
     hid_client = IOHIDEventSystemClientCreate(kCFAllocatorDefault);
 }
 
-static void dispatch_hid_event(IOHIDEventRef event) {
-    if (!hid_client || !event) return;
-    IOHIDEventSystemClientDispatchEvent(hid_client, event);
+static void dispatch_hid_event(IOHIDEventRef event, double x, double y, bool touching, uint32_t mask) {
+    if (!event) return;
+    if (!hid_client) touch_inject_init();
+    if (!hid_client) { CFRelease(event); return; }
+    IOHIDEventRef hand = IOHIDEventCreateDigitizerEvent(kCFAllocatorDefault, mach_absolute_time(),
+        3, 0, 0, mask, 0, x, y, 0, touching ? 1 : 0, 0, touching, touching, 0);
+    if (hand) {
+        IOHIDEventSetIntegerValue(hand, 1, 1);
+        IOHIDEventSetIntegerValue(hand, 0xb0025, 1);
+        IOHIDEventAppendEvent(hand, event);
+        IOHIDEventSystemClientDispatchEvent(hid_client, hand);
+        CFRelease(hand);
+    }
     CFRelease(event);
 }
 
 // Clamp normalized coordinate to [0.0, 1.0]
 static double clamp01(double v) {
+    if (!isfinite(v)) return 0;
     return v < 0.0 ? 0.0 : (v > 1.0 ? 1.0 : v);
 }
 
 static CGSize get_screen_size(void) {
     // logical points, matches Lua coordinate space
-    return [UIScreen mainScreen].bounds.size;
+    __block CGSize size = CGSizeMake(1, 1);
+    void (^readSize)(void) = ^{ size = UIScreen.mainScreen.bounds.size; };
+    if (NSThread.isMainThread) readSize(); else dispatch_sync(dispatch_get_main_queue(), readSize);
+    return size;
 }
 
 void send_touch_down(double x, double y, uint32_t finger_id) {
@@ -67,7 +86,7 @@ void send_touch_down(double x, double y, uint32_t finger_id) {
         nx, ny, 0, 1.0, 0,
         true, true, 0
     );
-    dispatch_hid_event(event);
+    dispatch_hid_event(event, nx, ny, true, 7);
 }
 
 void send_touch_move(double x, double y, uint32_t finger_id) {
@@ -82,7 +101,7 @@ void send_touch_move(double x, double y, uint32_t finger_id) {
         nx, ny, 0, 1.0, 0,
         true, true, 0
     );
-    dispatch_hid_event(event);
+    dispatch_hid_event(event, nx, ny, true, 4);
 }
 
 void send_touch_up(double x, double y, uint32_t finger_id) {
@@ -97,5 +116,5 @@ void send_touch_up(double x, double y, uint32_t finger_id) {
         nx, ny, 0, 0, 0,
         false, false, 0
     );
-    dispatch_hid_event(event);
+    dispatch_hid_event(event, nx, ny, false, 7);
 }

@@ -11,7 +11,8 @@
 
 #define IMG_MT "IOSAutoTool.Image"
 
-typedef struct { UIImage *__strong img; } LuaImage;
+typedef struct { void *retained_image; } LuaImage;
+static UIImage *image_value(LuaImage *value) { return (__bridge UIImage *)value->retained_image; }
 
 static LuaImage *check_image(lua_State *L, int idx) {
     return (LuaImage *)luaL_checkudata(L, idx, IMG_MT);
@@ -20,7 +21,7 @@ static LuaImage *check_image(lua_State *L, int idx) {
 static int push_image(lua_State *L, UIImage *img) {
     if (!img) { lua_pushnil(L); return 1; }
     LuaImage *ud = lua_newuserdata(L, sizeof(LuaImage));
-    ud->img = img;
+    ud->retained_image = (__bridge_retained void *)img;
     luaL_getmetatable(L, IMG_MT);
     lua_setmetatable(L, -2);
     return 1;
@@ -28,19 +29,20 @@ static int push_image(lua_State *L, UIImage *img) {
 
 static int img_gc(lua_State *L) {
     LuaImage *ud = check_image(L, 1);
-    ud->img = nil;
+    if (ud->retained_image) CFRelease(ud->retained_image);
+    ud->retained_image = NULL;
     return 0;
 }
 
 static int img_width(lua_State *L) {
     LuaImage *ud = check_image(L, 1);
-    lua_pushnumber(L, ud->img.size.width);
+    lua_pushnumber(L, image_value(ud).size.width);
     return 1;
 }
 
 static int img_height(lua_State *L) {
     LuaImage *ud = check_image(L, 1);
-    lua_pushnumber(L, ud->img.size.height);
+    lua_pushnumber(L, image_value(ud).size.height);
     return 1;
 }
 
@@ -53,7 +55,7 @@ static int img_get_color(lua_State *L) {
     UIGraphicsBeginImageContextWithOptions(CGSizeMake(1, 1), NO, 1.0);
     CGContextRef ctx = UIGraphicsGetCurrentContext();
     CGContextTranslateCTM(ctx, -x, -y);
-    [ud->img drawAtPoint:CGPointZero];
+    [image_value(ud) drawAtPoint:CGPointZero];
     UIImage *pixel = UIGraphicsGetImageFromCurrentImageContext();
     UIGraphicsEndImageContext();
 
@@ -75,7 +77,7 @@ static int img_get_color(lua_State *L) {
 static int img_save(lua_State *L) {
     LuaImage *ud = check_image(L, 1);
     const char *path = luaL_checkstring(L, 2);
-    NSData *data = UIImagePNGRepresentation(ud->img);
+    NSData *data = UIImagePNGRepresentation(image_value(ud));
     BOOL ok = [data writeToFile:[NSString stringWithUTF8String:path] atomically:YES];
     lua_pushboolean(L, ok);
     return 1;
@@ -88,7 +90,8 @@ static int img_crop(lua_State *L) {
     int w = (int)luaL_checkinteger(L, 4);
     int h = (int)luaL_checkinteger(L, 5);
     CGRect region = CGRectMake(x, y, w, h);
-    CGImageRef ci = CGImageCreateWithImageInRect(ud->img.CGImage, region);
+    CGImageRef ci = CGImageCreateWithImageInRect(image_value(ud).CGImage, region);
+    if (!ci) { lua_pushnil(L); return 1; }
     UIImage *cropped = [UIImage imageWithCGImage:ci];
     CGImageRelease(ci);
     return push_image(L, cropped);

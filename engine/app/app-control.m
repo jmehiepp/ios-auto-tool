@@ -4,6 +4,11 @@
 #import <stdlib.h>
 #import <string.h>
 
+@interface IATApplicationWorkspace : NSObject
++ (instancetype)defaultWorkspace;
+- (BOOL)openApplicationWithBundleID:(NSString *)identifier;
+@end
+
 // SpringBoardServices private API declarations
 extern int SBSOpenApplicationWithBundleID(CFStringRef bundleID);
 extern pid_t SBSProcessIDForDisplayIdentifier(CFStringRef identifier);
@@ -16,11 +21,9 @@ void c_app_run(const char *bundle_id) {
                                                 bundle_id,
                                                 kCFStringEncodingUTF8);
     // LSApplicationWorkspace is more reliable on iOS 15+
-    id workspace = [NSClassFromString(@"LSApplicationWorkspace") performSelector:
-                    @selector(defaultWorkspace)];
+    IATApplicationWorkspace *workspace = [(Class)NSClassFromString(@"LSApplicationWorkspace") defaultWorkspace];
     if (workspace) {
-        [workspace performSelector:@selector(openApplicationWithBundleID:)
-                        withObject:(__bridge NSString *)bid];
+        [workspace openApplicationWithBundleID:(__bridge NSString *)bid];
     } else {
         SBSOpenApplicationWithBundleID(bid);
     }

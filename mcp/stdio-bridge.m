@@ -2,6 +2,8 @@
 #import "../daemon/runtime-paths.h"
 #import <Foundation/Foundation.h>
 #include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
 
 int iat_stdio_bridge(void) {
     char *line = NULL;
