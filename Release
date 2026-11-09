@@ -1,17 +1,17 @@
 Origin: iOS Auto Tool
 Label: iOS Auto Tool
 Suite: stable
-Version: 1.0
+Version: 1.1
 Codename: ios
-Architectures: iphoneos-arm64
+Architectures: iphoneos-arm iphoneos-arm64
 Components: main
 Description: iOS automation tool with Lua scripting and Web IDE
 
 MD5Sum:
- 8bf05f3a0aec8cd9ed5a390d3541ec27             1746 Packages
- b7d6415bf2eb89640ff5a670bfc05970              821 Packages.gz
- 76aeec4123ad1b4e056a1ffc2ab2cab9              927 Packages.bz2
+ 930957cabe776fa3cd241c4ec05822bc             1556 Packages
+ e9f92ef6ca7aa9aca02aad317f95225f              615 Packages.gz
+ ae3b79b27303051964d75b7a956727ea              771 Packages.bz2
 SHA256:
- 24bf9b5415dc3d343c48dc65140865a743954a0f280a98b13acabf916d2a0910             1746 Packages
- 67e0b1f99dc631d48c71ab3978687f18a04aebb8ac1cc598d076ab6cd83d517d              821 Packages.gz
- f458035595928a4b510e44598486e6333be25baa22d7f3047a39941a4a63c00a              927 Packages.bz2
+ 29b5a1a1e497311326497b2d6d61dab25a1e7d2915d8e02407de0a71ee8977c1             1556 Packages
+ 70911669cdd1d591ebac6fe4575f4681a7af94921c2abf64adea794700922d6f              615 Packages.gz
+ 69889737fcd1047636d667c8d8b10c750a48a9208de9e69a299d5937c06a3af4              771 Packages.bz2

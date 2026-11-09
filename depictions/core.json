@@ -1,0 +1,12 @@
+{
+  "class": "DepictionTabView",
+  "tabs": [{
+    "class": "DepictionStackView",
+    "tabname": "Chi tiết",
+    "views": [
+      {"class": "DepictionHeaderView", "title": "iOS Auto Tool 1.1 beta"},
+      {"class": "DepictionMarkdownView", "markdown": "Bộ lõi tự động hóa iPhone: Web IDE, Lua, touch, screenshot, OCR, MJPEG và MCP. Mỗi thiết bị có mã kết nối riêng.\n\n**Yêu cầu:** iOS 15+, jailbreak Rootful hoặc Rootless. Chưa phát hành gói RootHide.\n\n**Trạng thái:** bản beta; kiểm tra build và cấu trúc gói có sẵn, kiểm thử thao tác trên thiết bị thực còn cần xác nhận."},
+      {"class": "DepictionButtonView", "title": "Hướng dẫn sử dụng", "action": "https://github.com/jmehiepp/ios-auto-tool#readme"}
+    ]
+  }]
+}

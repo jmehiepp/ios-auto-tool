@@ -3,46 +3,38 @@ Name: iOS Auto Tool
 Description: iOS automation tool with Lua scripting.
  Write Lua scripts in your browser and automate your jailbroken iPhone.
  Features: touch injection, screen OCR/image-match, Web IDE, MCP server.
-Maintainer: dev
-Author: dev
+Maintainer: JME
+Author: JME
 Section: Tweaks
-Tag: purpose::automation, compatible_min::ios14.0
-Depends: firmware (>= 14.0), cy+model.iphone
-Architecture: iphoneos-arm64
-Version: 1.0.0-1+debug
-Installed-Size: 796
-Filename: pool/main/com.iosautotool_1.0.0-1+debug_iphoneos-arm64.deb
-Size: 265352
-MD5sum: 2a16c0f65c4962d749afa9b0e7ac69e4
-SHA256: 417a902ed85f3b1d29e3bb7a18aa338d4ccd53d91e3d374cd2b2bf43981b7bef
+Tag: purpose::automation, compatible_min::ios15.0
+Depends: firmware (>= 15.0), cy+model.iphone
+Homepage: https://jmehiepp.github.io/ios-auto-tool/
+SileoDepiction: https://jmehiepp.github.io/ios-auto-tool/depictions/core.json
+Architecture: iphoneos-arm
+Version: 1.1.0~beta1
+Installed-Size: 752
+Filename: pool/main/iosautotool-daemon_1.1.0~beta1_iphoneos-arm.deb
+Size: 244944
+MD5sum: fcdf7cd488a7023f88ab13f0716f585f
+SHA256: c89cd7726e1f5b3828d2137c4fe3064dc96d2e773a5ad0e0249ae48f26e56117
 
-Package: com.iosautotool.spoof
-Name: IOSAutoTool Device Spoof
-Description: Device fingerprint spoofing add-on for IOSAutoTool (26 modules)
-Maintainer: IOSAutoTool
-Author: IOSAutoTool
+Package: com.iosautotool
+Name: iOS Auto Tool
+Description: iOS automation tool with Lua scripting.
+ Write Lua scripts in your browser and automate your jailbroken iPhone.
+ Features: touch injection, screen OCR/image-match, Web IDE, MCP server.
+Maintainer: JME
+Author: JME
 Section: Tweaks
-Depends: mobilesubstrate, com.iosautotool (>= 1.0.0)
+Tag: purpose::automation, compatible_min::ios15.0
+Depends: firmware (>= 15.0), cy+model.iphone
+Homepage: https://jmehiepp.github.io/ios-auto-tool/
+SileoDepiction: https://jmehiepp.github.io/ios-auto-tool/depictions/core.json
 Architecture: iphoneos-arm64
-Version: 1.0.0-1+debug
-Installed-Size: 528
-Filename: pool/main/com.iosautotool.spoof_1.0.0-1+debug_iphoneos-arm64.deb
-Size: 158228
-MD5sum: db681e427abf29f82d9e4acfdceab093
-SHA256: 4f6288f263e1398d25d07099718e56d872eaa6438a0bf0a3dcfa2d6b50185f65
-
-Package: com.iosautotool.widget
-Name: IOSAutoTool Floating Widget
-Description: AssistiveTouch-style floating widget — tap to run any Lua macro instantly without opening Web IDE.
-Maintainer: IOSAutoTool
-Author: IOSAutoTool
-Section: Tweaks
-Depends: mobilesubstrate, com.iosautotool (>= 1.0.0)
-Architecture: iphoneos-arm64
-Version: 1.0.0-1+debug
-Installed-Size: 220
-Filename: pool/main/com.iosautotool.widget_1.0.0-1+debug_iphoneos-arm64.deb
-Size: 32254
-MD5sum: 61c95be40d4968aa1c49ebba2c9c6e62
-SHA256: 06a0cde8b9c0dd141f7d29342a80caf706404ca63232e9f533f329011a4467b7
+Version: 1.1.0~beta1
+Installed-Size: 752
+Filename: pool/main/iosautotool-daemon_1.1.0~beta1_iphoneos-arm64.deb
+Size: 244952
+MD5sum: fc0fe933fe797152a933ac163ff30955
+SHA256: 9f4372a837628c63ea4bfa25d4467869dc936a566c818c046fefee5eb384da1d
 
