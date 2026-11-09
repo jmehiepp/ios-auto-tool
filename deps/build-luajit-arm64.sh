@@ -3,6 +3,7 @@ set -euo pipefail
 
 LUAJIT_REPO="${LUAJIT_REPO:-https://github.com/LuaJIT/LuaJIT.git}"
 LUAJIT_BRANCH="v2.1"
+LUAJIT_COMMIT="c4b1e2f73a2e10fbcc637fcec474f639c38daafe"
 DIR="$(cd "$(dirname "$0")" && pwd)"
 cd "$DIR"
 
@@ -33,14 +34,14 @@ if [[ ! -d "luajit-src/.git" ]]; then
     git clone --depth 1 -b "$LUAJIT_BRANCH" "$LUAJIT_REPO" luajit-src
 else
     echo "Updating LuaJIT..."
-    git -C luajit-src fetch origin
-    git -C luajit-src checkout "$LUAJIT_BRANCH"
-    git -C luajit-src pull --ff-only
+    git -C luajit-src fetch origin "$LUAJIT_COMMIT"
 fi
+git -C luajit-src fetch --depth 1 origin "$LUAJIT_COMMIT"
+git -C luajit-src checkout --detach "$LUAJIT_COMMIT"
 
 # Cross-compile for iOS arm64
 ICC="$(xcrun --sdk iphoneos --find clang)"
-ISDKF="-arch arm64 -isysroot $ISDKP -mios-version-min=14.0"
+ISDKF="-arch arm64 -isysroot $ISDKP -mios-version-min=15.0"
 
 export MACOSX_DEPLOYMENT_TARGET="${MACOSX_DEPLOYMENT_TARGET:-14.0}"
 

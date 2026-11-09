@@ -1,12 +1,13 @@
 Package: com.iosautotool
 Name: iOS Auto Tool
-Version: 1.0.0
-Architecture: iphoneos-arm64
+Version: 1.1.0~beta1
+Architecture: iphoneos-arm
 Description: iOS automation tool with Lua scripting.
  Write Lua scripts in your browser and automate your jailbroken iPhone.
  Features: touch injection, screen OCR/image-match, Web IDE, MCP server.
-Maintainer: dev
-Author: dev
+Maintainer: JME
+Author: JME
 Section: Tweaks
-Tag: purpose::automation, compatible_min::ios14.0
-Depends: firmware (>= 14.0), cy+model.iphone
+Tag: purpose::automation, compatible_min::ios15.0
+Depends: firmware (>= 15.0), cy+model.iphone
+Homepage: https://jmehiepp.github.io/ios-auto-tool/

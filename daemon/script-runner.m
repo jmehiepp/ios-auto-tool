@@ -1,87 +1,65 @@
 #import "script-runner.h"
 #import "logger.h"
 #import "../lua/lua-bridge.h"
+#import "../engine/screen/screenshot.h"
 #import <Foundation/Foundation.h>
-#import <pthread.h>
-#import <string.h>
-#import <unistd.h>
+#include <pthread.h>
+#include <sys/socket.h>
+#include <unistd.h>
+#include <string.h>
 
-static int         current_fd     = -1;
-static char        current_id[64] = {0};
-static pthread_mutex_t run_mutex  = PTHREAD_MUTEX_INITIALIZER;
-static volatile int stop_flag     = 0;
+static pthread_mutex_t run_mutex = PTHREAD_MUTEX_INITIALIZER;
+static bool running = false, stop_requested = false;
+typedef struct { int fd; char *identifier; char *code; } RunContext;
 
-typedef struct {
-    int   fd;
-    char  req_id[64];
-    char *code;
-} RunCtx;
-
-static void *run_thread(void *arg) {
+bool script_should_stop(void) {
+    pthread_mutex_lock(&run_mutex);
+    bool value = stop_requested;
+    pthread_mutex_unlock(&run_mutex);
+    return value;
+}
+static void *run_thread(void *argument) {
     @autoreleasepool {
-        RunCtx *ctx = (RunCtx *)arg;
-
-        pthread_mutex_lock(&run_mutex);
-        current_fd  = ctx->fd;
-        stop_flag   = 0;
-        strlcpy(current_id, ctx->req_id, sizeof(current_id));
-        pthread_mutex_unlock(&run_mutex);
-
-        log_add_client(ctx->fd);
-
-        int rc = lua_run_script(ctx->code);
-
-        char result[256];
-        snprintf(result, sizeof(result),
-            "{\"id\":\"%s\",\"type\":\"result\",\"ok\":%s}\n",
-            ctx->req_id, rc == 0 ? "true" : "false");
-        write(ctx->fd, result, strlen(result));
-
-        log_remove_client(ctx->fd);
-
-        pthread_mutex_lock(&run_mutex);
-        current_fd = -1;
-        current_id[0] = '\0';
-        pthread_mutex_unlock(&run_mutex);
-
-        free(ctx->code);
-        free(ctx);
+        RunContext *ctx = argument;
+        if (ctx->fd >= 0) log_add_client(ctx->fd);
+        log_info("Script started");
+        int code = lua_run_script(ctx->code);
+        screen_cache_invalidate();
+        log_info("Script finished (exit %d)", code);
+        if (ctx->fd >= 0) {
+            NSDictionary *result = @{@"id": @(ctx->identifier), @"type": @"result", @"ok": @(code == 0)};
+            NSMutableData *data = [[NSJSONSerialization dataWithJSONObject:result options:0 error:nil] mutableCopy];
+            [data appendBytes:"\n" length:1];
+            send(ctx->fd, data.bytes, data.length, 0);
+            log_remove_client(ctx->fd);
+            close(ctx->fd);
+        }
+        free(ctx->identifier); free(ctx->code); free(ctx);
+        pthread_mutex_lock(&run_mutex); running = false; pthread_mutex_unlock(&run_mutex);
     }
     return NULL;
 }
-
-void script_run(int client_fd, const char *req_id, const char *code) {
-    RunCtx *ctx = malloc(sizeof(RunCtx));
-    ctx->fd   = client_fd;
-    strlcpy(ctx->req_id, req_id, sizeof(ctx->req_id));
-    ctx->code = strdup(code);
-
-    pthread_t t;
-    pthread_create(&t, NULL, run_thread, ctx);
-    pthread_detach(t);
-}
-
-void script_stop_current(void) {
+bool script_run(int client_fd, const char *identifier, const char *source) {
+    if (!source || strlen(source) > 1024 * 1024) return false;
     pthread_mutex_lock(&run_mutex);
-    stop_flag = 1;
+    if (running) { pthread_mutex_unlock(&run_mutex); return false; }
+    running = true; stop_requested = false;
     pthread_mutex_unlock(&run_mutex);
-}
-
-void script_send_log(const char *level, const char *msg) {
-    pthread_mutex_lock(&run_mutex);
-    int   fd  = current_fd;
-    char  id[64];
-    strlcpy(id, current_id, sizeof(id));
-    pthread_mutex_unlock(&run_mutex);
-
-    if (fd < 0) {
-        log_broadcast(LOG_LEVEL_LUA, msg);
-        return;
+    RunContext *ctx = calloc(1, sizeof(*ctx));
+    if (!ctx) { pthread_mutex_lock(&run_mutex); running = false; pthread_mutex_unlock(&run_mutex); return false; }
+    ctx->fd = client_fd >= 0 ? dup(client_fd) : -1;
+    ctx->identifier = strdup(identifier ?: "script");
+    ctx->code = strdup(source);
+    pthread_t thread;
+    if (ctx->identifier && ctx->code && pthread_create(&thread, NULL, run_thread, ctx) == 0) {
+        pthread_detach(thread); return true;
     }
-
-    char json[4096 + 256];
-    snprintf(json, sizeof(json),
-        "{\"id\":\"%s\",\"type\":\"log\",\"level\":\"%s\",\"data\":\"%s\"}\n",
-        id, level, msg);
-    write(fd, json, strlen(json));
+    if (ctx->fd >= 0) close(ctx->fd);
+    free(ctx->identifier); free(ctx->code); free(ctx);
+    pthread_mutex_lock(&run_mutex); running = false; pthread_mutex_unlock(&run_mutex);
+    return false;
 }
+void script_stop_current(void) {
+    pthread_mutex_lock(&run_mutex); stop_requested = true; pthread_mutex_unlock(&run_mutex);
+}
+void script_send_log(const char *level, const char *message) { log_broadcast(LOG_LEVEL_LUA, message ?: ""); }

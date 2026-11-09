@@ -31,7 +31,7 @@ static void json_reply(struct mg_connection *c, int status,
                        const char *json_body) {
     mg_http_reply(c, status,
                   "Content-Type: application/json\r\n"
-                  "Access-Control-Allow-Origin: *\r\n",
+                  "Cache-Control: no-store\r\n",
                   "%s", json_body);
 }
 
@@ -128,9 +128,9 @@ static void handle_run(struct mg_connection *c, struct mg_http_message *hm) {
         return;
     }
 
-    script_run(-1, "webide", code);
+    bool accepted = script_run(-1, "webide", code);
     free(code);
-    json_reply(c, 200, "{\"ok\":true}");
+    json_reply(c, accepted ? 202 : 409, accepted ? "{\"ok\":true}" : "{\"error\":\"A script is already running\"}");
 }
 
 // POST /api/stop
@@ -164,9 +164,8 @@ static void handle_screenshot(struct mg_connection *c) {
     }
     NSString *b64 = result[@"content"][0][@"data"];
     CGSize sz    = UIScreen.mainScreen.bounds.size;
-    CGFloat sc   = UIScreen.mainScreen.scale;
-    int w = (int)(sz.width * sc);
-    int h = (int)(sz.height * sc);
+    int w = (int)sz.width;
+    int h = (int)sz.height;
     NSString *json = [NSString stringWithFormat:
         @"{\"image\":\"%@\",\"width\":%d,\"height\":%d}", b64, w, h];
     json_reply(c, 200, json.UTF8String);
@@ -396,7 +395,7 @@ void api_handle(struct mg_connection *c, struct mg_http_message *hm,
     // Handle OPTIONS preflight (CORS)
     if (mg_match(hm->method, mg_str("OPTIONS"), NULL)) {
         mg_http_reply(c, 204,
-                      "Access-Control-Allow-Origin: *\r\n"
+                      "Cache-Control: no-store\r\n"
                       "Access-Control-Allow-Methods: GET,POST,DELETE,OPTIONS\r\n"
                       "Access-Control-Allow-Headers: Content-Type\r\n", "");
         return;
@@ -408,6 +407,14 @@ void api_handle(struct mg_connection *c, struct mg_http_message *hm,
 
     } else if (mg_match(hm->uri, mg_str("/api/files/*"), NULL)) {
         extract_filename(&hm->uri, filename, sizeof(filename));
+        int count = mg_url_decode(filename, strlen(filename), filename, sizeof(filename), 0);
+        if (count <= 0 || strlen(filename) != (size_t)count || strchr(filename, '/') || strchr(filename, '\\') || strcmp(filename, ".") == 0 || strcmp(filename, "..") == 0) {
+            json_reply(c, 400, "{\"error\":\"invalid file name\"}"); return;
+        }
+        NSString *candidate = [[@(scripts_dir) stringByAppendingPathComponent:@(filename)] stringByResolvingSymlinksInPath];
+        if (![[candidate stringByDeletingLastPathComponent] isEqualToString:[@(scripts_dir) stringByResolvingSymlinksInPath]]) {
+            json_reply(c, 400, "{\"error\":\"file outside scripts directory\"}"); return;
+        }
         if (mg_match(hm->method, mg_str("GET"), NULL))
             handle_read_file(c, scripts_dir, filename);
         else if (mg_match(hm->method, mg_str("POST"), NULL))
@@ -421,10 +428,10 @@ void api_handle(struct mg_connection *c, struct mg_http_message *hm,
                mg_match(hm->method, mg_str("POST"), NULL)) {
         claude_handle_chat(c, hm);
 
-    } else if (mg_match(hm->uri, mg_str("/api/run"), NULL)) {
+    } else if (mg_match(hm->uri, mg_str("/api/run"), NULL) && mg_match(hm->method, mg_str("POST"), NULL)) {
         handle_run(c, hm);
 
-    } else if (mg_match(hm->uri, mg_str("/api/stop"), NULL)) {
+    } else if (mg_match(hm->uri, mg_str("/api/stop"), NULL) && mg_match(hm->method, mg_str("POST"), NULL)) {
         handle_stop(c);
 
     } else if (mg_match(hm->uri, mg_str("/api/device-info"), NULL)) {

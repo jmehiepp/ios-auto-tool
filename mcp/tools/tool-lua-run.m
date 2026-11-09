@@ -3,17 +3,17 @@
 #import <Foundation/Foundation.h>
 
 // Collected log output from Lua execution (thread-local via script-runner)
-extern void script_run(int client_fd, const char *req_id, const char *code);
+#import "../../daemon/script-runner.h"
 
 NSDictionary *tool_lua_run(NSDictionary *args) {
     NSString *code = args[@"code"];
     if (!code.length) return mcp_error_result(@"'code' is required");
 
     // Run synchronously on the Lua state (already mutex-protected in lua-bridge)
-    int rc = lua_run_script(code.UTF8String);
+    int rc = script_run(-1, "mcp", code.UTF8String) ? 0 : 1;
 
     NSString *status = rc == 0
-        ? [NSString stringWithFormat:@"Script executed (exit %d)", rc]
-        : [NSString stringWithFormat:@"Script error (exit %d)", rc];
+        ? @"Script accepted. Read the Web IDE log for completion."
+        : @"A script is already running, or the script could not be scheduled.";
     return mcp_text_result(status, rc != 0);
 }

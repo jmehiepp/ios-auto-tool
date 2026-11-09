@@ -4,7 +4,6 @@
 static NSString *const kClaudeURL   = @"https://api.anthropic.com/v1/messages";
 static NSString *const kClaudeModel = @"claude-sonnet-4-6";
 
-static const char *kEmbeddedKey = "__ANTHROPIC_API_KEY__";
 
 static NSString *kSystemPrompt = @"\
 Bạn là trợ lý sinh script Lua cho iOSAutoTool — daemon chạy trên iPhone jailbreak.\n\
@@ -51,13 +50,14 @@ static void send_json_reply(struct mg_connection *c, int status, NSDictionary *b
         : @"{\"error\":\"json serialization failed\"}";
     mg_http_reply(c, status,
                   "Content-Type: application/json\r\n"
-                  "Access-Control-Allow-Origin: *\r\n",
+                  "Cache-Control: no-store\r\n",
                   "%s", json.UTF8String);
 }
 
 void claude_handle_chat(struct mg_connection *c, struct mg_http_message *hm) {
-    if (strcmp(kEmbeddedKey, "__ANTHROPIC_API_KEY__") == 0) {
-        send_json_reply(c, 500, @{@"error": @"API key not injected at build time"});
+    const char *api_key = getenv("ANTHROPIC_API_KEY");
+    if (!api_key || !api_key[0]) {
+        send_json_reply(c, 503, @{@"error": @"AI chat is not configured on this device"});
         return;
     }
 
@@ -103,7 +103,7 @@ void claude_handle_chat(struct mg_connection *c, struct mg_http_message *hm) {
         @"timeout": @60.0,
         @"headers": @{
             @"Content-Type":      @"application/json",
-            @"x-api-key":         @(kEmbeddedKey),
+            @"x-api-key":         @(api_key),
             @"anthropic-version": @"2023-06-01",
         },
     });

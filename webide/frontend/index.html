@@ -289,11 +289,13 @@
 <!-- ─── SCRIPTS ──────────────────────────────────────────────── -->
 <script src="monaco/loader.js"></script>
 <script>
-  require.config({ paths: { 'vs': 'monaco/editor' } });
+  if (window.require) {
+  require.config({ paths: { 'vs': 'monaco/vs' } });
   require(['vs/editor/editor.main'], function() {
     window._monacoReady = true;
     initEditor();
   });
+  }
 </script>
 <script src="file-manager.js"></script>
 <script src="log-viewer.js"></script>

@@ -7,7 +7,7 @@
 #import <string.h>
 #import <stdlib.h>
 
-#define ACCOUNTS_BASE "/Library/IOSAutoTool/accounts"
+#define ACCOUNTS_BASE "/var/mobile/Library/IOSAutoTool/accounts"
 
 // MCMContainer private framework
 extern id MCMContainerCreate(NSString *type, NSString *bundleId);

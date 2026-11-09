@@ -8,7 +8,7 @@ typedef struct {
     int      height;
 } ScreenCache;
 
-extern ScreenCache g_screen_cache;
+extern __thread ScreenCache g_screen_cache;
 
 void screen_cache_invalidate(void);
 

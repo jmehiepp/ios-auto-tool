@@ -1,16 +1,11 @@
 #import "screenshot.h"
 #import <UIKit/UIKit.h>
+#import <IOSurface/IOSurface.h>
+#include <dlfcn.h>
 
-typedef struct __IOSurface *IOSurfaceRef;
-extern int IOSurfaceLock(IOSurfaceRef, uint32_t, uint32_t *);
-extern int IOSurfaceUnlock(IOSurfaceRef, uint32_t, uint32_t *);
-extern size_t IOSurfaceGetWidth(IOSurfaceRef);
-extern size_t IOSurfaceGetHeight(IOSurfaceRef);
-extern void *IOSurfaceGetBaseAddress(IOSurfaceRef);
-extern size_t IOSurfaceGetBytesPerRow(IOSurfaceRef);
 #define IOSURFACE_LOCK_READ_ONLY 0x00000001
 
-ScreenCache g_screen_cache = {NULL, 0, 0};
+__thread ScreenCache g_screen_cache = {NULL, 0, 0};
 
 void screen_cache_invalidate(void) {
     if (g_screen_cache.pixels) {
@@ -47,10 +42,31 @@ void screen_cache_fill(UIImage *img) {
 }
 
 // Private SpringBoard API — available on jailbroken devices
-extern IOSurfaceRef SBGetMainDisplayIOSurface(void);
+static IOSurfaceRef render_display(void) {
+    typedef void (*RenderDisplay)(int, CFStringRef, IOSurfaceRef, int, int);
+    static RenderDisplay render;
+    static dispatch_once_t once;
+    dispatch_once(&once, ^{
+        void *quartz = dlopen("/System/Library/Frameworks/QuartzCore.framework/QuartzCore", RTLD_LAZY);
+        render = quartz ? (RenderDisplay)dlsym(quartz, "CARenderServerRenderDisplay") : NULL;
+    });
+    if (!render) return NULL;
+    __block CGSize size = CGSizeZero;
+    void (^dimensions)(void) = ^{ size = UIScreen.mainScreen.nativeBounds.size; };
+    if (NSThread.isMainThread) dimensions(); else dispatch_sync(dispatch_get_main_queue(), dimensions);
+    size_t width = (size_t)size.width, height = (size_t)size.height;
+    if (!width || !height || width > 8192 || height > 8192) return NULL;
+    size_t row = (width * 4 + 63) & ~(size_t)63;
+    NSDictionary *properties = @{(__bridge id)kIOSurfaceWidth: @(width), (__bridge id)kIOSurfaceHeight: @(height),
+        (__bridge id)kIOSurfaceBytesPerElement: @4, (__bridge id)kIOSurfaceBytesPerRow: @(row),
+        (__bridge id)kIOSurfaceAllocSize: @(row * height), (__bridge id)kIOSurfacePixelFormat: @(0x42475241)};
+    IOSurfaceRef surface = IOSurfaceCreate((__bridge CFDictionaryRef)properties);
+    if (surface) render(0, CFSTR("LCD"), surface, 0, 0);
+    return surface;
+}
 
 static UIImage *capture_via_iosurface(void) {
-    IOSurfaceRef surface = SBGetMainDisplayIOSurface();
+    IOSurfaceRef surface = render_display();
     if (!surface) return nil;
 
     IOSurfaceLock(surface, IOSURFACE_LOCK_READ_ONLY, NULL);
@@ -59,16 +75,21 @@ static UIImage *capture_via_iosurface(void) {
     int h = (int)IOSurfaceGetHeight(surface);
     void *base = IOSurfaceGetBaseAddress(surface);
     size_t bpr  = IOSurfaceGetBytesPerRow(surface);
+    if (!base || !w || !h || bpr < (size_t)w * 4) {
+        IOSurfaceUnlock(surface, IOSURFACE_LOCK_READ_ONLY, NULL); CFRelease(surface); return nil;
+    }
 
     // Copy to own buffer so we can unlock immediately
     size_t total = bpr * h;
     void *copy = malloc(total);
     if (!copy) {
         IOSurfaceUnlock(surface, IOSURFACE_LOCK_READ_ONLY, NULL);
+        CFRelease(surface);
         return nil;
     }
     memcpy(copy, base, total);
     IOSurfaceUnlock(surface, IOSURFACE_LOCK_READ_ONLY, NULL);
+    CFRelease(surface);
 
     CGColorSpaceRef cs = CGColorSpaceCreateDeviceRGB();
     CGContextRef ctx = CGBitmapContextCreate(
@@ -82,7 +103,10 @@ static UIImage *capture_via_iosurface(void) {
     CGContextRelease(ctx);
     free(copy);
 
-    UIImage *img = [UIImage imageWithCGImage:cgImg];
+    __block CGFloat scale = 1;
+    void (^readScale)(void) = ^{ scale = UIScreen.mainScreen.scale; };
+    if (NSThread.isMainThread) readScale(); else dispatch_sync(dispatch_get_main_queue(), readScale);
+    UIImage *img = [UIImage imageWithCGImage:cgImg scale:scale orientation:UIImageOrientationUp];
     CGImageRelease(cgImg);
     return img;
 }

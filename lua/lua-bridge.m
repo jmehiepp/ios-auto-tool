@@ -9,6 +9,9 @@
 #import "bindings/bind-spoof.h"
 #import <Foundation/Foundation.h>
 #import <pthread.h>
+#import "../daemon/runtime-paths.h"
+#include <lua/luajit.h>
+#include <unistd.h>
 
 static lua_State      *L          = NULL;
 static pthread_mutex_t lua_mutex  = PTHREAD_MUTEX_INITIALIZER;
@@ -23,8 +26,19 @@ static int builtin_log(lua_State *state) {
 
 static int builtin_sleep(lua_State *state) {
     lua_Integer ms = luaL_checkinteger(state, 1);
-    if (ms > 0) usleep((useconds_t)(ms * 1000));
+    if (ms < 0 || ms > 86400000) return luaL_error(state, "sleep must be 0..86400000 milliseconds");
+    while (ms > 0) {
+        if (script_should_stop()) return luaL_error(state, "script stopped");
+        lua_Integer step = ms > 50 ? 50 : ms;
+        usleep((useconds_t)(step * 1000));
+        ms -= step;
+    }
     return 0;
+}
+
+static void stop_hook(lua_State *state, lua_Debug *debug) {
+    (void)debug;
+    if (script_should_stop()) luaL_error(state, "script stopped");
 }
 
 // ── init ─────────────────────────────────────────────────────────────
@@ -32,6 +46,7 @@ static int builtin_sleep(lua_State *state) {
 void lua_bridge_init(void) {
     L = luaL_newstate();
     luaL_openlibs(L);
+    luaJIT_setmode(L, 0, LUAJIT_MODE_ENGINE | LUAJIT_MODE_OFF);
 
     lua_register(L, "log",   builtin_log);
     lua_register(L, "sleep", builtin_sleep);
@@ -44,7 +59,7 @@ void lua_bridge_init(void) {
     register_spoof_bindings(L);
 
     // Load stdlib helpers
-    NSString *stdlibPath = @"/Library/IOSAutoTool/lua/stdlib/utils.lua";
+    NSString *stdlibPath = iat_resource_path(@"lua/stdlib/utils.lua");
     if ([[NSFileManager defaultManager] fileExistsAtPath:stdlibPath]) {
         if (luaL_dofile(L, stdlibPath.UTF8String) != LUA_OK) {
             log_warn("stdlib load warning: %s", lua_tostring(L, -1));
@@ -59,6 +74,8 @@ void lua_bridge_init(void) {
 
 int lua_run_script(const char *code) {
     pthread_mutex_lock(&lua_mutex);
+    int base = lua_gettop(L);
+    lua_sethook(L, stop_hook, LUA_MASKCOUNT | LUA_MASKLINE, 1000);
 
     // Wrap user code in pcall so errors return cleanly instead of crashing
     NSString *wrapped = [NSString stringWithFormat:
@@ -83,6 +100,8 @@ int lua_run_script(const char *code) {
         lua_pop(L, 1);
     }
 
+    lua_sethook(L, NULL, 0, 0);
+    lua_settop(L, base);
     pthread_mutex_unlock(&lua_mutex);
     return rc;
 }

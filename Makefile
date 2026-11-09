@@ -1,7 +1,7 @@
 THEOS_DEVICE_IP    ?= 192.168.1.100
 THEOS_DEVICE_PORT  ?= 22
 
-TARGET  := iphone:clang:latest:14.0
+TARGET  := iphone:clang:16.5:15.0
 ARCHS   := arm64
 
 include $(THEOS)/makefiles/common.mk
@@ -10,6 +10,7 @@ TOOL_NAME = iosautotool-daemon
 
 iosautotool-daemon_FILES = \
 	daemon/main.m \
+	daemon/runtime-paths.m \
 	daemon/ipc-server.m \
 	daemon/script-runner.m \
 	daemon/logger.m \
@@ -35,10 +36,12 @@ iosautotool-daemon_FILES = \
 	engine/system/file-ops.m \
 	engine/system/http-client.m \
 	webide/server/webide-server.m \
+	webide/server/access-control.m \
 	webide/server/api-handler.m \
 	webide/server/claude-handler.m \
 	deps/mongoose.c \
 	mcp/mcp-server.m \
+	mcp/stdio-bridge.m \
 	mcp/mcp-tools-common.m \
 	mcp/tools/tool-lua-run.m \
 	mcp/tools/tool-screenshot.m \
@@ -71,6 +74,9 @@ iosautotool-daemon_LDFLAGS = \
 	-lluajit-5.1 \
 	-lz \
 	-framework Foundation \
+	-framework Security \
+	-framework QuartzCore \
+	-framework MobileCoreServices \
 	-framework UIKit \
 	-framework IOKit \
 	-framework IOSurface \

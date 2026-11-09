@@ -2,7 +2,7 @@
 #import "script-runner.h"
 #import "logger.h"
 
-#define SCHEDULES_PATH @"/Library/IOSAutoTool/schedules.json"
+#define SCHEDULES_PATH @"/var/mobile/Library/IOSAutoTool/schedules.json"
 #define TICK_SECONDS 30.0
 
 static NSMutableArray *g_jobs = nil;

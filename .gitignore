@@ -22,3 +22,9 @@ repo/Packages
 repo/Packages.gz
 repo/Packages.bz2
 repo/pool/main/*.deb
+packages/
+.theos/
+deps/luajit/
+deps/luajit-src/
+.build-evidence/
+__pycache__/

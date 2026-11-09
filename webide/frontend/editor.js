@@ -4,6 +4,21 @@ let currentFile = null;
 let isDirty = false;
 
 function initEditor() {
+  if (editor) return;
+  if (!window.monaco) {
+    const textarea = document.createElement('textarea');
+    textarea.spellcheck = false;
+    textarea.setAttribute('aria-label', 'Lua script editor');
+    textarea.style.cssText = 'box-sizing:border-box;width:100%;height:100%;resize:none;border:0;padding:20px;background:#10131c;color:#e8edff;font:14px/1.6 monospace;outline:none;tab-size:2';
+    document.getElementById('editor-container').replaceChildren(textarea);
+    textarea.addEventListener('input', () => { isDirty = true; });
+    textarea.addEventListener('keydown', e => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 's') { e.preventDefault(); saveCurrentFile(); }
+      if (e.key === 'F5') { e.preventDefault(); runScript(); }
+      if (e.key === 'F6') { e.preventDefault(); stopScript(); }
+    });
+    editor = { getValue: () => textarea.value, setValue: v => { textarea.value = v; }, setScrollPosition: () => { textarea.scrollTop = 0; }, focus: () => textarea.focus() };
+  } else {
   editor = monaco.editor.create(document.getElementById('editor-container'), {
     language: 'lua',
     theme: 'vs-dark',
@@ -22,6 +37,7 @@ function initEditor() {
   editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, saveCurrentFile);
   editor.addCommand(monaco.KeyCode.F5, runScript);
   editor.addCommand(monaco.KeyCode.F6, stopScript);
+  }
 
   // Load initial file list
   loadFileList();
@@ -57,11 +73,15 @@ async function runScript() {
   clearLog();
 
   try {
-    await fetch('/api/run', {
+    const response = await fetch('/api/run', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name, code }),
     });
+    if (!response.ok) {
+      const body = await response.json();
+      throw new Error(body.error || `HTTP ${response.status}`);
+    }
   } catch (e) {
     appendLog('ERROR', 'Failed to send run request: ' + e.message);
     setRunning(false);
@@ -97,3 +117,5 @@ function setCurrentFile(name, content) {
 function getCurrentFileName() {
   return currentFile;
 }
+
+document.addEventListener('DOMContentLoaded', () => setTimeout(initEditor, 700));

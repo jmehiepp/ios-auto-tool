@@ -86,8 +86,8 @@ void ipc_server_start(const char *socket_path) {
         return;
     }
 
-    chmod(socket_path, 0777);
-    chown(socket_path, 501, 501); // mobile:mobile
+    chmod(socket_path, 0600);
+    chown(socket_path, 0, 0);
 
     listen(server_fd, 16);
 
@@ -95,6 +95,10 @@ void ipc_server_start(const char *socket_path) {
         while (1) {
             int client_fd = accept(server_fd, NULL, NULL);
             if (client_fd < 0) continue;
+            uid_t peer_uid; gid_t peer_gid;
+            if (getpeereid(client_fd, &peer_uid, &peer_gid) != 0 || peer_uid != 0) {
+                close(client_fd); continue;
+            }
 
             ClientCtx *ctx = malloc(sizeof(ClientCtx));
             ctx->fd = client_fd;

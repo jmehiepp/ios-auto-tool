@@ -8,7 +8,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define SCRIPTS_DIR "/Library/IOSAutoTool/scripts"
+#define SCRIPTS_DIR "/var/mobile/Library/IOSAutoTool/scripts"
 
 // ---------- Shell ----------
 

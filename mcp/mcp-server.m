@@ -1,5 +1,6 @@
 #import "mcp-server.h"
 #import "mcp-tools.h"
+#import "../webide/server/access-control.h"
 #import "../deps/mongoose.h"
 #import <Foundation/Foundation.h>
 #import <pthread.h>
@@ -285,23 +286,6 @@ static void handle_mcp(struct mg_connection *c, struct mg_http_message *hm) {
             return;
         }
 
-        // Retain connection reference for deferred response
-        struct mg_connection *conn = c;
-        dispatch_async(s_tool_q, ^{
-            @autoreleasepool {
-                NSDictionary *result = handler(args);
-                NSData *resp = jsonrpc_response(req_id,
-                    result ?: mcp_error_result(@"Tool returned nil"), nil);
-                // mg_http_reply is not thread-safe — post back to mongoose event loop
-                // by writing the pre-serialized response via mg_wakeup mechanism.
-                // For simplicity (single-threaded mongoose poll), store in a queue.
-                (void)conn;
-                (void)resp;
-                // NOTE: thread-safe response delivery requires mg_wakeup(mgr, id, data, len)
-                // which is available in mongoose 7.x. Full wakeup wiring is in the
-                // production integration; this dispatch captures the result correctly.
-            }
-        });
         __block NSDictionary *result = nil;
         dispatch_sync(s_tool_q, ^{
             result = handler(args);
@@ -320,13 +304,17 @@ static void handle_mcp(struct mg_connection *c, struct mg_http_message *hm) {
 static struct mg_mgr s_mgr;
 
 static void ev_handler(struct mg_connection *c, int ev, void *ev_data) {
-    if (ev == MG_EV_HTTP_MSG)
-        handle_mcp(c, (struct mg_http_message *)ev_data);
+    if (ev == MG_EV_HTTP_MSG) {
+        struct mg_http_message *hm = ev_data;
+        if (!iat_request_authorized(hm)) { mg_http_reply(c, 401, "Content-Type: application/json\r\n", "{\"error\":\"authentication required\"}"); return; }
+        if (!mg_match(hm->method, mg_str("POST"), NULL)) { mg_http_reply(c, 405, "Allow: POST\r\n", ""); return; }
+        handle_mcp(c, hm);
+    }
 }
 
 static void *mcp_thread(void *arg) {
     (void)arg;
-    for (;;) mg_mgr_poll(&s_mgr, 50);
+    for (;;) { @autoreleasepool { mg_mgr_poll(&s_mgr, 50); } }
     return NULL;
 }
 
