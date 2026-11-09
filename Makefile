@@ -98,4 +98,4 @@ iosautotool-daemon_CODESIGN_FLAGS = -Siosautotool-daemon.entitlements
 include $(THEOS)/makefiles/tool.mk
 
 after-install::
-	install.exec "launchctl unload /Library/LaunchDaemons/com.iosautotool.daemon.plist 2>/dev/null; launchctl load /Library/LaunchDaemons/com.iosautotool.daemon.plist"
+	install.exec "launchctl unload $(THEOS_PACKAGE_INSTALL_PREFIX)/Library/LaunchDaemons/com.iosautotool.daemon.plist 2>/dev/null; launchctl load $(THEOS_PACKAGE_INSTALL_PREFIX)/Library/LaunchDaemons/com.iosautotool.daemon.plist"

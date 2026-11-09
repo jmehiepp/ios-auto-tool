@@ -12,8 +12,8 @@ API có sẵn (gọi từ Lua):\n\
 - tap(x, y) / swipe(x1,y1,x2,y2,duration) / longPress(x,y,duration)\n\
 - screenshot() trả về buffer ảnh / findColor(rgb, tolerance)\n\
 - ocr() trả về text / findImage(template_path)\n\
-- appRun(bundle_id) / appKill(bundle_id) / frontMostAppId()\n\
-- inputText(text) / keyPress(key_name)\n\
+- appRun(bundle_id) / appKill(bundle_id) / getFrontApp()\n\
+- typeText(text) / pressHome() / pressLock() / pressVolume(up)\n\
 - shell(cmd) / sleep(ms) / httpGet(url)\n\
 - log(msg) — log ra console Web IDE\n\
 \n\

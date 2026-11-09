@@ -11,3 +11,4 @@ Section: Tweaks
 Tag: purpose::automation, compatible_min::ios15.0
 Depends: firmware (>= 15.0), cy+model.iphone
 Homepage: https://jmehiepp.github.io/ios-auto-tool/
+SileoDepiction: https://jmehiepp.github.io/ios-auto-tool/depictions/core.json

@@ -7,6 +7,7 @@ import pathlib
 import plistlib
 import subprocess
 import tarfile
+import tempfile
 
 parser = argparse.ArgumentParser()
 parser.add_argument('directory', type=pathlib.Path)
@@ -32,7 +33,7 @@ for deb in sorted(args.directory.glob('*.deb')):
         assert binary[:4] == b'\xcf\xfa\xed\xfe', 'Expected a real thin 64-bit Mach-O'
         assert int.from_bytes(binary[4:8], 'little') == 0x100000c, 'Expected arm64 code'
         assert len(binary) > 100000, 'Suspiciously small daemon payload'
-        for required in ('webide/frontend/index.html', 'webide/frontend/login.html', 'webide/frontend/editor.js', 'lua/stdlib/utils.lua'):
+        for required in ('webide/frontend/index.html', 'webide/frontend/login.html', 'webide/frontend/editor.js', 'lua/stdlib/utils.lua', 'licenses/Mongoose-GPL2.txt', 'licenses/LuaJIT-MIT.txt'):
             assert base + required in members, required
         launch_path = prefix + 'Library/LaunchDaemons/com.iosautotool.daemon.plist'
         launch = plistlib.loads(archive.extractfile(members[launch_path]).read())
@@ -41,6 +42,12 @@ for deb in sorted(args.directory.glob('*.deb')):
         assert members[launch_path].mode & 0o777 == 0o644
         assert not any(n.endswith('/access-token') for n in members), 'A device token must never ship in a package'
         assert b'__ANTHROPIC_API_KEY__' not in binary, 'Embedded key placeholder must not be compiled'
+        with tempfile.TemporaryDirectory() as scratch:
+            native = pathlib.Path(scratch) / 'daemon'
+            native.write_bytes(binary)
+            entitlements = plistlib.loads(subprocess.check_output(['ldid', '-e', str(native)]))
+            for entitlement in ('platform-application', 'com.apple.private.security.no-sandbox', 'com.apple.private.hid.client.event-dispatch'):
+                assert entitlements.get(entitlement) is True, entitlement
     maintainer_tar = subprocess.check_output(['dpkg-deb', '--ctrl-tarfile', str(deb)])
     with tarfile.open(fileobj=io.BytesIO(maintainer_tar)) as archive:
         scripts = {m.name.removeprefix('./'): m for m in archive.getmembers()}

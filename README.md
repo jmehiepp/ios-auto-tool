@@ -1,153 +1,102 @@
-# IOSAutoTool
+# iOS Auto Tool — core 1.1 beta
 
-Jailbreak automation daemon for iOS 14–17. Runs as root, exposes Lua scripting, Web IDE, and an MCP server so Claude (or any AI agent) can control the device directly.
+Công cụ tự động hóa cho iPhone jailbreak, có Web IDE, Lua, điều khiển touch, screenshot/OCR, MJPEG và MCP. Nguồn Sileo: **https://jmehiepp.github.io/ios-auto-tool/**.
 
----
+Bản này được triển khai từ mã nguồn IOSAutoTool và kết quả nghiên cứu giao diện/chức năng trong workspace. Không đóng gói lại binary, UI nhúng hoặc pseudocode của iOSAutomate.
 
-## Prerequisites
+## Phạm vi
 
-- **macOS** host (Apple Silicon or Intel)
-- **Xcode Command Line Tools**: `xcode-select --install`
-- **Theos**: [theos.dev/docs/installation-macos](https://theos.dev/docs/installation-macos) — install to `~/theos`
-- **ldid**: bundled with Theos, or `brew install ldid`
-- **Jailbroken iOS 14.0+ device** with OpenSSH + root access
+- iOS 15+, arm64; hai gói Rootful `iphoneos-arm` và Rootless `iphoneos-arm64`.
+- 59 tên hàm Lua được kiểm kê từ source: [lua-api.json](docs/lua-api.json).
+- Web IDE tại cổng **8890**: file manager, editor hoạt động không cần CDN, run/stop, log WebSocket, app controls và màn hình MJPEG tối đa 4 khung/giây mỗi viewer.
+- Xác thực API và WebSocket bằng mã ngẫu nhiên 256-bit tạo trên từng thiết bị; không có token chung trong `.deb`.
+- Một script chạy tại một thời điểm. Stop dùng Lua debug hook; code Lua chạy ở chế độ interpreter để hook hoạt động. Lời gọi native đang block cần trả về trước khi Lua tiếp tục dừng.
+- MCP loopback cổng 8765 và bridge stdio tích hợp.
 
----
+Đây là **bản beta**. Build, auth trên host và payload có kiểm tra tự động; hành vi touch/capture/private API trên từng iPhone cần kiểm thử thực tế. RootHide/`iphoneos-arm64e`, widget và addon spoof chưa nằm trong các gói core phát hành đợt này. Các module addon cũ vẫn giữ trong source, không được xem là đã kiểm thử hay đã cài cùng core.
 
-## Build
+## Cài qua Sileo
 
-```bash
-export THEOS=~/theos
+1. Sileo → Sources → thêm `https://jmehiepp.github.io/ios-auto-tool/`.
+2. Tìm **iOS Auto Tool**, cài gói đúng kiến trúc bootstrap.
+3. Dùng terminal root trên iPhone hoặc SSH để lấy mã kết nối:
 
-./build.sh                # daemon .deb + spoof tweak .deb
-./build.sh --with-monaco  # also bundle Monaco editor in Web IDE
-./build.sh --clean        # clean rebuild from scratch
-./build.sh --debug        # debug build (symbols, no optimization)
+```sh
+# Rootless
+/var/jb/Library/IOSAutoTool/iosautotool-daemon --access-code
+
+# Rootful
+/Library/IOSAutoTool/iosautotool-daemon --access-code
 ```
 
-Output: `packages/iosautotool-daemon_*.deb` and `packages/iosautotool-spoof_*.deb`
+4. Mở `http://IP-IPHONE:8890` và nhập mã. Có thể dùng SSH tunnel `ssh -L 8890:127.0.0.1:8890 root@IP-IPHONE`, rồi mở `http://127.0.0.1:8890`.
 
-The script handles dependencies automatically on first run:
-- Downloads `mongoose.c` r7.13 from GitHub
-- Cross-compiles LuaJIT 2.1 ARM64 using the iPhoneOS SDK
-- Renames `spoof/modules/*.m` → `*.xm` for the Logos preprocessor
+Daemon được launchd khởi động sau cài đặt. Dữ liệu script và mã kết nối ở `/var/mobile/Library/IOSAutoTool`; logs ở `/var/log/iosautotool`. Gỡ gói giữ lại dữ liệu cá nhân. Cổng 8890 được chọn để tránh trùng cổng 8888 của các công cụ khác.
 
----
+## Lua
 
-## Install to Device
-
-```bash
-scp packages/*.deb root@<device-ip>:/tmp/
-ssh root@<device-ip> 'dpkg -i /tmp/iosautotool*.deb && killall -9 SpringBoard'
-```
-
-Verify daemon is running:
-```bash
-ssh root@<device-ip> 'launchctl list | grep iosautotool'
-```
-
-Logs:
-```bash
-ssh root@<device-ip> 'tail -f /var/log/iosautotool/stdout.log'
-```
-
----
-
-## Lua Scripting
-
-Scripts live at `/Library/IOSAutoTool/scripts/` on the device.
+Các hàm là **global**, không gọi qua namespace `touch` hay `screen`:
 
 ```lua
--- example: tap a button, read the screen, type text
-touch.tap(200, 400)
+log('Bắt đầu')
 sleep(500)
-
-local img = screen.capture()
-local result = screen.ocr(img, "en-US")
-log(result)
-
-keyboard.type("hello world")
-app.launch("com.example.app")
+tap(180, 300)
+swipe(180, 500, 180, 200, 400)
+typeText('Xin chào')
+local text = ocr()
+log(text or 'Không đọc được ảnh')
 ```
 
-Run via Web IDE, MCP tool `lua-run`, or IPC client:
-```bash
-ssh root@<device-ip> '/Library/IOSAutoTool/iosautotool-daemon --run /path/to/script.lua'
-```
+Touch và tọa độ Web IDE dùng logical points của màn hình. Các phương thức native phụ thuộc phiên bản iOS và quyền jailbreak. Tệp `hello.lua` được tạo khi thư mục script còn trống; ví dụ này chỉ ghi log và sleep.
 
----
+## MCP
 
-## Web IDE
-
-Open in a browser (same WiFi network):
-```
-http://<device-ip>:8888/
-```
-
-Features: file manager, script editor (Monaco if `--with-monaco` was used, otherwise textarea), live log viewer, run/stop controls.
-
----
-
-## MCP Setup (Claude Desktop)
-
-Add to `~/Library/Application Support/Claude/claude_desktop_config.json`:
+Bridge không cần Python/Node trên iPhone. Ví dụ cấu hình client stdio cho Rootless:
 
 ```json
 {
   "mcpServers": {
-    "iosautotool": {
+    "ios-auto-tool": {
       "command": "ssh",
-      "args": ["root@<device-ip>", "/Library/IOSAutoTool/mcp-bridge"]
+      "args": ["root@IP-IPHONE", "/var/jb/Library/IOSAutoTool/iosautotool-daemon", "--mcp-stdio"]
     }
   }
 }
 ```
 
-Restart Claude Desktop. The following tools will appear: `lua-run`, `screenshot`, `ocr`, `tap`, `double-tap`, `long-press`, `swipe`, `type-text`, `press-key`, `find-color`, `find-image`, `get-color`, `shell-exec`, `read-file`, `write-file`, `http-request`, `app-run`, `app-kill`, `get-front-app`, `device-info`, `get-clipboard`, `set-clipboard`.
+Rootful dùng đường dẫn `/Library/IOSAutoTool/iosautotool-daemon`. SSH cần key/login được thiết lập sẵn. `lua_run` trả trạng thái nhận chạy; kết quả hoàn tất nằm trong log. Tool handler chỉ thực thi một lần cho mỗi request. HTTP API và MCP yêu cầu bearer token hoặc cookie đã xác thực; client stdio đọc token cục bộ và gửi qua loopback.
 
----
+Chat AI trong Web IDE là tùy chọn: chỉ hoạt động nếu môi trường daemon trên thiết bị có `ANTHROPIC_API_KEY`. Core không cần key đó. Không nhúng key vào source hoặc gói cài.
 
-## Device Spoof (Paid Add-on)
+## Build và kiểm tra
 
-Install `iosautotool-spoof_*.deb` separately. Requires a valid license key at `/Library/IOSAutoTool/license.key`.
+Dùng macOS, Xcode, Node, Python 3 và [Theos](https://theos.dev/docs/installation-macos). Windows có thể gửi build tới workflow macOS của repository.
 
-Control via Lua:
-```lua
-spoof.enable("device_model", "iPhone15,3")
-spoof.enable("gps", { lat = 21.0285, lon = 105.8542 })
-spoof.enable("idfa", "00000000-0000-0000-0000-000000000000")
-spoof.applyPreset("iphone14_pro_max")
-spoof.reset()
+```sh
+export THEOS=~/theos
+bash build.sh
 ```
 
----
+Script dùng SDK 16.5 trong Theos, LuaJIT revision cố định và Mongoose 7.14 vendored. Hai `.deb` nằm trong `packages/`, đi cùng `validation.json`.
 
-## Troubleshooting
+Các bước thực hiện:
 
-**`THEOS not set`** → `export THEOS=~/theos` before running `build.sh`.
+1. Biên dịch/chạy test auth bằng Foundation/Security trên macOS.
+2. Chạy Lua VM thật để kiểm tra lỗi, tái sử dụng state, dừng vòng lặp và dừng sleep.
+3. Kiểm tra cú pháp JavaScript.
+4. Render đúng layout và launchd path cho từng scheme, biên dịch/ký Mach-O arm64.
+5. Đọc lại `.deb`: metadata, kiến trúc, binary thật, entitlements, frontend/stdlib/licenses, launchd, script permissions, không lặp `/var/jb`, không mang token thiết bị.
 
-**LuaJIT cross-compile fails on Apple Silicon:**
-```bash
-export MACOSX_DEPLOYMENT_TARGET=11.0
-bash deps/build-luajit-arm64.sh
+`scripts/validate-packages.py packages` kiểm tra lại payload. `scripts/export-lua-api.py` tạo inventory globals. Các lượt CI và log build là bằng chứng biên dịch, không thay thế test iPhone.
+
+## Nguồn Sileo
+
+`repo/` chứa landing page, depiction và metadata. Sau khi build/validate:
+
+```sh
+mkdir -p repo/pool/main
+cp packages/*.deb repo/pool/main/
+bash scripts/update-repo.sh
 ```
 
-**Daemon not launching after install:**
-```bash
-ssh root@<device-ip> 'launchctl load /Library/LaunchDaemons/com.iosautotool.daemon.plist'
-ssh root@<device-ip> 'tail -20 /var/log/iosautotool/stdout.log'
-```
-
-**Entitlements stripped (private API crashes):**
-```bash
-ldid -e /Library/IOSAutoTool/iosautotool-daemon
-```
-Should list all 6 entitlement keys. If empty, re-run `build.sh` with `$THEOS >= 2019`.
-
-**MCP bridge hangs:** Ensure `socat` is installed on the device (`apt install socat` via Sileo/Cydia).
-
----
-
-## License
-
-For use on jailbroken devices only. The daemon runs as root with private-API entitlements — use responsibly. Not affiliated with Apple.
+Workflow publish đưa `repo/` lên nhánh `gh-pages`. Chỉ cập nhật nguồn khi kiểm tra `.deb` đạt. Dependency mới và code tương ứng được ghi ở [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md); license texts nằm trong `licenses/` và trong gói.

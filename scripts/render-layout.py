@@ -52,3 +52,5 @@ stdlib = layout / 'Library/IOSAutoTool/lua/stdlib'
 stdlib.mkdir(parents=True, exist_ok=True)
 for source in (root / 'lua/stdlib').glob('*.lua'):
     (stdlib / source.name).write_bytes(source.read_bytes())
+licenses = layout / 'Library/IOSAutoTool/licenses'
+shutil.copytree(root / 'licenses', licenses, dirs_exist_ok=True)

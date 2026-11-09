@@ -47,6 +47,10 @@ export MACOSX_DEPLOYMENT_TARGET="${MACOSX_DEPLOYMENT_TARGET:-14.0}"
 
 cd luajit-src
 make clean
+make DEFAULT_CC=clang BUILDMODE=static -j"$(sysctl -n hw.ncpu)"
+mkdir -p ../luajit/lib
+cp src/libluajit.a ../luajit/lib/libluajit-host.a
+make clean
 make DEFAULT_CC=clang \
      HOST_CC="clang -m64" \
      CROSS="$(dirname "$ICC")/" \
