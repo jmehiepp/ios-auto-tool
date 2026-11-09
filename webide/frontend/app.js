@@ -180,20 +180,25 @@ async function captureOnce() {
   }
 }
 
-function toggleLive() {
-  const btn  = document.getElementById('btn-live');
-  const dot  = document.getElementById('screen-dot');
+async function toggleLive() {
+  const btn = document.getElementById('btn-live');
+  const dot = document.getElementById('screen-dot');
+  const img = document.getElementById('screen-img');
   if (_liveTimer) {
-    clearInterval(_liveTimer);
     _liveTimer = null;
+    img.src = '';
     btn.classList.remove('on');
-    btn.textContent = '● Live';
+    btn.textContent = 'Live';
     if (dot) dot.classList.remove('live');
+    await captureOnce();
   } else {
-    captureOnce();
-    _liveTimer = setInterval(captureOnce, 1000);
+    _liveTimer = true;
+    await captureOnce();
+    if (!_liveTimer) return;
+    img.src = '/api/stream';
+    img.onerror = () => { if (_liveTimer) { _liveTimer = null; btn.classList.remove('on'); appendLog('WARN', 'Screen stream is unavailable.'); } };
     btn.classList.add('on');
-    btn.textContent = '◉ Live';
+    btn.textContent = 'Stop live';
     if (dot) dot.classList.add('live');
   }
 }

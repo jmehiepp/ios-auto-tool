@@ -24,6 +24,11 @@ void iat_prepare_storage(void) {
                        attributes:@{NSFilePosixPermissions: @0700} error:nil];
         chmod(path.fileSystemRepresentation, 0700);
     }
+    NSString *scripts = [iat_data_directory() stringByAppendingPathComponent:@"scripts"];
+    if ([NSFileManager.defaultManager contentsOfDirectoryAtPath:scripts error:nil].count == 0) {
+        [@"log('iOS Auto Tool ready')\nsleep(250)\nlog('Finished')\n" writeToFile:
+            [scripts stringByAppendingPathComponent:@"hello.lua"] atomically:YES encoding:NSUTF8StringEncoding error:nil];
+    }
 }
 NSString *iat_access_token(void) {
     static NSString *token;

@@ -1,0 +1,359 @@
+{
+  "scope": "Static registration inventory; iPhone behavior requires device testing.",
+  "globals": [
+    {
+      "name": "appRun",
+      "native_function": "lua_app_run",
+      "source": "lua/bindings/bind-app.m",
+      "line": 105
+    },
+    {
+      "name": "appKill",
+      "native_function": "lua_app_kill",
+      "source": "lua/bindings/bind-app.m",
+      "line": 106
+    },
+    {
+      "name": "appKillAll",
+      "native_function": "lua_app_kill_all",
+      "source": "lua/bindings/bind-app.m",
+      "line": 107
+    },
+    {
+      "name": "clearSwitcher",
+      "native_function": "lua_clear_switcher",
+      "source": "lua/bindings/bind-app.m",
+      "line": 108
+    },
+    {
+      "name": "getFrontApp",
+      "native_function": "lua_get_front_app",
+      "source": "lua/bindings/bind-app.m",
+      "line": 109
+    },
+    {
+      "name": "getRunningApps",
+      "native_function": "lua_get_running_apps",
+      "source": "lua/bindings/bind-app.m",
+      "line": 110
+    },
+    {
+      "name": "saveAccount",
+      "native_function": "lua_save_account",
+      "source": "lua/bindings/bind-app.m",
+      "line": 111
+    },
+    {
+      "name": "switchAccount",
+      "native_function": "lua_switch_account",
+      "source": "lua/bindings/bind-app.m",
+      "line": 112
+    },
+    {
+      "name": "deleteAccount",
+      "native_function": "lua_delete_account",
+      "source": "lua/bindings/bind-app.m",
+      "line": 113
+    },
+    {
+      "name": "nameAccount",
+      "native_function": "lua_name_account",
+      "source": "lua/bindings/bind-app.m",
+      "line": 114
+    },
+    {
+      "name": "listAccounts",
+      "native_function": "lua_list_accounts",
+      "source": "lua/bindings/bind-app.m",
+      "line": 115
+    },
+    {
+      "name": "clearKeychain",
+      "native_function": "lua_clear_keychain",
+      "source": "lua/bindings/bind-app.m",
+      "line": 116
+    },
+    {
+      "name": "typeText",
+      "native_function": "lua_type_text",
+      "source": "lua/bindings/bind-keyboard.m",
+      "line": 69
+    },
+    {
+      "name": "keyboardType",
+      "native_function": "lua_keyboard_type",
+      "source": "lua/bindings/bind-keyboard.m",
+      "line": 70
+    },
+    {
+      "name": "setKeyboardLanguage",
+      "native_function": "lua_set_keyboard_language",
+      "source": "lua/bindings/bind-keyboard.m",
+      "line": 71
+    },
+    {
+      "name": "pressHome",
+      "native_function": "lua_press_home",
+      "source": "lua/bindings/bind-keyboard.m",
+      "line": 72
+    },
+    {
+      "name": "pressLock",
+      "native_function": "lua_press_lock",
+      "source": "lua/bindings/bind-keyboard.m",
+      "line": 73
+    },
+    {
+      "name": "pressVolume",
+      "native_function": "lua_press_volume",
+      "source": "lua/bindings/bind-keyboard.m",
+      "line": 74
+    },
+    {
+      "name": "pressMute",
+      "native_function": "lua_press_mute",
+      "source": "lua/bindings/bind-keyboard.m",
+      "line": 75
+    },
+    {
+      "name": "setClipboard",
+      "native_function": "lua_set_clipboard",
+      "source": "lua/bindings/bind-keyboard.m",
+      "line": 76
+    },
+    {
+      "name": "getClipboard",
+      "native_function": "lua_get_clipboard",
+      "source": "lua/bindings/bind-keyboard.m",
+      "line": 77
+    },
+    {
+      "name": "clearClipboard",
+      "native_function": "lua_clear_clipboard",
+      "source": "lua/bindings/bind-keyboard.m",
+      "line": 78
+    },
+    {
+      "name": "screenshot",
+      "native_function": "lua_screenshot",
+      "source": "lua/bindings/bind-screen.m",
+      "line": 261
+    },
+    {
+      "name": "findColor",
+      "native_function": "lua_find_color",
+      "source": "lua/bindings/bind-screen.m",
+      "line": 262
+    },
+    {
+      "name": "findColors",
+      "native_function": "lua_find_colors",
+      "source": "lua/bindings/bind-screen.m",
+      "line": 263
+    },
+    {
+      "name": "getColor",
+      "native_function": "lua_get_color",
+      "source": "lua/bindings/bind-screen.m",
+      "line": 264
+    },
+    {
+      "name": "findImage",
+      "native_function": "lua_find_image",
+      "source": "lua/bindings/bind-screen.m",
+      "line": 265
+    },
+    {
+      "name": "ocr",
+      "native_function": "lua_ocr",
+      "source": "lua/bindings/bind-screen.m",
+      "line": 266
+    },
+    {
+      "name": "ocrDetailed",
+      "native_function": "lua_ocr_detailed",
+      "source": "lua/bindings/bind-screen.m",
+      "line": 267
+    },
+    {
+      "name": "setOcrLanguages",
+      "native_function": "lua_set_ocr_languages",
+      "source": "lua/bindings/bind-screen.m",
+      "line": 268
+    },
+    {
+      "name": "shell",
+      "native_function": "lua_shell",
+      "source": "lua/bindings/bind-system.m",
+      "line": 205
+    },
+    {
+      "name": "readFile",
+      "native_function": "lua_read_file",
+      "source": "lua/bindings/bind-system.m",
+      "line": 206
+    },
+    {
+      "name": "writeFile",
+      "native_function": "lua_write_file",
+      "source": "lua/bindings/bind-system.m",
+      "line": 207
+    },
+    {
+      "name": "appendFile",
+      "native_function": "lua_append_file",
+      "source": "lua/bindings/bind-system.m",
+      "line": 208
+    },
+    {
+      "name": "deleteFile",
+      "native_function": "lua_delete_file",
+      "source": "lua/bindings/bind-system.m",
+      "line": 209
+    },
+    {
+      "name": "fileExists",
+      "native_function": "lua_file_exists",
+      "source": "lua/bindings/bind-system.m",
+      "line": 210
+    },
+    {
+      "name": "listDir",
+      "native_function": "lua_list_dir",
+      "source": "lua/bindings/bind-system.m",
+      "line": 211
+    },
+    {
+      "name": "makeDir",
+      "native_function": "lua_make_dir",
+      "source": "lua/bindings/bind-system.m",
+      "line": 212
+    },
+    {
+      "name": "copyFile",
+      "native_function": "lua_copy_file",
+      "source": "lua/bindings/bind-system.m",
+      "line": 213
+    },
+    {
+      "name": "moveFile",
+      "native_function": "lua_move_file",
+      "source": "lua/bindings/bind-system.m",
+      "line": 214
+    },
+    {
+      "name": "fileSize",
+      "native_function": "lua_file_size",
+      "source": "lua/bindings/bind-system.m",
+      "line": 215
+    },
+    {
+      "name": "httpGet",
+      "native_function": "lua_http_get",
+      "source": "lua/bindings/bind-system.m",
+      "line": 216
+    },
+    {
+      "name": "httpPost",
+      "native_function": "lua_http_post",
+      "source": "lua/bindings/bind-system.m",
+      "line": 217
+    },
+    {
+      "name": "httpPostForm",
+      "native_function": "lua_http_post_form",
+      "source": "lua/bindings/bind-system.m",
+      "line": 218
+    },
+    {
+      "name": "httpRequest",
+      "native_function": "lua_http_request",
+      "source": "lua/bindings/bind-system.m",
+      "line": 219
+    },
+    {
+      "name": "downloadFile",
+      "native_function": "lua_download_file",
+      "source": "lua/bindings/bind-system.m",
+      "line": 220
+    },
+    {
+      "name": "scriptDir",
+      "native_function": "lua_script_dir",
+      "source": "lua/bindings/bind-system.m",
+      "line": 221
+    },
+    {
+      "name": "homeDir",
+      "native_function": "lua_home_dir",
+      "source": "lua/bindings/bind-system.m",
+      "line": 222
+    },
+    {
+      "name": "tmpDir",
+      "native_function": "lua_tmp_dir",
+      "source": "lua/bindings/bind-system.m",
+      "line": 223
+    },
+    {
+      "name": "tap",
+      "native_function": "lua_tap",
+      "source": "lua/bindings/bind-touch.m",
+      "line": 97
+    },
+    {
+      "name": "doubleTap",
+      "native_function": "lua_double_tap",
+      "source": "lua/bindings/bind-touch.m",
+      "line": 98
+    },
+    {
+      "name": "longPress",
+      "native_function": "lua_long_press",
+      "source": "lua/bindings/bind-touch.m",
+      "line": 99
+    },
+    {
+      "name": "swipe",
+      "native_function": "lua_swipe",
+      "source": "lua/bindings/bind-touch.m",
+      "line": 100
+    },
+    {
+      "name": "touchDown",
+      "native_function": "lua_touch_down",
+      "source": "lua/bindings/bind-touch.m",
+      "line": 101
+    },
+    {
+      "name": "touchMove",
+      "native_function": "lua_touch_move",
+      "source": "lua/bindings/bind-touch.m",
+      "line": 102
+    },
+    {
+      "name": "touchUp",
+      "native_function": "lua_touch_up",
+      "source": "lua/bindings/bind-touch.m",
+      "line": 103
+    },
+    {
+      "name": "tapText",
+      "native_function": "lua_tap_text",
+      "source": "lua/bindings/bind-touch.m",
+      "line": 104
+    },
+    {
+      "name": "log",
+      "native_function": "builtin_log",
+      "source": "lua/lua-bridge.m",
+      "line": 51
+    },
+    {
+      "name": "sleep",
+      "native_function": "builtin_sleep",
+      "source": "lua/lua-bridge.m",
+      "line": 52
+    }
+  ]
+}

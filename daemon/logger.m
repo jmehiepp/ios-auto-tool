@@ -58,16 +58,16 @@ void log_broadcast(LogLevel level, const char *msg) {
         fflush(log_file);
     }
 
-    char json[4096 + 128];
-    snprintf(json, sizeof(json),
-        "{\"type\":\"log\",\"level\":\"%s\",\"data\":\"%s\"}\n",
-        level_names[level], msg);
-    size_t len = strlen(json);
+    NSString *message = [[NSString alloc] initWithBytes:msg length:strlen(msg) encoding:NSUTF8StringEncoding] ?: @"[invalid UTF-8 log]";
+    NSMutableData *json = [[NSJSONSerialization dataWithJSONObject:
+        @{@"type": @"log", @"level": @(level_names[level]), @"data": message} options:0 error:nil] mutableCopy];
+    [json appendBytes:"\n" length:1];
+    size_t len = json.length;
 
     pthread_mutex_lock(&log_mutex);
     for (int i = 0; i < log_client_count; i++) {
         if (log_clients[i] >= 0) {
-            write(log_clients[i], json, len);
+            write(log_clients[i], json.bytes, len);
         }
     }
     pthread_mutex_unlock(&log_mutex);

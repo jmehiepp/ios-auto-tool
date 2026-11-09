@@ -97,9 +97,5 @@ iosautotool-daemon_CODESIGN_FLAGS = -Siosautotool-daemon.entitlements
 
 include $(THEOS)/makefiles/tool.mk
 
-before-package::
-	mkdir -p layout/Library/IOSAutoTool/webide/frontend
-	rsync -a --delete webide/frontend/ layout/Library/IOSAutoTool/webide/frontend/
-
 after-install::
 	install.exec "launchctl unload /Library/LaunchDaemons/com.iosautotool.daemon.plist 2>/dev/null; launchctl load /Library/LaunchDaemons/com.iosautotool.daemon.plist"

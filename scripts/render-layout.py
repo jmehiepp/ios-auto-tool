@@ -2,6 +2,7 @@
 import argparse
 import pathlib
 import plistlib
+import shutil
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--scheme', choices=('rootful', 'rootless'), required=True)
@@ -9,6 +10,8 @@ args = parser.parse_args()
 root = pathlib.Path(__file__).resolve().parents[1]
 prefix = '/var/jb' if args.scheme == 'rootless' else ''
 layout = root / 'layout'
+frontend = layout / 'Library/IOSAutoTool/webide/frontend'
+shutil.copytree(root / 'webide/frontend', frontend, dirs_exist_ok=True)
 launch = layout / 'Library/LaunchDaemons/com.iosautotool.daemon.plist'
 launch.parent.mkdir(parents=True, exist_ok=True)
 launch.write_bytes(plistlib.dumps({

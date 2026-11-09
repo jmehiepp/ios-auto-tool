@@ -41,20 +41,27 @@ static IOHIDEventSystemClientRef get_client(void) {
 static void dispatch_key(uint32_t page, uint32_t usage, uint32_t modifiers) {
     IOHIDEventSystemClientRef client = get_client();
     if (!client) return;
+    bool command = (modifiers & 0x100) != 0;
+    if (command) {
+        IOHIDEventRef modifier = IOHIDEventCreateKeyboardEvent(kCFAllocatorDefault, mach_absolute_time(), 7, 0xe3, true, 0);
+        if (modifier) { IOHIDEventSystemClientDispatchEvent(client, modifier); CFRelease(modifier); }
+    }
 
     uint64_t ts = mach_absolute_time();
     IOHIDEventRef down = IOHIDEventCreateKeyboardEvent(
-        kCFAllocatorDefault, ts, page, usage, true, modifiers);
-    IOHIDEventSystemClientDispatchEvent(client, down);
-    CFRelease(down);
+        kCFAllocatorDefault, ts, page, usage, true, 0);
+    if (down) { IOHIDEventSystemClientDispatchEvent(client, down); CFRelease(down); }
 
     usleep(50000);
 
     ts = mach_absolute_time();
     IOHIDEventRef up = IOHIDEventCreateKeyboardEvent(
-        kCFAllocatorDefault, ts, page, usage, false, modifiers);
-    IOHIDEventSystemClientDispatchEvent(client, up);
-    CFRelease(up);
+        kCFAllocatorDefault, ts, page, usage, false, 0);
+    if (up) { IOHIDEventSystemClientDispatchEvent(client, up); CFRelease(up); }
+    if (command) {
+        IOHIDEventRef modifier = IOHIDEventCreateKeyboardEvent(kCFAllocatorDefault, mach_absolute_time(), 7, 0xe3, false, 0);
+        if (modifier) { IOHIDEventSystemClientDispatchEvent(client, modifier); CFRelease(modifier); }
+    }
 }
 
 void c_send_key(unsigned short hid_usage, unsigned int modifiers) {

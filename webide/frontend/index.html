@@ -29,7 +29,7 @@
     <button class="htab htab-schedule"      onclick="switchTab('schedule');refreshSchedule()">⏰ Schedule</button>
     <button class="htab htab-apps"          onclick="switchTab('apps')">Apps</button>
     <button class="htab htab-device"        onclick="switchTab('device')">Device</button>
-    <button class="htab htab-spoof"         onclick="switchTab('spoof')">Spoof</button>
+    <button class="htab htab-spoof"         style="display:none" onclick="switchTab('spoof')">Spoof</button>
   </div>
 
   <span class="header-spacer"></span>
@@ -287,16 +287,6 @@
 </div>
 
 <!-- ─── SCRIPTS ──────────────────────────────────────────────── -->
-<script src="monaco/loader.js"></script>
-<script>
-  if (window.require) {
-  require.config({ paths: { 'vs': 'monaco/vs' } });
-  require(['vs/editor/editor.main'], function() {
-    window._monacoReady = true;
-    initEditor();
-  });
-  }
-</script>
 <script src="file-manager.js"></script>
 <script src="log-viewer.js"></script>
 <script src="editor.js"></script>

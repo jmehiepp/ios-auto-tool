@@ -11,6 +11,7 @@ static NSString *get_device_ip(void) {
     getifaddrs(&addrs);
     NSString *ip = @"unknown";
     for (struct ifaddrs *ifa = addrs; ifa; ifa = ifa->ifa_next) {
+        if (!ifa->ifa_addr || !ifa->ifa_name) continue;
         if (ifa->ifa_addr->sa_family != AF_INET) continue;
         if (strncmp(ifa->ifa_name, "en", 2) != 0) continue;
         char buf[INET_ADDRSTRLEN];

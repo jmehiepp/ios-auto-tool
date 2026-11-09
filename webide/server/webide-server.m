@@ -15,8 +15,9 @@ static pthread_mutex_t log_lock = PTHREAD_MUTEX_INITIALIZER;
 void webide_ws_broadcast_log(const char *level, const char *message) {
     if (!level || !message) return;
     @autoreleasepool {
+        NSString *text = [[NSString alloc] initWithBytes:message length:strlen(message) encoding:NSUTF8StringEncoding] ?: @"[invalid UTF-8 log]";
         NSData *data = [NSJSONSerialization dataWithJSONObject:
-            @{@"level": @(level), @"data": @(message)} options:0 error:nil];
+            @{@"level": @(level), @"data": text} options:0 error:nil];
         if (!data) return;
         pthread_mutex_lock(&log_lock);
         if (!pending_logs) pending_logs = [NSMutableArray array];

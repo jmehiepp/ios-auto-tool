@@ -18,30 +18,29 @@ static NSArray<NSString *> *parse_languages(const char *lang_str) {
 static NSArray<VNRecognizedTextObservation *> *run_vision(UIImage *image,
                                                           const char *languages)
 {
-    __block NSArray *results = nil;
-    dispatch_semaphore_t sem = dispatch_semaphore_create(0);
 
     CIImage *ci = [CIImage imageWithCGImage:image.CGImage];
-    VNRecognizeTextRequest *req = [[VNRecognizeTextRequest alloc]
-        initWithCompletionHandler:^(VNRequest *r, NSError *e) {
-            results = r.results;
-            dispatch_semaphore_signal(sem);
-        }];
+    VNRecognizeTextRequest *req = [[VNRecognizeTextRequest alloc] init];
     req.recognitionLevel   = VNRequestTextRecognitionLevelAccurate;
     req.usesLanguageCorrection = YES;
-    req.recognitionLanguages   = parse_languages(languages ?: g_languages);
+    NSArray *supported = [VNRecognizeTextRequest supportedRecognitionLanguagesForTextRecognitionLevel:
+        req.recognitionLevel revision:req.revision error:nil];
+    NSMutableArray *selected = [NSMutableArray array];
+    for (NSString *language in parse_languages(languages ?: g_languages))
+        if ([supported containsObject:language]) [selected addObject:language];
+    req.recognitionLanguages = selected.count ? selected : @[@"en-US"];
 
     VNImageRequestHandler *handler = [[VNImageRequestHandler alloc]
         initWithCIImage:ci options:@{}];
     NSError *err = nil;
-    [handler performRequests:@[req] error:&err];
-    dispatch_semaphore_wait(sem, DISPATCH_TIME_FOREVER);
-    return results;
+    if (![handler performRequests:@[req] error:&err]) return nil;
+    return req.results ?: @[];
 }
 
 char *ocr_image(UIImage *image, const char *languages) {
     if (!image) return NULL;
     NSArray<VNRecognizedTextObservation *> *obs = run_vision(image, languages);
+    if (!obs) return NULL;
     NSMutableString *sb = [NSMutableString string];
     for (VNRecognizedTextObservation *o in obs) {
         NSString *top = [o topCandidates:1].firstObject.string;

@@ -51,21 +51,11 @@ static void extract_filename(const struct mg_str *uri, char *out, size_t sz) {
 
 // GET /api/files → JSON array of filenames
 static void handle_list_files(struct mg_connection *c, const char *scripts_dir) {
-    NSMutableString *json = [NSMutableString stringWithString:@"["];
-    DIR *dir = opendir(scripts_dir);
-    if (dir) {
-        struct dirent *entry;
-        BOOL first = YES;
-        while ((entry = readdir(dir)) != NULL) {
-            if (entry->d_name[0] == '.') continue;
-            if (!first) [json appendString:@","];
-            NSString *name = [NSString stringWithUTF8String:entry->d_name];
-            [json appendFormat:@"\"%@\"", name];
-            first = NO;
-        }
-        closedir(dir);
-    }
-    [json appendString:@"]"];
+    NSMutableArray *files = [NSMutableArray array];
+    NSArray *names = [NSFileManager.defaultManager contentsOfDirectoryAtPath:@(scripts_dir) error:nil];
+    for (NSString *name in names) if (![name hasPrefix:@"."]) [files addObject:name];
+    NSData *data = [NSJSONSerialization dataWithJSONObject:files options:0 error:nil];
+    NSString *json = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
     json_reply(c, 200, json.UTF8String);
 }
 
@@ -81,13 +71,8 @@ static void handle_read_file(struct mg_connection *c, const char *scripts_dir,
         json_reply(c, 404, "{\"error\":\"not found\"}");
         return;
     }
-    // Escape JSON string minimally
-    NSString *escaped = [content stringByReplacingOccurrencesOfString:@"\\"
-                                                           withString:@"\\\\"];
-    escaped = [escaped stringByReplacingOccurrencesOfString:@"\"" withString:@"\\\""];
-    escaped = [escaped stringByReplacingOccurrencesOfString:@"\n" withString:@"\\n"];
-    escaped = [escaped stringByReplacingOccurrencesOfString:@"\r" withString:@"\\r"];
-    NSString *json = [NSString stringWithFormat:@"{\"content\":\"%@\"}", escaped];
+    NSData *data = [NSJSONSerialization dataWithJSONObject:@{@"content": content} options:0 error:nil];
+    NSString *json = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
     json_reply(c, 200, json.UTF8String);
 }
 
@@ -152,7 +137,8 @@ static void handle_device_info(struct mg_connection *c) {
 static NSDictionary *parse_json_body(struct mg_http_message *hm) {
     if (!hm->body.len) return nil;
     NSData *data = [NSData dataWithBytes:hm->body.buf length:hm->body.len];
-    return [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
+    id result = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
+    return [result isKindOfClass:NSDictionary.class] ? result : nil;
 }
 
 // GET /api/screenshot → {"image":"<base64-PNG>","width":N,"height":N}

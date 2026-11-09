@@ -43,7 +43,7 @@ void c_type_text(NSString *text) {
 
     // Try clipboard paste via HID Cmd+V
     c_send_key(HID_KEY_V, CMD_MODIFIER);
-    usleep(120000);
+    usleep(250000);
 
     // Verify by checking the first responder (fallback if HID paste didn't work)
     UIResponder *r = get_first_responder();

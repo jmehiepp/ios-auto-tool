@@ -12,7 +12,7 @@
 #include <unistd.h>
 
 #define IPC_SOCKET_PATH  "/var/run/iosautotool.sock"
-#define WEBIDE_PORT      8888
+#define WEBIDE_PORT      8890
 #define MCP_PORT         8765
 
 int main(int argc, char *argv[]) {
