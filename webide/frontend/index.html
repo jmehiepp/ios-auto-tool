@@ -236,44 +236,47 @@
       <div class="funcs-cat funcs-cat-touch">Touch</div>
       <div class="funcs-fn">tap(x, y)</div>
       <div class="funcs-fn">swipe(x1,y1,x2,y2)</div>
-      <div class="funcs-fn">longPress(x,y,ms)</div>
-      <div class="funcs-fn">drag(x1,y1,x2,y2)</div>
+      <div class="funcs-fn" data-native="longPress(x,y,ms)" data-legacy="longPress(x,y,seconds)">longPress(x,y,ms)</div>
+      <div class="funcs-fn">touchReset()</div>
 
       <div class="funcs-cat funcs-cat-screen">Screen</div>
       <div class="funcs-fn">screenshot()</div>
-      <div class="funcs-fn">findImage(tpl)</div>
-      <div class="funcs-fn">waitForImage(tpl,t)</div>
-      <div class="funcs-fn">getPixelColor(x,y)</div>
+      <div class="funcs-fn" data-native="findImage(path,threshold)" data-legacy="findImage(path,1,similarity,region)">findImage(path,threshold)</div>
+      <div class="funcs-fn" data-native="ocrDetailed(x,y,w,h)" data-legacy="ocr({x,y,w,h})">ocrDetailed(x,y,w,h)</div>
+      <div class="funcs-fn" data-native="getColor(x,y) → r,g,b,a" data-legacy="getColor(x,y) → RGB">getColor(x,y) → r,g,b,a</div>
+      <div class="funcs-fn">keepScreen()</div>
+      <div class="funcs-fn">releaseScreen()</div>
 
       <div class="funcs-cat funcs-cat-app">App</div>
-      <div class="funcs-fn">launchApp(bundleId)</div>
-      <div class="funcs-fn">killApp(bundleId)</div>
-      <div class="funcs-fn">getInstalledApps()</div>
+      <div class="funcs-fn">appRun(bundleId)</div>
+      <div class="funcs-fn">appKill(bundleId)</div>
+      <div class="funcs-fn" data-native="getRunningApps()" data-legacy="apps()">getRunningApps()</div>
       <div class="funcs-fn">getFrontApp()</div>
 
       <div class="funcs-cat funcs-cat-key">Keys</div>
-      <div class="funcs-fn">pressKey("home")</div>
-      <div class="funcs-fn">pressKey("volume_up")</div>
-      <div class="funcs-fn">pressKey("volume_down")</div>
-      <div class="funcs-fn">pressKey("lock")</div>
+      <div class="funcs-fn">pressHome()</div>
+      <div class="funcs-fn">pressVolume("up")</div>
+      <div class="funcs-fn">pressVolume("down")</div>
+      <div class="funcs-fn">pressLock()</div>
       <div class="funcs-fn">typeText(str)</div>
 
       <div class="funcs-cat funcs-cat-device">Device</div>
-      <div class="funcs-fn">getDeviceInfo()</div>
-      <div class="funcs-fn">getBatteryLevel()</div>
-      <div class="funcs-fn">getOrientation()</div>
+      <div class="funcs-fn" data-native="screenGeometry()" data-legacy="screenSize()">screenGeometry()</div>
+      <div class="funcs-fn">spoof.getAll()</div>
+      <div class="funcs-fn">spoof.listProfiles()</div>
 
       <div class="funcs-cat funcs-cat-system">System</div>
-      <div class="funcs-fn">runShell(cmd)</div>
+      <div class="funcs-fn">shell(cmd)</div>
       <div class="funcs-fn">readFile(path)</div>
       <div class="funcs-fn">writeFile(path,data)</div>
-      <div class="funcs-fn">sleep(ms)</div>
+      <div class="funcs-fn" data-native="sleep(ms)" data-legacy="sleep(seconds)">sleep(ms)</div>
+      <div class="funcs-fn">tmpDir()</div>
 
       <div class="funcs-cat funcs-cat-spoof">Spoof</div>
-      <div class="funcs-fn">getSpoofConfig()</div>
-      <div class="funcs-fn">setSpoofKey(k,v)</div>
-      <div class="funcs-fn">applyPreset(name)</div>
-      <div class="funcs-fn">resetSpoof()</div>
+      <div class="funcs-fn">spoof.enable(module,value)</div>
+      <div class="funcs-fn">spoof.applyPreset(name)</div>
+      <div class="funcs-fn">spoof.saveProfile(name)</div>
+      <div class="funcs-fn">spoof.reset()</div>
     </div>
   </div>
 

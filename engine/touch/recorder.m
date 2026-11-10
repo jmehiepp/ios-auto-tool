@@ -92,16 +92,16 @@ NSString *recorder_stop_and_codegen(void) {
         int t = [ev[@"t"] intValue];
         int gap = t - prev_t;
         if (i > 0 && gap > 50) {
-            [code appendFormat:@"system.sleep(%d)\n", gap];
+            [code appendFormat:@"sleep(%d)\n", gap];
         }
         NSString *type = ev[@"type"];
         if ([type isEqualToString:@"tap"]) {
-            [code appendFormat:@"touch.tap(%d, %d)\n",
-                [ev[@"x"] intValue], [ev[@"y"] intValue]];
+            [code appendFormat:@"tap(%.3f, %.3f)\n",
+                [ev[@"x"] doubleValue], [ev[@"y"] doubleValue]];
         } else if ([type isEqualToString:@"swipe"]) {
-            [code appendFormat:@"touch.swipe(%d, %d, %d, %d, 300)\n",
-                [ev[@"x1"] intValue], [ev[@"y1"] intValue],
-                [ev[@"x2"] intValue], [ev[@"y2"] intValue]];
+            [code appendFormat:@"swipe(%.3f, %.3f, %.3f, %.3f, 300)\n",
+                [ev[@"x1"] doubleValue], [ev[@"y1"] doubleValue],
+                [ev[@"x2"] doubleValue], [ev[@"y2"] doubleValue]];
         }
         prev_t = t;
     }

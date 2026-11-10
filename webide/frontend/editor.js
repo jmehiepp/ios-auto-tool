@@ -64,7 +64,7 @@ async function saveCurrentFile() {
 
 async function runScript() {
   if (!editor) return;
-  if (isDirty) await saveCurrentFile();
+  if (isDirty) { try { await saveCurrentFile(); } catch (_) { return; } }
 
   const code = editor.getValue();
   const name = currentFile || 'untitled.lua';
@@ -119,6 +119,9 @@ function setCurrentFile(name, content) {
 function updateCompatibilityMode(content) {
   const field = document.getElementById('compatibility-mode');
   if (field) field.value = /^(?:\uFEFF)?--!iosautomate(?:\r?\n|$)/.test(content) ? 'legacy' : 'native';
+  document.querySelectorAll('.funcs-fn[data-native]').forEach(row => {
+    row.textContent = field?.value === 'legacy' ? (row.dataset.legacy || row.dataset.native) : row.dataset.native;
+  });
 }
 
 function setCompatibilityMode(mode) {

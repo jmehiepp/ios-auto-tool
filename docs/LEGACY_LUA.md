@@ -26,6 +26,8 @@ Dấu đầu tệp được lưu cùng script, nên IDE, CLI, lịch và widget 
 
 `require('json')`, `require('base64')`, `require('plist')`, `require('lfs')`, `require('md5')` dùng native bindings. JSON giữ boolean, Unicode và null qua `json.null`; mảng rỗng cần `json.array()`, `{}` là object. Lỗi conversion trả `nil,error`; không mô phỏng chính xác mọi wrapper lỗi gốc. Base64 giữ byte NUL. Plist hỗ trợ read/write/load/dump XML và đọc binary; không hỗ trợ đầy đủ tùy chọn output format. Lfs có mkdir/rmdir/attributes/currentdir/dir; `dir` trả iterator trên snapshot tên, không giữ descriptor mở. MD5 có `sumhexa` cho tương thích dữ liệu, không dùng làm cơ chế xác thực.
 
+`tmpDir()` và `os.tmpname()` dùng thư mục tạm riêng của dự án (0700), mỗi tệp được tạo bằng mkstemp (0600). `scriptDir()` trả đường dẫn scripts đã resolve, gồm đường dẫn bootstrap thực khi dùng RootHide. Script tự dọn tệp tạm sau khi sử dụng.
+
 Lua Device có `spoof.listProfiles()`, `saveProfile(name)`, `applyProfile(name)`, `deleteProfile(name)`, `renameProfile(old,new)`. Đổi tên từ chối ghi đè đích. Chúng quản lý schema của dự án; không tự alias ResetDevice/RestoreDevice hoặc workflow clone của sản phẩm khác.
 
 ## Giới hạn còn mở

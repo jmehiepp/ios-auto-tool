@@ -35,13 +35,18 @@ async function openFile(name) {
 
 async function saveFile(name, content) {
   try {
-    await fetch(`/api/files/${encodeURIComponent(name)}`, {
+    const response = await fetch(`/api/files/${encodeURIComponent(name)}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ content }),
     });
+    if (!response.ok) {
+      const body = await response.json();
+      throw new Error(body.error || `HTTP ${response.status}`);
+    }
   } catch (e) {
     appendLog('ERROR', 'Failed to save file: ' + e.message);
+    throw e;
   }
 }
 

@@ -21,6 +21,8 @@ xcrun clang -fobjc-arc -fblocks -Ideps/luajit/include tests/lua-runtime-tests.m 
 .build-evidence/lua-runtime-tests
 xcrun clang -fobjc-arc -fblocks -Ideps/luajit/include tests/data-bindings-tests.m lua/bindings/bind-data.m deps/luajit/lib/libluajit-host.a -framework Foundation -o .build-evidence/data-bindings-tests
 .build-evidence/data-bindings-tests
+xcrun clang -fobjc-arc -fblocks -Ideps/luajit/include tests/recorder-codegen-tests.m engine/touch/recorder.m deps/luajit/lib/libluajit-host.a -framework Foundation -o .build-evidence/recorder-codegen-tests
+.build-evidence/recorder-codegen-tests
 bash spoof/tests/run-config-tests.sh
 bash spoof/tests/run-profile-tests.sh
 xcrun clang -fobjc-arc -fblocks tests/web-script-preservation-tests.m spoof/web-script-update.m -framework Foundation -framework WebKit -o .build-evidence/web-script-preservation-tests
@@ -40,6 +42,7 @@ xcrun clang -fobjc-arc -fblocks tests/scheduler-tests.m daemon/runtime-paths.m -
 for file in webide/frontend/*.js; do node --check "$file"; done
 node tests/admin-device-ui-tests.cjs
 node tests/editor-compatibility-tests.cjs
+node tests/editor-save-failure-tests.cjs
 mkdir -p packages
 python3 -c "from pathlib import Path; [p.unlink() for p in Path('packages').glob('*.deb')]"
 python3 scripts/prepare-logos.py

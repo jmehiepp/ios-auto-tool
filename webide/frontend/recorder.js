@@ -54,8 +54,8 @@ async function stopRecord() {
     });
     if (!save.ok) { alert('Lưu file thất bại'); return; }
 
-    if (typeof refreshFileList === 'function') refreshFileList();
-    if (typeof loadFile === 'function') loadFile(filename);
+    await loadFileList();
+    await openFile(filename);
     switchTab('ide');
     alert('Đã lưu ' + filename);
   } catch (e) {
