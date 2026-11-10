@@ -31,7 +31,10 @@ static int write_all(int fd, const void *bytes, size_t size, int allow_peer_canc
     while (sent < size) {
         ssize_t count = write(fd, (const char *)bytes + sent, size - sent);
         if (count < 0 && errno == EINTR) continue;
-        if (count < 0 && allow_peer_cancel && (errno == EPIPE || errno == ECONNRESET)) {
+        // Darwin may report ENOTCONN when the timed-out client has closed its
+        // Unix socket. This exception applies only to the second slow write;
+        // the parent still requires the client's exact ETIMEDOUT result.
+        if (count < 0 && allow_peer_cancel && (errno == EPIPE || errno == ECONNRESET || errno == ENOTCONN)) {
             fprintf(stderr, "[%s] fixture second slow write cancelled after client deadline: %s\n",
                 active_case, strerror(errno));
             return 1;
