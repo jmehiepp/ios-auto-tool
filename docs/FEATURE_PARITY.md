@@ -5,7 +5,7 @@
 | Nhóm | Triển khai trong dự án | Ranh giới còn lại |
 |---|---|---|
 | Lua, Web IDE, tệp, log | LuaJIT interpreter, editor offline, lưu/chạy/dừng, WebSocket log; legacy core theo tệp, JSON/Base64/plist/lfs/MD5 | Inventory có 88 global (gồm helper nội bộ) và 15 hàm spoof; [legacy core](LEGACY_LUA.md) mới hỗ trợ một phần, chưa có đủ 285 tên/hợp đồng API gốc |
-| Touch/keyboard | tap/swipe/multi-touch, phím hệ thống, nhập chữ | Đã xác nhận tap chuyển tab Sileo và nút Home; swipe/multi-touch/nhập chữ cần thêm phép thử |
+| Touch/keyboard | tap/swipe, contact riêng, phím hệ thống, nhập chữ | Đã xác nhận tap Native và tap pixel legacy, nút Home; chưa có frame đa contact/pinch/rotate đã xác minh, swipe/nhập chữ cần thêm phép thử |
 | Screen/vision | screenshot, OCR/Vision, màu, template image, MJPEG | Chưa có relay H.264/UDP 9001 hay giao thức REMOTE gốc |
 | Lịch và recorder | lịch một lần/theo phút/hằng ngày; record touch từ Web IDE | Chưa record mọi thao tác vật lý toàn hệ thống |
 | Widget | floating picker, chạy/dừng/status qua daemon | Đã xác nhận chọn/chạy/dừng từ SpringBoard trên iPhone 6s/RootHide; các thiết bị và hướng màn hình khác chưa thử |

@@ -53,3 +53,17 @@ Publisher beta3 qua chín nhóm kiểm tra, nhưng một job Build độc lập 
 Trên chính gói công khai, bốn trường hợp Device có đối chứng đều đạt 27 điểm kiểm tra/trường hợp, với các giới hạn fixture và WebKit đã ghi ở trên. Sau respring cuối, widget hiện danh sách, chạy `USB-smoke.lua`, báo đang chạy; MCP xác nhận `running=true`. Dừng bằng nút widget đưa trạng thái về sẵn sàng, MCP `running=false`, log ghi `script stopped` và exit 1, trước khi macro hết thời gian chờ.
 
 APT update riêng nguồn dự án không báo lỗi; installed và candidate đều là beta4 ở priority 500. MJPEG vẫn trả frame sau kiểm tra. Đã xóa script/profile/bundle thử riêng, danh sách script còn `hello.lua`; master Device khôi phục OFF, modules và whitelist rỗng. Không thử restore/xóa dữ liệu ứng dụng cá nhân. Bản beta này vẫn chưa đáp ứng toàn bộ chức năng và giao thức/script cũ.
+
+## Bản công khai beta5: legacy core, identity và recorder
+
+Gói RootHide `1.2.0~beta5` có SHA-256 `6c3197dd8eb319f8cde3adc4a55c40805d194e407d85b4cd5d75ad937108e981`, source phát hành `324673ab42b5c80f54e8682e64276ce1cdb9b105`. Publisher `42789052490` và Pages `42789312840` thành công. Hai Build độc lập `42788484754`/`42788486681` đều đạt; 18 nhóm kiểm tra có mặt trong log publisher. Ba gói và hash metadata đã được tải lại từ nguồn công khai.
+
+Build master trước đó `42787714596` trả đúng ETIMEDOUT phía client nhưng fixture ghi vào socket đã đóng nhận ENOTCONN trên Darwin, khác EPIPE/ECONNRESET đã xử lý. Đã hủy publisher `42787866171` trước triển khai. Bản sửa chỉ chấp nhận ENOTCONN ở lần ghi chậm thứ hai, vẫn yêu cầu kết quả client chính xác là timeout. Tag `v1.2.0-beta5-r1` phát hành gói beta5 sau hai Build xanh; không ghi đè tag cũ.
+
+Sau cài chính gói công khai, `__text` daemon và cả hai tweak cùng XML entitlements daemon khớp payload. Bốn trường hợp Device đều đạt 33 assertion/trường hợp, bổ sung truy vấn sysctl theo tên/MIB và MobileGestalt ProductType/ProductVersion/DeviceName. Mặc định, whitelist, master và tắt riêng device_name đều có đối chứng; các giới hạn fixture/WebContent ở trên vẫn áp dụng.
+
+Suite legacy trên gói công khai đạt 55 assertion, gồm một assertion cho mỗi observation OCR; đây không phải 55 chức năng độc lập. Đã xác nhận giây/ms, pixel geometry, packed RGB, hướng ảnh/cache, batch/pattern, lưu/tìm ảnh mẫu, vùng ngoài màn hình, OCR rectangle, Unicode, module dữ liệu và profile Lua. Tap pixel mở Clock đã quan sát trên candidate cùng source adapter. Kiểm tra UI trên daemon công khai xác nhận giữ frame qua đổi màn hình và cập nhật sau release. HTTP lưu/chạy tiếng Việt và emoji hoạt động; NUL bị từ chối 400.
+
+Recorder HTTP thu hai tap ở vùng trống, sinh Lua với các global hợp lệ và replay kết thúc exit 0. Widget chạy script có header legacy, MCP báo running=true; dừng một vòng lặp chờ vô hạn bằng nút widget đưa MCP về false và log `script stopped`/exit 1. Lượt script hữu hạn trước đó tự kết thúc nên không được dùng làm bằng chứng cancellation. Mã `__text` widget không đổi so với component beta4 đang nạp; widget đó đã được thử với daemon beta5 công khai.
+
+APT installed/candidate cùng beta5, priority 500; MJPEG còn trả frame, API không có token trả 401. Đã dọn script/profile/bundle thử, còn `hello.lua`, Device OFF/modules rỗng/whitelist rỗng. Bản beta5 vẫn chưa đạt toàn bộ parity; phạm vi tiếp theo nằm trong [FEATURE_PARITY.md](FEATURE_PARITY.md) và [LEGACY_LUA.md](LEGACY_LUA.md).

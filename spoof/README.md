@@ -49,4 +49,8 @@ Lua retains `spoof.enable/disable/reset/reload/isEnabled/applyPreset` and adds `
 
 ## Validation
 
+Beta5 adds app-scoped `sysctlbyname` reads for `hw.machine` and `kern.osproductversion`, the `CTL_HW/HW_MACHINE` MIB, and selected readable MobileGestalt keys (ProductType/ProductVersion/DeviceName/UserAssignedDeviceName/DeviceClass). These map to the existing typed modules and retain the master, module and application gates. No serial/UDID or system-daemon spoofing is claimed. The sysctl replacement honors size queries, NUL termination and short-buffer failure; writes and unknown keys pass to the original function.
+
+Lua also exposes `spoof.listProfiles/saveProfile/applyProfile/deleteProfile/renameProfile`. Rename uses an exclusive operation and rejects an existing destination. The HTTP profile route accepts `action:"rename", name, newName`. These are project profiles rather than the original product's ResetDevice/clone workflows. See [device testing](../docs/DEVICE_TESTING.md) for actual iPhone accessor/identity observations and limits.
+
 On macOS run `bash spoof/tests/run-config-tests.sh` from `tool/`. It compiles only the Foundation config implementation, uses isolated temporary paths and a test-only root-check exemption, and verifies defaults, validation, protected process exclusions, filter/config persistence, immutable snapshots, concurrent module updates, and write-failure behavior. This is not a Logos/UIKit hook test. Theos/Logos compilation and an explicitly selected on-device probe app are required to verify ABI, injection, accessor results, callbacks and WebKit behavior. No on-device success is claimed before those checks.
