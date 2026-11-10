@@ -8,10 +8,10 @@ Components: main
 Description: iOS automation tool with Lua scripting and Web IDE
 
 MD5Sum:
- 2429e8e8fc1cd8870fa82b3982a689a9             2392 Packages
- 00279304d328ce26ddf10edccda80156              709 Packages.gz
- 5637198f0c6fd3aba2c3a73e109a86b6              906 Packages.bz2
+ a1708826c9c1ef9193a6241bffbe8317             2392 Packages
+ cf1d2bde6762440d17f2836140d0a9d3              715 Packages.gz
+ e28247de44dc635587349c8d93384f19              897 Packages.bz2
 SHA256:
- 9c3cb10f3d52075ff3f54df2d8b8ff7f7ea92034a332a63ee47d4fc406dcf5e4             2392 Packages
- 9370d073759fb4122cf179f1b58022d0d22c5074674d24118c6679617f179db7              709 Packages.gz
- fde164293ce73987a02f2f5d939ba7536448ba9c75074bb5bb72c591a75f059c              906 Packages.bz2
+ fb6dfacd85675e1076347ef1669629c590b7eff4c3a6c679c05c99e77b2e96ea             2392 Packages
+ 1d218cfcbffc6b2e3691ccfd18419bc92c860c4e7c19781b00ba22adc4072495              715 Packages.gz
+ e72694d007c593b7002940e101ec8d76b5a108874710098b603a202f81268440              897 Packages.bz2

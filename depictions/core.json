@@ -7,11 +7,11 @@
       "views": [
         {
           "class": "DepictionHeaderView",
-          "title": "iOS Auto Tool 1.2 beta"
+          "title": "iOS Auto Tool 1.2 beta 2"
         },
         {
           "class": "DepictionMarkdownView",
-          "markdown": "Tự động hóa iPhone: Web IDE, Lua, touch, screenshot, OCR, MJPEG, MCP, widget và profile cấu hình theo ứng dụng.\n\n**Yêu cầu:** iOS 15+, jailbreak Rootful, Rootless hoặc RootHide; payload arm64.\n\n**Trạng thái:** beta. Có kiểm tra build/payload; kiểm thử touch và hook trên iPhone còn chờ xác nhận. Chưa tương đương toàn bộ tính năng iOSAutomate."
+          "markdown": "Tự động hóa iPhone: Web IDE, Lua, touch, screenshot, OCR, MJPEG, MCP, widget và profile cấu hình theo ứng dụng.\n\n**Yêu cầu:** iOS 15+, jailbreak Rootful, Rootless hoặc RootHide; payload arm64.\n\n**Beta 2:** sửa quyền capture/GPU, sender cảm ứng, giới hạn bộ nhớ Vision và tạo script trên RootHide. Đã thử tap/Home, screenshot/OCR, MJPEG, API và profile trên iPhone 6s/iOS 15.8.4/RootHide.\n\nWidget và các hook còn cần kiểm thử thêm. Chưa tương đương toàn bộ tính năng iOSAutomate."
         },
         {
           "class": "DepictionButtonView",
