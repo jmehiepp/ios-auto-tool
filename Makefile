@@ -40,6 +40,7 @@ iosautotool-daemon_FILES = \
 	webide/server/webide-server.m \
 	webide/server/access-control.m \
 	webide/server/api-handler.m \
+	webide/server/script-source.m \
 	webide/server/claude-handler.m \
 	deps/mongoose.c \
 	mcp/mcp-server.m \

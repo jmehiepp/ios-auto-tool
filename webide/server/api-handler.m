@@ -1,5 +1,6 @@
 #import "api-handler.h"
 #import "claude-handler.h"
+#import "script-source.h"
 #import "../../daemon/scheduler.h"
 #import "../../daemon/script-runner.h"
 #import "../../deps/mongoose.h"
@@ -80,13 +81,11 @@ static void handle_read_file(struct mg_connection *c, const char *scripts_dir,
 // POST /api/files/:name body: {"content":"..."}
 static void handle_save_file(struct mg_connection *c, const char *scripts_dir,
                              const char *name, struct mg_http_message *hm) {
-    char *content = mg_json_get_str(hm->body, "$.content");
-    if (!content) {
-        json_reply(c, 400, "{\"error\":\"missing content\"}");
+    NSString *raw = iat_script_source_json(hm->body.buf,hm->body.len,@"content");
+    if (!raw) {
+        json_reply(c, 400, "{\"error\":\"content must be a UTF-8 string without NUL, up to 1 MiB\"}");
         return;
     }
-    NSString *raw = [NSString stringWithUTF8String:content];
-    free(content);
     NSString *path = [[NSString stringWithUTF8String:scripts_dir]
                       stringByAppendingPathComponent:
                       [NSString stringWithUTF8String:name]];
@@ -108,14 +107,13 @@ static void handle_delete_file(struct mg_connection *c, const char *scripts_dir,
 
 // POST /api/run body: {"name":"...","code":"..."}
 static void handle_run(struct mg_connection *c, struct mg_http_message *hm) {
-    char *code = mg_json_get_str(hm->body, "$.code");
+    NSString *code = iat_script_source_json(hm->body.buf,hm->body.len,@"code");
     if (!code) {
-        json_reply(c, 400, "{\"error\":\"missing code\"}");
+        json_reply(c, 400, "{\"error\":\"code must be a UTF-8 string without NUL, up to 1 MiB\"}");
         return;
     }
 
-    bool accepted = script_run(-1, "webide", code);
-    free(code);
+    bool accepted = script_run(-1, "webide", code.UTF8String);
     json_reply(c, accepted ? 202 : 409, accepted ? "{\"ok\":true}" : "{\"error\":\"A script is already running\"}");
 }
 

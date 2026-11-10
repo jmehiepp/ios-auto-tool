@@ -13,6 +13,8 @@ mkdir -p .build-evidence/lua/stdlib
 cp lua/stdlib/*.lua .build-evidence/lua/stdlib/
 xcrun clang -fobjc-arc -fblocks tests/http-auth-tests.m daemon/runtime-paths.m webide/server/access-control.m deps/mongoose.c -framework Foundation -framework Security -o .build-evidence/http-auth-tests
 .build-evidence/http-auth-tests
+xcrun clang -fobjc-arc tests/script-source-tests.m webide/server/script-source.m -framework Foundation -o .build-evidence/script-source-tests
+.build-evidence/script-source-tests
 xcrun clang -fobjc-arc -fblocks -Ideps/luajit/include tests/lua-runtime-tests.m lua/lua-bridge.m daemon/runtime-paths.m deps/luajit/lib/libluajit-host.a -framework Foundation -framework Security -o .build-evidence/lua-runtime-tests
 .build-evidence/lua-runtime-tests
 xcrun clang -fobjc-arc -fblocks -Ideps/luajit/include tests/data-bindings-tests.m lua/bindings/bind-data.m deps/luajit/lib/libluajit-host.a -framework Foundation -o .build-evidence/data-bindings-tests
