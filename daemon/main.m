@@ -7,6 +7,9 @@
 #import "../webide/server/webide-server.h"
 #import "../mcp/mcp-server.h"
 #import "runtime-paths.h"
+#import "widget-service.h"
+#import "platform-paths.h"
+#import "../spoof/spoof-config.h"
 #import "../mcp/stdio-bridge.h"
 #include <signal.h>
 #include <unistd.h>
@@ -28,12 +31,17 @@ int main(int argc, char *argv[]) {
         }
         if (!iat_access_token()) { fprintf(stderr, "Could not initialize access code.\n"); return 1; }
         log_init();
-        log_info("iOS Auto Tool daemon v1.0 starting");
+        log_info("iOS Auto Tool daemon v1.2 beta starting");
+        NSError *configError = nil;
+        SpoofConfig *deviceConfig = [SpoofConfig shared];
+        if (![deviceConfig setConfiguration:[deviceConfig getAll] error:&configError])
+            log_warn("Device filter could not be refreshed: %s", configError.localizedDescription.UTF8String);
 
         lua_bridge_init();
         log_info("Lua engine initialized");
 
-        ipc_server_start(IPC_SOCKET_PATH);
+        ipc_server_start(IAT_PATH(IPC_SOCKET_PATH));
+        widget_service_start();
         log_info("IPC ready at " IPC_SOCKET_PATH);
 
         NSString *scripts = [iat_data_directory() stringByAppendingPathComponent:@"scripts"];

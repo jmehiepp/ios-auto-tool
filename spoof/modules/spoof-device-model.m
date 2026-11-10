@@ -1,25 +1,27 @@
-#import "../spoof-config.h"
+﻿#import "../spoof-config.h"
 #import <UIKit/UIKit.h>
 #import <sys/utsname.h>
+#import <string.h>
 
+%group IOSATDeviceModel
 %hook UIDevice
 - (NSString *)model {
-    NSString *v = spoof_str(@"device_model");
-    return v ?: %orig;
+    NSString *family = spoof_str(@"device_family");
+    if (family) return family;
+    NSString *hardware = spoof_str(@"device_model");
+    if ([hardware hasPrefix:@"iPhone"]) return @"iPhone";
+    if ([hardware hasPrefix:@"iPad"]) return @"iPad";
+    return %orig;
 }
-- (NSString *)systemVersion {
-    NSString *v = spoof_str(@"ios_version");
-    return v ?: %orig;
-}
-- (NSString *)name {
-    NSString *v = spoof_str(@"device_name");
-    return v ?: %orig;
+- (NSString *)systemVersion { return spoof_str(@"ios_version") ?: %orig; }
+- (NSString *)name { return spoof_str(@"device_name") ?: %orig; }
+%end
+%hookf(int, uname, struct utsname *info) {
+    int result = %orig(info);
+    NSString *hardware = spoof_str(@"device_model");
+    if (result == 0 && info && hardware)
+        strlcpy(info->machine, hardware.UTF8String, sizeof(info->machine));
+    return result;
 }
 %end
-
-%hookf(int, uname, struct utsname *info) {
-    int ret = %orig(info);
-    NSString *model = spoof_str(@"device_model");
-    if (model) strlcpy(info->machine, model.UTF8String, sizeof(info->machine));
-    return ret;
-}
+%ctor { @autoreleasepool { if (IOSATShouldInitializeHooks()) { %init(IOSATDeviceModel); } } }

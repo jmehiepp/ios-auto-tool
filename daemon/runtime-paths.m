@@ -1,4 +1,5 @@
 #import "runtime-paths.h"
+#import "platform-paths.h"
 #import <Security/Security.h>
 #include <mach-o/dyld.h>
 #include <sys/stat.h>
@@ -15,7 +16,7 @@ NSString *iat_resource_path(NSString *relative) {
 }
 NSString *iat_data_directory(void) {
     const char *override = getenv("IAT_DATA_DIR");
-    return override && override[0] ? @(override) : @"/var/mobile/Library/IOSAutoTool";
+    return override && override[0] ? @(override) : IAT_PATH(@"/var/mobile/Library/IOSAutoTool");
 }
 void iat_prepare_storage(void) {
     for (NSString *subdir in @[@"", @"scripts", @"accounts"]) {

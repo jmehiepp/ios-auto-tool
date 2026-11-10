@@ -1,17 +1,22 @@
-#import "../spoof-config.h"
+﻿#import "../spoof-config.h"
 #import <Foundation/Foundation.h>
 
+%group IOSATLocale
 %hook NSLocale
 + (NSLocale *)currentLocale {
-    NSString *v = spoof_str(@"locale");
-    return v ? [NSLocale localeWithLocaleIdentifier:v] : %orig;
+    NSString *value = spoof_str(@"locale");
+    return value ? [NSLocale localeWithLocaleIdentifier:value] : %orig;
 }
 + (NSLocale *)autoupdatingCurrentLocale {
-    NSString *v = spoof_str(@"locale");
-    return v ? [NSLocale localeWithLocaleIdentifier:v] : %orig;
+    NSString *value = spoof_str(@"locale");
+    return value ? [NSLocale localeWithLocaleIdentifier:value] : %orig;
 }
 + (NSArray<NSString *> *)preferredLanguages {
-    NSString *v = spoof_str(@"locale");
-    return v ? @[v] : %orig;
+    NSString *value = spoof_str(@"locale");
+    if (!value) return %orig;
+    NSString *language = [NSLocale canonicalLanguageIdentifierFromString:value];
+    return language.length ? @[language] : %orig;
 }
 %end
+%end
+%ctor { @autoreleasepool { if (IOSATShouldInitializeHooks()) { %init(IOSATLocale); } } }

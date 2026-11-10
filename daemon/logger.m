@@ -1,4 +1,5 @@
 #import "logger.h"
+#import "platform-paths.h"
 #import "../webide/server/webide-server.h"
 #import <Foundation/Foundation.h>
 #import <sys/stat.h>
@@ -18,10 +19,10 @@ static pthread_mutex_t  log_mutex       = PTHREAD_MUTEX_INITIALIZER;
 static const char *level_names[] = { "INFO", "WARN", "ERROR", "LUA" };
 
 void log_init(void) {
-    mkdir(LOG_DIR, 0755);
+    mkdir(IAT_PATH(LOG_DIR), 0755);
     time_t t = time(NULL);
-    char path[256];
-    snprintf(path, sizeof(path), LOG_DIR "/run-%ld.log", (long)t);
+    char path[4096];
+    snprintf(path, sizeof(path), "%s/run-%ld.log", IAT_PATH(LOG_DIR), (long)t);
     log_file = fopen(path, "w");
 
     pthread_mutex_lock(&log_mutex);

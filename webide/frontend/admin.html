@@ -19,7 +19,7 @@
   <button onclick="switchTab('dashboard')" id="tab-btn-dashboard" class="active">Dashboard</button>
   <button onclick="switchTab('apps')"      id="tab-btn-apps">Apps</button>
   <button onclick="switchTab('screen')"    id="tab-btn-screen">Screen</button>
-  <button style="display:none" onclick="switchTab('spoof')"     id="tab-btn-spoof">Spoof</button>
+  <button onclick="switchTab('spoof')"     id="tab-btn-spoof">Device configuration</button>
 </nav>
 
 <!-- ── Dashboard ── -->
@@ -37,7 +37,7 @@
     <div class="card">
       <h3>Services</h3>
       <p>MCP &nbsp;<span id="svc-mcp" class="badge badge-gray">8765</span></p>
-      <p style="margin-top:6px">IDE &nbsp;<span id="svc-ide" class="badge badge-gray">8888</span></p>
+      <p style="margin-top:6px">IDE &nbsp;<span id="svc-ide" class="badge badge-gray">8890</span></p>
     </div>
   </div>
   <p style="color:#666;font-size:12px">Click <strong>Screen</strong> tab to take a screenshot,
@@ -69,6 +69,12 @@
 
 <!-- ── Spoof ── -->
 <section id="tab-spoof" class="a-tab">
+  <p>Apply a test profile to selected apps. Reopen those apps after enabling or changing a profile.
+     Location and advertising identifiers retain the app's existing permission requirements.</p>
+  <p><label><input type="checkbox" id="device-enabled"> Enable device configuration</label></p>
+  <p><label for="device-apps">Application bundle IDs (one per line; find IDs in Apps)</label></p>
+  <textarea id="device-apps" rows="4" style="width:100%;max-width:600px" placeholder="com.example.test"></textarea>
+  <p id="device-message" role="status" aria-live="polite"></p>
   <div class="spoof-toolbar">
     <span>Status: <span id="spoof-status" class="badge badge-gray">unknown</span></span>
     <label>Preset:

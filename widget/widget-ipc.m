@@ -1,39 +1,65 @@
 #import "widget-ipc.h"
-#import <sys/socket.h>
-#import <sys/un.h>
-#import <unistd.h>
-#import <string.h>
+#import "../daemon/platform-paths.h"
+#include "widget-ipc-transport.h"
 
-#define IPC_SOCKET_PATH "/var/run/iosautotool.sock"
+static NSString *const WidgetIPCErrorDomain = @"IOSAutoToolWidgetIPC";
 
-BOOL widget_ipc_run_script(NSString *script_path) {
-    NSString *code = [NSString stringWithContentsOfFile:script_path
-                                               encoding:NSUTF8StringEncoding
-                                                  error:nil];
-    if (!code.length) return NO;
-
-    int fd = socket(AF_UNIX, SOCK_STREAM, 0);
-    if (fd < 0) return NO;
-
-    struct sockaddr_un addr;
-    memset(&addr, 0, sizeof(addr));
-    addr.sun_family = AF_UNIX;
-    strlcpy(addr.sun_path, IPC_SOCKET_PATH, sizeof(addr.sun_path));
-
-    if (connect(fd, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
-        close(fd);
+BOOL widget_ipc_valid_script_name(NSString *name) {
+    if (![name isKindOfClass:NSString.class] || !name.length ||
+        ![name hasSuffix:@".lua"] ||
+        [name rangeOfString:@"/"].location != NSNotFound ||
+        [name rangeOfString:@"\\"].location != NSNotFound ||
+        [name rangeOfCharacterFromSet:NSCharacterSet.controlCharacterSet].location != NSNotFound)
         return NO;
+    NSData *utf8 = [name dataUsingEncoding:NSUTF8StringEncoding];
+    return utf8.length > 4 && utf8.length <= 255 &&
+        [name isEqualToString:name.lastPathComponent];
+}
+
+NSDictionary *widget_ipc_request(NSString *action, NSString *name, NSError **error) {
+    BOOL run = [action isEqualToString:@"run_saved_script"];
+    BOOL known = run || [action isEqualToString:@"stop_script"] ||
+        [action isEqualToString:@"list_scripts"] || [action isEqualToString:@"script_status"];
+    if (!known || (run && !widget_ipc_valid_script_name(name)) || (!run && name != nil)) {
+        if (error) *error = [NSError errorWithDomain:WidgetIPCErrorDomain code:EINVAL
+            userInfo:@{NSLocalizedDescriptionKey: @"Tên script hoặc yêu cầu không hợp lệ."}];
+        return nil;
     }
+    NSString *identifier = NSUUID.UUID.UUIDString;
+    NSMutableDictionary *request = [@{@"action": action, @"id": identifier} mutableCopy];
+    if (run) request[@"name"] = name;
+    NSMutableData *payload = [[NSJSONSerialization dataWithJSONObject:request options:0 error:error] mutableCopy];
+    if (!payload) return nil;
+    [payload appendBytes:"\n" length:1];
+    unsigned char response[WIDGET_IPC_MAX_RESPONSE];
+    size_t responseLength = 0;
+    int failure = widget_transport_exchange(IAT_PATH(WIDGET_IPC_SOCKET_PATH),
+        payload.bytes, payload.length, response, sizeof(response), &responseLength,
+        WIDGET_IPC_TIMEOUT_MS);
+    if (failure) {
+        NSString *message = failure == ETIMEDOUT ? @"Daemon chưa trả lời trong 3 giây." :
+            @"Không kết nối được daemon. Kiểm tra dịch vụ iOS Auto Tool.";
+        if (error) *error = [NSError errorWithDomain:WidgetIPCErrorDomain code:failure
+            userInfo:@{NSLocalizedDescriptionKey: message}];
+        return nil;
+    }
+    NSData *bytes = [NSData dataWithBytes:response length:responseLength];
+    id decoded = [NSJSONSerialization JSONObjectWithData:bytes options:0 error:error];
+    if (![decoded isKindOfClass:NSDictionary.class] ||
+        ![decoded[@"id"] isKindOfClass:NSString.class] ||
+        ![decoded[@"id"] isEqualToString:identifier] ||
+        ![decoded[@"ok"] isKindOfClass:NSNumber.class]) {
+        if (error) *error = [NSError errorWithDomain:WidgetIPCErrorDomain code:EPROTO
+            userInfo:@{NSLocalizedDescriptionKey: @"Phản hồi daemon không khớp yêu cầu."}];
+        return nil;
+    }
+    return decoded;
+}
 
-    NSDictionary *req = @{
-        @"action": @"run_script",
-        @"id":     [[NSUUID UUID] UUIDString],
-        @"script": code,
-    };
-    NSData *data = [NSJSONSerialization dataWithJSONObject:req options:0 error:nil];
-    if (!data) { close(fd); return NO; }
+BOOL widget_ipc_run_script(NSString *name) {
+    return [widget_ipc_request(@"run_saved_script", name, NULL)[@"ok"] boolValue];
+}
 
-    ssize_t n = send(fd, data.bytes, data.length, 0);
-    close(fd);
-    return n == (ssize_t)data.length;
+BOOL widget_ipc_stop_script(void) {
+    return [widget_ipc_request(@"stop_script", nil, NULL)[@"ok"] boolValue];
 }

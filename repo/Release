@@ -1,8 +1,8 @@
 Origin: iOS Auto Tool
 Label: iOS Auto Tool
 Suite: stable
-Version: 1.1
+Version: 1.2
 Codename: ios
-Architectures: iphoneos-arm iphoneos-arm64
+Architectures: iphoneos-arm iphoneos-arm64 iphoneos-arm64e
 Components: main
 Description: iOS automation tool with Lua scripting and Web IDE

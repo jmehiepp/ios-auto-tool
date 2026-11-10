@@ -5,7 +5,7 @@ import plistlib
 import shutil
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--scheme', choices=('rootful', 'rootless'), required=True)
+parser.add_argument('--scheme', choices=('rootful', 'rootless', 'roothide'), required=True)
 args = parser.parse_args()
 root = pathlib.Path(__file__).resolve().parents[1]
 prefix = '/var/jb' if args.scheme == 'rootless' else ''

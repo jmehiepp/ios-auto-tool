@@ -1,24 +1,38 @@
-#import "../spoof-config.h"
+﻿#import "../spoof-config.h"
 #import <UIKit/UIKit.h>
 
+static CGFloat ConfiguredScale(CGFloat fallback) {
+    NSNumber *standalone = spoof_num(@"screen_scale");
+    NSDictionary *resolution = spoof_dict(@"screen_resolution");
+    NSNumber *value = standalone ?: resolution[@"scale"];
+    return value ? value.doubleValue : fallback;
+}
+%group IOSATScreen
 %hook UIScreen
 - (CGRect)bounds {
-    NSDictionary *cfg = spoof_dict(@"screen_resolution");
-    if (!cfg) return %orig;
-    CGFloat w = [cfg[@"w"] doubleValue];
-    CGFloat h = [cfg[@"h"] doubleValue];
-    return CGRectMake(0, 0, w, h);
+    CGRect original = %orig;
+    if (self != UIScreen.mainScreen) return original;
+    NSDictionary *config = spoof_dict(@"screen_resolution");
+    return config ? CGRectMake(original.origin.x, original.origin.y, [config[@"w"] doubleValue],
+                               [config[@"h"] doubleValue]) : original;
 }
 - (CGRect)nativeBounds {
-    NSDictionary *cfg = spoof_dict(@"screen_resolution");
-    if (!cfg) return %orig;
-    CGFloat scale = self.nativeScale;
-    CGFloat w = [cfg[@"w"] doubleValue] * scale;
-    CGFloat h = [cfg[@"h"] doubleValue] * scale;
-    return CGRectMake(0, 0, w, h);
+    CGRect original = %orig;
+    if (self != UIScreen.mainScreen) return original;
+    NSDictionary *config = spoof_dict(@"screen_resolution");
+    if (!config) return original;
+    CGFloat scale = ConfiguredScale(self.nativeScale);
+    return CGRectMake(original.origin.x, original.origin.y, [config[@"w"] doubleValue] * scale,
+                       [config[@"h"] doubleValue] * scale);
 }
 - (CGFloat)scale {
-    NSNumber *v = spoof_num(@"screen_scale");
-    return v ? v.doubleValue : %orig;
+    CGFloat original = %orig;
+    return self == UIScreen.mainScreen ? ConfiguredScale(original) : original;
+}
+- (CGFloat)nativeScale {
+    CGFloat original = %orig;
+    return self == UIScreen.mainScreen ? ConfiguredScale(original) : original;
 }
 %end
+%end
+%ctor { @autoreleasepool { if (IOSATShouldInitializeHooks()) { %init(IOSATScreen); } } }

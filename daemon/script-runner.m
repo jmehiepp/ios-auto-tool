@@ -12,6 +12,13 @@ static pthread_mutex_t run_mutex = PTHREAD_MUTEX_INITIALIZER;
 static bool running = false, stop_requested = false;
 typedef struct { int fd; char *identifier; char *code; } RunContext;
 
+bool script_is_running(void) {
+    pthread_mutex_lock(&run_mutex);
+    bool value = running;
+    pthread_mutex_unlock(&run_mutex);
+    return value;
+}
+
 bool script_should_stop(void) {
     pthread_mutex_lock(&run_mutex);
     bool value = stop_requested;

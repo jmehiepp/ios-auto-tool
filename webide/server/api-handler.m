@@ -312,8 +312,7 @@ static void handle_key(struct mg_connection *c, struct mg_http_message *hm) {
 
 // GET /api/spoof → raw spoof.json content (or {})
 static void handle_spoof_get(struct mg_connection *c) {
-    NSData *data = [NSData dataWithContentsOfFile:SPOOF_CONFIG_PATH];
-    if (!data) { json_reply(c, 200, "{}"); return; }
+    NSData *data = [NSJSONSerialization dataWithJSONObject:[[SpoofConfig shared] getAll] options:0 error:nil];
     NSString *json = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
     json_reply(c, 200, json.UTF8String);
 }
@@ -321,14 +320,24 @@ static void handle_spoof_get(struct mg_connection *c) {
 // POST /api/spoof {"key":"...","value":any}  (null value = disable)
 static void handle_spoof_post(struct mg_connection *c, struct mg_http_message *hm) {
     NSDictionary *body = parse_json_body(hm);
-    NSString *key = body[@"key"];
-    if (!key.length) { json_reply(c, 400, "{\"error\":\"missing key\"}"); return; }
-    id value = body[@"value"];
-    if (!value || [value isKindOfClass:[NSNull class]])
-        [[SpoofConfig shared] setEnabled:NO forModule:key];
-    else
-        [[SpoofConfig shared] setValue:value forModule:key];
-    json_reply(c, 200, "{\"ok\":true}");
+    NSDictionary *configuration = body;
+    if ([body[@"key"] isKindOfClass:NSString.class]) {
+        NSMutableDictionary *next = [[[SpoofConfig shared] getAll] mutableCopy];
+        NSMutableDictionary *modules = [next[@"modules"] mutableCopy];
+        NSString *key = body[@"key"]; id value = body[@"value"];
+        if (!value || value == NSNull.null) {
+            NSMutableDictionary *entry = [modules[key] mutableCopy] ?: [NSMutableDictionary dictionary];
+            entry[@"enabled"] = @NO; modules[key] = entry;
+        } else modules[key] = @{@"enabled":@YES, @"value":value};
+        next[@"modules"] = modules; configuration = next;
+    }
+    NSError *error = nil;
+    BOOL saved = [[SpoofConfig shared] setConfiguration:configuration error:&error];
+    NSDictionary *result = saved ? @{@"ok":@YES, @"relaunchRequired":@YES} :
+        @{@"error":error.localizedDescription ?: @"Invalid configuration"};
+    NSData *data = [NSJSONSerialization dataWithJSONObject:result options:0 error:nil];
+    NSString *json = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+    json_reply(c, saved ? 200 : 400, json.UTF8String);
 }
 
 // POST /api/spoof/preset {"name":"iphone14_pro_max"|"iphone13"}
@@ -340,38 +349,42 @@ static void handle_spoof_preset(struct mg_connection *c, struct mg_http_message 
     dispatch_once(&tok, ^{
         presets = @{
             @"iphone14_pro_max": @{
-                @"device_model": @"iPhone15,2",
+                @"device_model": @"iPhone15,3",
                 @"ios_version":  @"17.4.1",
-                @"screen_width": @430,
-                @"screen_height":@932,
-                @"screen_scale": @3,
+                @"screen_resolution": @{@"w":@430, @"h":@932, @"scale":@3},
                 @"locale":       @"en_US",
                 @"timezone":     @"America/Los_Angeles",
             },
             @"iphone13": @{
                 @"device_model": @"iPhone14,5",
                 @"ios_version":  @"16.7.8",
-                @"screen_width": @390,
-                @"screen_height":@844,
-                @"screen_scale": @3,
+                @"screen_resolution": @{@"w":@390, @"h":@844, @"scale":@3},
                 @"locale":       @"en_US",
                 @"timezone":     @"America/New_York",
             },
         };
     });
-    NSDictionary *preset = presets[name];
+    NSDictionary *preset = [name isKindOfClass:NSString.class] ? presets[name] : nil;
     if (!preset) { json_reply(c, 400, "{\"error\":\"unknown preset\"}"); return; }
     SpoofConfig *sc = [SpoofConfig shared];
+    NSMutableDictionary *next = [[sc getAll] mutableCopy];
+    NSMutableDictionary *modules = [next[@"modules"] mutableCopy];
     [preset enumerateKeysAndObjectsUsingBlock:^(NSString *k, id v, BOOL *stop) {
-        [sc setValue:v forModule:k];
+        modules[k] = @{@"enabled":@YES, @"value":v};
     }];
-    json_reply(c, 200, "{\"ok\":true}");
+    next[@"modules"] = modules;
+    NSError *error = nil;
+    BOOL ok = [sc setConfiguration:next error:&error];
+    NSData *data = [NSJSONSerialization dataWithJSONObject:ok ? @{@"ok":@YES, @"relaunchRequired":@YES} :
+        @{@"error":error.localizedDescription ?: @"Could not save preset"} options:0 error:nil];
+    NSString *json = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+    json_reply(c, ok ? 200 : 400, json.UTF8String);
 }
 
 // DELETE /api/spoof → reset all spoof fields
 static void handle_spoof_reset(struct mg_connection *c) {
-    [[SpoofConfig shared] reset];
-    json_reply(c, 200, "{\"ok\":true}");
+    BOOL ok = [[SpoofConfig shared] setConfiguration:@{@"enabled":@NO, @"selectedApps":@[], @"modules":@{}} error:nil];
+    json_reply(c, ok ? 200 : 500, ok ? "{\"ok\":true}" : "{\"error\":\"Reset failed\"}");
 }
 
 void api_handle(struct mg_connection *c, struct mg_http_message *hm,

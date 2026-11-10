@@ -7,15 +7,28 @@ let _allApps = [];
 let _spoofData = {};
 let _dragStart = null;
 
-const KNOWN_SPOOF_KEYS = [
-  'device_model', 'ios_version',
-  'screen_width', 'screen_height', 'screen_scale',
-  'locale', 'timezone',
-  'wifi_ssid', 'carrier_name',
-  'gps_lat', 'gps_lng',
-  'idfa', 'idfv',
-  'user_agent',
+const DEVICE_FIELDS = [
+  ['device_model','Model','iPhone14,5'], ['device_family','Device family','iPhone'],
+  ['device_name','Device name','Test iPhone'], ['ios_version','iOS version','15.8.4'],
+  ['screen_resolution','Screen (points)','{"w":375,"h":667,"scale":2}'],
+  ['screen_scale','Screen scale','2'], ['locale','Locale','vi_VN'],
+  ['timezone','Time zone','Asia/Ho_Chi_Minh'], ['carrier_name','Carrier','Test Carrier'],
+  ['mcc','Mobile country code','452'], ['mnc','Mobile network code','01'],
+  ['iso_country','Country','vn'], ['wifi','Wi-Fi','{"ssid":"Test Wi-Fi"}'],
+  ['gps','Location','{"lat":10.77,"lon":106.69,"accuracy":10}'],
+  ['gps_accuracy','Location accuracy (m)','10'],
+  ['idfa','Advertising ID','00000000-0000-0000-0000-000000000000'],
+  ['idfv','Vendor ID','00000000-0000-0000-0000-000000000001'],
+  ['user_agent','Web user agent','Test Browser'], ['webgl_vendor','WebGL vendor','Apple Inc.'],
+  ['webgl_renderer','WebGL renderer','Apple GPU'], ['canvas','Canvas variation','true'],
+  ['battery_level','Battery level (0..1)','0.8'], ['battery_state','Battery state (0..3)','1'],
+  ['proximity','Proximity','false'], ['accelerometer','Acceleration','{"x":0,"y":0,"z":-1}'],
+  ['gyroscope','Rotation','{"x":0,"y":0,"z":0}'],
+  ['app_list','Hidden apps','{"hide":["com.example.test"]}'],
 ];
+const DEVICE_NUMBERS = new Set(['screen_scale','gps_accuracy','battery_level','battery_state']);
+const DEVICE_OBJECTS = new Set(['screen_resolution','wifi','gps','accelerometer','gyroscope','app_list']);
+const DEVICE_BOOLEANS = new Set(['canvas','proximity']);
 
 // ── Tab switching ──────────────────────────────────────────────────────────
 function switchTab(name) {
@@ -45,8 +58,8 @@ async function loadDashboard() {
   }
 
   // Mark services as up (we're already talking to them)
-  setBadge('svc-mcp', 'green', '8765 ●');
-  setBadge('svc-ide', 'green', '8888 ●');
+  setBadge('svc-mcp', 'gray', 'localhost:8765 ●');
+  setBadge('svc-ide', 'green', '8890 ●');
 }
 
 function setBadge(id, color, text) {
@@ -217,96 +230,66 @@ async function sendKey(key) {
 }
 
 // ── Spoof ──────────────────────────────────────────────────────────────────
+async function deviceRequest(body, method = 'POST', path = '/api/spoof') {
+  const response = await fetch(path, {method, headers:{'Content-Type':'application/json'},
+    body: body === undefined ? undefined : JSON.stringify(body)});
+  const value = await response.json();
+  if (!response.ok || value.error) throw new Error(value.error || 'Request failed');
+  return value;
+}
+function deviceMessage(text, failed = false) {
+  const el = document.getElementById('device-message');
+  el.textContent = text; el.style.color = failed ? '#c62828' : '#16743a';
+}
 async function loadSpoof() {
   try {
-    _spoofData = await fetch('/api/spoof').then(r => r.json());
+    _spoofData = await deviceRequest(undefined, 'GET');
     renderSpoof();
-  } catch (e) {
-    document.getElementById('spoof-tbody').innerHTML =
-      '<tr><td colspan="3" style="color:#c62828;padding:10px">Failed: ' + e.message + '</td></tr>';
-  }
+  } catch (e) { deviceMessage(e.message, true); }
 }
-
 function renderSpoof() {
-  // Merge known keys + any extra keys from current config
-  const keys = [...new Set([...KNOWN_SPOOF_KEYS, ...Object.keys(_spoofData)])];
-  const anyEnabled = keys.some(k => _spoofData[k]?.enabled);
-  setBadge('spoof-status', anyEnabled ? 'green' : 'gray', anyEnabled ? 'active' : 'off');
-
-  document.getElementById('spoof-tbody').innerHTML = keys.map(k => {
-    const entry   = _spoofData[k] || {};
-    const enabled = !!entry.enabled;
-    const value   = entry.value != null ? String(entry.value) : '';
-    return `<tr data-key="${esc(k)}">
-      <td><input type="checkbox" class="spoof-enabled" ${enabled ? 'checked' : ''}
-          onchange="onSpoofCheckbox(this,'${esc(k)}')"></td>
-      <td><span class="spoof-key">${esc(k)}</span></td>
-      <td><input type="text" class="spoof-val" value="${esc(value)}"
-          placeholder="value" data-orig="${esc(value)}"></td>
-    </tr>`;
+  const modules = _spoofData.modules || {};
+  const enabled = !!_spoofData.enabled;
+  setBadge('spoof-status', enabled ? 'green' : 'gray', enabled ? 'enabled' : 'off');
+  document.getElementById('device-enabled').checked = enabled;
+  document.getElementById('device-apps').value = (_spoofData.selectedApps || []).join('\n');
+  document.getElementById('spoof-tbody').innerHTML = DEVICE_FIELDS.map(([key,label,example]) => {
+    const entry = modules[key] || {};
+    const value = entry.value == null ? '' : typeof entry.value === 'object' ? JSON.stringify(entry.value) : String(entry.value);
+    return `<tr data-key="${key}"><td><input type="checkbox" class="spoof-enabled" ${entry.enabled ? 'checked' : ''}></td>
+      <td><label>${esc(label)}</label></td><td><input type="text" class="spoof-val" value="${esc(value)}" placeholder="${esc(example)}"></td></tr>`;
   }).join('');
 }
-
-function onSpoofCheckbox(cb, key) {
-  // If unchecking, immediately disable the key
-  if (!cb.checked) {
-    fetch('/api/spoof', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({key, value: null}),
-    }).catch(console.error);
-  }
-}
-
 async function saveSpoof() {
-  const rows = document.querySelectorAll('#spoof-tbody tr[data-key]');
-  const tasks = [];
-  rows.forEach(row => {
-    const key     = row.dataset.key;
-    const cb      = row.querySelector('.spoof-enabled');
-    const valInp  = row.querySelector('.spoof-val');
-    const enabled = cb.checked;
-    const value   = valInp.value.trim();
-
-    if (!enabled) return; // disabled keys handled by onSpoofCheckbox immediately
-    if (!value)   return;
-
-    // Try to cast to number if it looks numeric
-    const numVal = Number(value);
-    const finalVal = value === 'true'  ? true
-                   : value === 'false' ? false
-                   : !isNaN(numVal) && value !== '' ? numVal
-                   : value;
-
-    tasks.push(
-      fetch('/api/spoof', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({key, value: finalVal}),
-      })
-    );
-    valInp.dataset.orig = value;
-  });
-
-  await Promise.all(tasks);
-  await loadSpoof();
+  try {
+    const modules = {};
+    document.querySelectorAll('#spoof-tbody tr[data-key]').forEach(row => {
+      const key = row.dataset.key, enabled = row.querySelector('.spoof-enabled').checked;
+      const raw = row.querySelector('.spoof-val').value.trim();
+      const entry = {enabled};
+      if (raw) {
+        entry.value = DEVICE_OBJECTS.has(key) || DEVICE_BOOLEANS.has(key) || DEVICE_NUMBERS.has(key) ? JSON.parse(raw) : raw;
+      } else if (enabled) throw new Error('Enter a value for ' + key);
+      modules[key] = entry;
+    });
+    const selectedApps = [...new Set(document.getElementById('device-apps').value.split(/[\s,]+/).filter(Boolean))];
+    await deviceRequest({enabled:document.getElementById('device-enabled').checked, selectedApps, modules});
+    await loadSpoof();
+    deviceMessage('Saved. Close and reopen selected apps to apply.');
+  } catch (e) { deviceMessage(e.message, true); }
 }
-
 async function applyPreset(name) {
   if (!name) return;
-  await fetch('/api/spoof/preset', {
-    method: 'POST',
-    headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({name}),
-  });
-  document.getElementById('spoof-preset').value = '';
-  await loadSpoof();
+  try {
+    await deviceRequest({name}, 'POST', '/api/spoof/preset');
+    document.getElementById('spoof-preset').value = '';
+    await loadSpoof(); deviceMessage('Preset saved. Select apps and enable configuration to apply.');
+  } catch (e) { deviceMessage(e.message, true); }
 }
-
 async function resetSpoof() {
-  if (!confirm('Reset all spoof settings?')) return;
-  await fetch('/api/spoof', {method: 'DELETE'});
-  await loadSpoof();
+  if (!confirm('Turn off and clear all device configuration?')) return;
+  try { await deviceRequest(undefined, 'DELETE'); await loadSpoof(); deviceMessage('Configuration cleared.'); }
+  catch (e) { deviceMessage(e.message, true); }
 }
 
 // ── Helpers ────────────────────────────────────────────────────────────────

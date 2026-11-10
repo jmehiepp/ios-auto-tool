@@ -28,3 +28,5 @@ deps/luajit/
 deps/luajit-src/
 .build-evidence/
 __pycache__/
+spoof/modules/*.xm
+.build-theos-roothide/

@@ -13,11 +13,30 @@ xcrun clang -fobjc-arc -fblocks tests/http-auth-tests.m daemon/runtime-paths.m w
 .build-evidence/http-auth-tests
 xcrun clang -fobjc-arc -fblocks -Ideps/luajit/include tests/lua-runtime-tests.m lua/lua-bridge.m daemon/runtime-paths.m deps/luajit/lib/libluajit-host.a -framework Foundation -framework Security -o .build-evidence/lua-runtime-tests
 .build-evidence/lua-runtime-tests
+bash spoof/tests/run-config-tests.sh
+xcrun clang -std=c11 -Wall -Wextra -Werror tests/widget-transport-tests.c -o .build-evidence/widget-transport-tests
+.build-evidence/widget-transport-tests
 for file in webide/frontend/*.js; do node --check "$file"; done
 mkdir -p packages
 python3 -c "from pathlib import Path; [p.unlink() for p in Path('packages').glob('*.deb')]"
-for scheme in rootful rootless; do
-    echo "Building core daemon: $scheme"
+for source in spoof/modules/*.m; do cp "$source" "${source%.m}.xm"; done
+for scheme in rootful rootless roothide; do
+    echo "Building automation ecosystem: $scheme"
+    if [[ "$scheme" == roothide ]]; then
+        # Keep the ordinary cached Theos intact; pin the RootHide toolchain fork.
+        base_theos="$THEOS"
+        task_theos="$PWD/.build-theos-roothide"
+        if [[ ! -f "$task_theos/makefiles/common.mk" ]]; then
+            git init "$task_theos"
+            git -C "$task_theos" remote add origin https://github.com/roothide/theos.git
+            git -C "$task_theos" fetch --depth 1 origin 958fea4f779943505b15b93c88bb4db8d97b346d
+            git -C "$task_theos" checkout --detach FETCH_HEAD
+            git -C "$task_theos" submodule update --init --recursive --depth 1
+            mkdir -p "$task_theos/sdks"
+            for sdk in "$base_theos"/sdks/*.sdk; do ln -s "$sdk" "$task_theos/sdks/$(basename "$sdk")"; done
+        fi
+        export THEOS="$task_theos"
+    fi
     python3 scripts/render-layout.py --scheme "$scheme"
     package_scheme="$scheme"
     [[ "$scheme" == rootful ]] && package_scheme=''
@@ -25,5 +44,5 @@ for scheme in rootful rootless; do
     make package FINALPACKAGE=1 THEOS_PACKAGE_SCHEME="$package_scheme"
 done
 python3 scripts/validate-packages.py packages --rename
-echo 'Core daemon packages are ready. Device smoke tests are still required.'
+echo 'Automation ecosystem packages are ready. Device smoke tests are still required.'
 ls -lh packages/*.deb

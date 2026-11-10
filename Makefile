@@ -12,6 +12,7 @@ iosautotool-daemon_FILES = \
 	daemon/main.m \
 	daemon/runtime-paths.m \
 	daemon/ipc-server.m \
+	daemon/widget-service.m \
 	daemon/script-runner.m \
 	daemon/logger.m \
 	daemon/scheduler.m \
@@ -96,6 +97,29 @@ iosautotool-daemon_INSTALL_PATH = /Library/IOSAutoTool
 iosautotool-daemon_CODESIGN_FLAGS = -Siosautotool-daemon.entitlements
 
 include $(THEOS)/makefiles/tool.mk
+
+TWEAK_NAME = iosautotool-spoof iosautotool-widget
+iosautotool-spoof_FILES = spoof/spoof-config.m $(wildcard spoof/modules/*.xm)
+iosautotool-spoof_CFLAGS = -fobjc-arc -Wno-deprecated-declarations -Ispoof
+iosautotool-spoof_FRAMEWORKS = Foundation UIKit CoreTelephony CoreMotion CoreLocation WebKit AdSupport SystemConfiguration
+iosautotool-spoof_LIBRARIES = substrate
+iosautotool-widget_FILES = widget/widget-tweak.xm widget/floating-widget.m widget/widget-ipc.m
+iosautotool-widget_CFLAGS = -fobjc-arc -Wno-deprecated-declarations -Iwidget
+iosautotool-widget_FRAMEWORKS = Foundation UIKit QuartzCore
+iosautotool-widget_LIBRARIES = substrate
+ifeq ($(THEOS_PACKAGE_SCHEME),rootless)
+iosautotool-daemon_CFLAGS += -DIOSAT_ROOTLESS=1
+iosautotool-spoof_CFLAGS += -DIOSAT_ROOTLESS=1
+endif
+ifeq ($(THEOS_PACKAGE_SCHEME),roothide)
+iosautotool-daemon_CFLAGS += -DIOSAT_ROOTHIDE=1
+iosautotool-spoof_CFLAGS += -DIOSAT_ROOTHIDE=1
+iosautotool-widget_CFLAGS += -DIOSAT_ROOTHIDE=1
+iosautotool-daemon_LDFLAGS += -lroothide
+iosautotool-spoof_LDFLAGS += -lroothide
+iosautotool-widget_LDFLAGS += -lroothide
+endif
+include $(THEOS)/makefiles/tweak.mk
 
 after-install::
 	install.exec "launchctl unload $(THEOS_PACKAGE_INSTALL_PREFIX)/Library/LaunchDaemons/com.iosautotool.daemon.plist 2>/dev/null; launchctl load $(THEOS_PACKAGE_INSTALL_PREFIX)/Library/LaunchDaemons/com.iosautotool.daemon.plist"

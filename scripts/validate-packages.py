@@ -20,7 +20,7 @@ for deb in sorted(args.directory.glob('*.deb')):
     fields = dict(line.split(': ', 1) for line in control.splitlines() if ': ' in line and not line.startswith(' '))
     assert fields['Package'] == 'com.iosautotool', fields
     arch = fields['Architecture']
-    assert arch in ('iphoneos-arm', 'iphoneos-arm64'), arch
+    assert arch in ('iphoneos-arm', 'iphoneos-arm64', 'iphoneos-arm64e'), arch
     assert arch not in seen, 'Duplicate architecture package'
     seen.add(arch)
     prefix = 'var/jb/' if arch == 'iphoneos-arm64' else ''
@@ -35,6 +35,14 @@ for deb in sorted(args.directory.glob('*.deb')):
         assert len(binary) > 100000, 'Suspiciously small daemon payload'
         for required in ('webide/frontend/index.html', 'webide/frontend/login.html', 'webide/frontend/editor.js', 'lua/stdlib/utils.lua', 'licenses/Mongoose-GPL2.txt', 'licenses/LuaJIT-MIT.txt'):
             assert base + required in members, required
+        tweaks = prefix + 'Library/MobileSubstrate/DynamicLibraries/'
+        for component in ('iosautotool-spoof', 'iosautotool-widget'):
+            payload = archive.extractfile(members[tweaks + component + '.dylib']).read()
+            assert payload[:4] in (b'\xcf\xfa\xed\xfe', b'\xca\xfe\xba\xbe'), component
+        widget_filter = plistlib.loads(archive.extractfile(members[tweaks + 'iosautotool-widget.plist']).read())
+        assert widget_filter['Filter']['Bundles'] == ['com.apple.springboard']
+        device_filter = plistlib.loads(archive.extractfile(members[tweaks + 'iosautotool-spoof.plist']).read())
+        assert device_filter['Filter']['Bundles'] == [], 'Device hooks must start with an empty app selection'
         launch_path = prefix + 'Library/LaunchDaemons/com.iosautotool.daemon.plist'
         launch = plistlib.loads(archive.extractfile(members[launch_path]).read())
         assert launch['ProgramArguments'][0] == '/' + base + 'iosautotool-daemon'
@@ -65,6 +73,6 @@ for deb in sorted(args.directory.glob('*.deb')):
     results.append({'file': deb.name, 'package': fields['Package'], 'version': fields['Version'],
                     'architecture': arch, 'size': deb.stat().st_size,
                     'sha256': hashlib.sha256(deb.read_bytes()).hexdigest(), 'checks_passed': True})
-assert seen == {'iphoneos-arm', 'iphoneos-arm64'}, 'Both rootful and rootless packages are required'
+assert seen == {'iphoneos-arm', 'iphoneos-arm64', 'iphoneos-arm64e'}, 'Rootful, rootless and RootHide packages are required'
 args.directory.joinpath('validation.json').write_text(json.dumps(results, indent=2), encoding='utf-8')
 print(json.dumps(results, indent=2))
