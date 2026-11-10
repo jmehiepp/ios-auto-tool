@@ -5,6 +5,12 @@
 <dict>
     <key>com.apple.private.hid.client.event-dispatch</key>
     <true/>
+    <key>com.apple.security.iokit-user-client-class</key>
+    <array>
+        <string>IOSurfaceRootUserClient</string>
+    </array>
+    <key>com.apple.QuartzCore.global-capture</key>
+    <true/>
     <key>task_for_pid-allow</key>
     <true/>
     <key>com.apple.springboard.launchapplications</key>

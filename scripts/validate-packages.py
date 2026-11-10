@@ -56,6 +56,8 @@ for deb in sorted(args.directory.glob('*.deb')):
             entitlements = plistlib.loads(subprocess.check_output(['ldid', '-e', str(native)]))
             for entitlement in ('platform-application', 'com.apple.private.security.no-sandbox', 'com.apple.private.hid.client.event-dispatch'):
                 assert entitlements.get(entitlement) is True, entitlement
+            assert entitlements.get('com.apple.QuartzCore.global-capture') is True
+            assert 'IOSurfaceRootUserClient' in entitlements.get('com.apple.security.iokit-user-client-class', [])
     maintainer_tar = subprocess.check_output(['dpkg-deb', '--ctrl-tarfile', str(deb)])
     with tarfile.open(fileobj=io.BytesIO(maintainer_tar)) as archive:
         scripts = {m.name.removeprefix('./'): m for m in archive.getmembers()}
