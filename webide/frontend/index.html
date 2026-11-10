@@ -42,6 +42,10 @@
 <div class="toolbar">
   <button id="btn-run"  class="tbtn tbtn-run"  onclick="runScript()">▶ Run</button>
   <button id="btn-stop" class="tbtn tbtn-stop" onclick="stopScript()" disabled>⏸ Stop</button>
+  <select id="compatibility-mode" aria-label="Script API" onchange="setCompatibilityMode(this.value)">
+    <option value="native">Native · point / ms</option>
+    <option value="legacy">iOSAutomate core · pixel / s</option>
+  </select>
 
   <span class="toolbar-sep"></span>
 

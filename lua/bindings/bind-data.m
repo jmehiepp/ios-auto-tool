@@ -13,7 +13,7 @@ static id object(lua_State *L, int index, int depth, NSMutableSet *parents, NSSt
         case LUA_TLIGHTUSERDATA:
             if (lua_touserdata(L, index) == &null_sentinel) return NSNull.null;
             break;
-        case LUA_TBOOLEAN: return @(lua_toboolean(L, index) != 0);
+        case LUA_TBOOLEAN: return lua_toboolean(L, index) ? @YES : @NO;
         case LUA_TNUMBER: {
             double value = lua_tonumber(L, index);
             if (!isfinite(value)) { *error = @"non-finite number"; return nil; }

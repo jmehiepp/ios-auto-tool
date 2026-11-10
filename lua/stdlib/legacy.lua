@@ -137,7 +137,9 @@ return function(native)
   function env.httpPost(url, body, extra)
     local h = headers(extra)
     if type(body) == 'table' then
-      body = native.jsonEncode(body)
+      local encoded, err = native.jsonEncode(body)
+      assert(encoded, err or 'JSON encoding failed')
+      body = encoded
       h = setmetatable({['Content-Type']='application/json'}, {__index=h})
       -- Native bridge enumerates concrete keys, so keep all supplied headers.
       for k,v in pairs(extra or {}) do h[k]=v end

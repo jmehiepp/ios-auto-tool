@@ -109,9 +109,25 @@ function setCurrentFile(name, content) {
     editor.setValue(content || '');
     editor.setScrollPosition({ scrollTop: 0 });
   }
+  updateCompatibilityMode(content || '');
   document.querySelectorAll('#file-list li').forEach(li => {
     li.classList.toggle('active', li.dataset.name === name);
   });
+}
+
+function updateCompatibilityMode(content) {
+  const field = document.getElementById('compatibility-mode');
+  if (field) field.value = /^(?:\uFEFF)?--!iosautomate(?:\r?\n|$)/.test(content) ? 'legacy' : 'native';
+}
+
+function setCompatibilityMode(mode) {
+  if (!editor) return;
+  let code = editor.getValue().replace(/^\uFEFF/, '');
+  code = code.replace(/^--!iosautomate(?:\r?\n|$)/, '');
+  if (mode === 'legacy') code = '--!iosautomate\n' + code;
+  editor.setValue(code);
+  isDirty = true;
+  updateCompatibilityMode(code);
 }
 
 function getCurrentFileName() {
