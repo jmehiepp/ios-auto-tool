@@ -25,7 +25,8 @@ static float *rgba_to_gray_float(const uint8_t *pixels, int stride,
 static uint8_t *uiimage_to_rgba(UIImage *img, int *out_w, int *out_h) {
     *out_w = (int)img.size.width;
     *out_h = (int)img.size.height;
-    size_t bytes = (size_t)(*out_w * *out_h * 4);
+    if (*out_w < 1 || *out_h < 1 || *out_w > 16384 || *out_h > 16384) return NULL;
+    size_t bytes = (size_t)*out_w * *out_h * 4;
     uint8_t *px = malloc(bytes);
     if (!px) return NULL;
 
@@ -78,6 +79,8 @@ ImageMatchResult find_image(const uint8_t *screen_pixels, int sw, int sh,
 {
     ImageMatchResult not_found = {{-1, -1}, 0.0f};
     if (!screen_pixels || sw < 2 || sh < 2 || !tmpl.CGImage || !isfinite(threshold) || threshold < 0 || threshold > 1)
+        return not_found;
+    if (!isfinite(region.origin.x) || !isfinite(region.origin.y) || !isfinite(region.size.width) || !isfinite(region.size.height))
         return not_found;
 
     // Load template pixels

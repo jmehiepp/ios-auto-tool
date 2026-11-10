@@ -10,6 +10,8 @@ native.sleep=function(ms) calls.ms=ms; clock=clock+ms end
 native.monotonicMillis=function() return clock end
 native._legacyGetColor=function(x,y) return x==42 and y==43 and 0x123456 or nil end
 native._legacyOCR=function() return {{text='hello',x=20,y=40,w=50,h=10}} end
+native._legacyFindText=function(text,region,fresh) assert(fresh); return text=='hello' and 45 or nil, text=='hello' and 45 or nil end
+native._legacyFindImage=function(path,_,similarity,region,fresh) assert(fresh); return path=='match.png' and {{10,20,.99}} or {} end
 native.getFrontApp=function() return 'com.apple.springboard' end
 native.getRunningApps=function() return {{bundleId='test.bundle'}} end
 native.shell=function() return 'result',4 end
@@ -39,5 +41,8 @@ env.httpGet('https://example.test',{test='value'});assert(calls.http.headers.tes
 env.httpPost('https://example.test',{test=true},{test='value'});assert(calls.http.body=='{"test":true}' and calls.http.headers.test=='value')
 assert(env.waitForColor(42,43,0x123456,.2)==true)
 assert(env.waitForColor(0,0,1,.2)==false)
+assert(env.waitForText('hello',.2)==45 and env.waitForText('missing',.2)==nil)
+assert(env.waitForImage('match.png',.2)==10 and env.waitForImage('missing.png',.2)==nil)
+assert(env.randomInt(5,2)==5 and env.randomFloat(5,2)==5)
 env.customValue=true; assert(factory(native).customValue==nil and native.customValue==nil)
 print('Legacy timing, coordinate, shape and environment contract tests passed')

@@ -73,17 +73,9 @@ return function(native)
   env.getColor, env.getPixelColor = native._legacyGetColor, native._legacyGetColor
   env.findColor, env.findColors = native._legacyFindColors, native._legacyFindColors
   env.screenshot = native._legacyScreenshot
-  function env.getColors(points)
-    assert(type(points) == 'table', 'points must be an array')
-    local result = {}
-    native.keepScreen()
-    local ok, err = pcall(function()
-      for i, p in ipairs(points) do result[i] = native._legacyGetColor(p[1], p[2]) end
-    end)
-    native.releaseScreen()
-    if not ok then error(err, 0) end
-    return result
-  end
+  env.getColors = native._legacyGetColors
+  env.findImage = native._legacyFindImage
+  env.findText = native._legacyFindText
   function env.ocr(region)
     local list, text = native._legacyOCR(region), {}
     for _, item in ipairs(list) do
@@ -123,8 +115,8 @@ return function(native)
   function env.rgbToInt(r,g,b)
     return (math.floor(number(r)) % 256) * 65536 + (math.floor(number(g)) % 256) * 256 + math.floor(number(b)) % 256
   end
-  function env.randomInt(low, high) return math.random(low, high) end
-  function env.randomFloat(low, high) return number(low) + math.random() * (number(high)-number(low)) end
+  function env.randomInt(low, high) return math.random(low, math.max(low, high)) end
+  function env.randomFloat(low, high) return number(low) + math.random() * math.max(0, number(high)-number(low)) end
   function env.randomSleep(low, high) env.sleep(low, high) end
   local function headers(value)
     assert(value == nil or type(value) == 'table', 'headers must be a table')
@@ -149,8 +141,26 @@ return function(native)
   function env.waitForColor(x,y,rgb,timeout)
     local deadline = native.monotonicMillis() + seconds(timeout or 5) * 1000
     repeat
-      if native._legacyGetColor(x,y) == rgb then return true end
+      if native._legacyGetColor(x,y,true) == rgb then return true end
       if native.monotonicMillis() >= deadline then return false end
+      native.sleep(100)
+    until false
+  end
+  function env.waitForText(text,timeout,region)
+    local deadline = native.monotonicMillis() + seconds(timeout or 10) * 1000
+    repeat
+      local x,y=native._legacyFindText(text,region,true)
+      if x then return x,y end
+      if native.monotonicMillis()>=deadline then return nil,nil end
+      native.sleep(100)
+    until false
+  end
+  function env.waitForImage(path,timeout,similarity)
+    local deadline = native.monotonicMillis() + seconds(timeout or 10) * 1000
+    repeat
+      local results=native._legacyFindImage(path,1,similarity or .9,nil,true)
+      if results[1] then return results[1][1],results[1][2] end
+      if native.monotonicMillis()>=deadline then return nil,nil end
       native.sleep(100)
     until false
   end

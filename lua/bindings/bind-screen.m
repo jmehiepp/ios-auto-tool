@@ -298,13 +298,66 @@ static CGRect legacy_region(lua_State *L, int index) {
         if (!isfinite(values[i]) || fabs(values[i]) > 1000000) luaL_error(L, "invalid pixel region"); }
     return CGRectMake(values[0], values[1], values[2], values[3]);
 }
+static UIImage *legacy_frame(CGRect region, BOOL fresh) {
+    UIImage *saved = kept_image;
+    if (fresh) kept_image = nil;
+    UIImage *frame = lua_frame(region, YES);
+    kept_image = saved; return frame;
+}
 static int legacy_color(lua_State *L) {
     int x = (int)luaL_checkinteger(L, 1), y = (int)luaL_checkinteger(L, 2);
-    lua_frame(CGRectZero, YES);
+    legacy_frame(CGRectZero, lua_toboolean(L, 3));
     if (!g_screen_cache.pixels || x < 0 || y < 0 || x >= g_screen_cache.width || y >= g_screen_cache.height)
         lua_pushnil(L);
     else lua_pushinteger(L, get_pixel_color(g_screen_cache.pixels, g_screen_cache.width, g_screen_cache.height, x, y) >> 8);
     return 1;
+}
+static int legacy_colors(lua_State *L) {
+    luaL_checktype(L, 1, LUA_TTABLE); size_t count=lua_objlen(L,1);
+    if (count>10000) return luaL_error(L,"maximum 10000 color points");
+    legacy_frame(CGRectZero, NO); lua_createtable(L,(int)count,0);
+    for (int i=1;i<=(int)count;i++) {
+        int x=0,y=0; lua_rawgeti(L,1,i);
+        if (lua_istable(L,-1)) {
+            lua_rawgeti(L,-1,1); x=(int)lua_tointeger(L,-1); lua_pop(L,1);
+            lua_rawgeti(L,-1,2); y=(int)lua_tointeger(L,-1); lua_pop(L,1);
+        }
+        lua_pop(L,1);
+        uint32_t rgb = g_screen_cache.pixels ? get_pixel_color(g_screen_cache.pixels,g_screen_cache.width,g_screen_cache.height,x,y)>>8 : 0;
+        lua_pushinteger(L,rgb); lua_rawseti(L,-2,i);
+    }
+    return 1;
+}
+static int legacy_find_image(lua_State *L) {
+    NSString *path = [NSString stringWithUTF8String:luaL_checkstring(L,1)];
+    float threshold=(float)luaL_optnumber(L,3,.98);
+    if (!isfinite(threshold) || threshold<=0 || threshold>1) threshold=.98;
+    CGRect region=legacy_region(L,4);
+    UIImage *image = [UIImage imageWithContentsOfFile:path]; lua_newtable(L);
+    if (!image.CGImage) return 1;
+    legacy_frame(CGRectZero,lua_toboolean(L,5));
+    if (!g_screen_cache.pixels) return 1;
+    image=[UIImage imageWithCGImage:image.CGImage scale:1 orientation:image.imageOrientation];
+    ImageMatchResult result=find_image(g_screen_cache.pixels,g_screen_cache.width,g_screen_cache.height,image,threshold,region);
+    if (result.center.x<0) return 1;
+    lua_createtable(L,3,0); lua_pushnumber(L,result.center.x); lua_rawseti(L,-2,1);
+    lua_pushnumber(L,result.center.y); lua_rawseti(L,-2,2); lua_pushnumber(L,result.score); lua_rawseti(L,-2,3);
+    lua_rawseti(L,-2,1); return 1;
+}
+static int legacy_find_text(lua_State *L) {
+    NSString *needle = [NSString stringWithUTF8String:luaL_checkstring(L,1)];
+    CGRect region=legacy_region(L,2); UIImage *image=legacy_frame(region,lua_toboolean(L,3));
+    int count=0; OcrObservation *obs=ocr_image_detailed(image,NULL,&count); double x=-1,y=-1;
+    for (int i=0;i<count;i++) {
+        NSString *text=obs[i].text ? @(obs[i].text) : @"";
+        if (x<0 && needle.length && [text rangeOfString:needle options:NSCaseInsensitiveSearch].location!=NSNotFound) {
+            x=MAX(0,region.origin.x)+obs[i].x+obs[i].w/2; y=MAX(0,region.origin.y)+obs[i].y+obs[i].h/2;
+        }
+        free(obs[i].text);
+    }
+    free(obs);
+    if (x<0) { lua_pushnil(L); lua_pushnil(L); }
+    else { lua_pushnumber(L,x); lua_pushnumber(L,y); } return 2;
 }
 static int legacy_screenshot(lua_State *L) {
     // screenshot always captures fresh; keepScreen only freezes analysis calls.
@@ -331,8 +384,8 @@ static int legacy_ocr(lua_State *L) {
 }
 typedef struct { int dx, dy; uint32_t rgb; } ColorPoint;
 static BOOL color_matches(const uint8_t *pixel, uint32_t rgb, int tolerance) {
-    return abs(pixel[0] - ((rgb >> 16) & 255)) <= tolerance &&
-           abs(pixel[1] - ((rgb >> 8) & 255)) <= tolerance && abs(pixel[2] - (rgb & 255)) <= tolerance;
+    return abs((int)pixel[0] - (int)((rgb >> 16) & 255)) <= tolerance &&
+           abs((int)pixel[1] - (int)((rgb >> 8) & 255)) <= tolerance && abs((int)pixel[2] - (int)(rgb & 255)) <= tolerance;
 }
 static int legacy_find_colors(lua_State *L) {
     ColorPoint pattern[256]; int count = 1; BOOL multi = lua_istable(L, 1);
@@ -404,7 +457,10 @@ void register_screen_bindings(lua_State *L) {
     lua_register(L, "releaseScreen", lua_release_screen);
     lua_register(L, "screenGeometry", lua_screen_geometry);
     lua_register(L, "_legacyGetColor", legacy_color);
+    lua_register(L, "_legacyGetColors", legacy_colors);
     lua_register(L, "_legacyFindColors", legacy_find_colors);
+    lua_register(L, "_legacyFindImage", legacy_find_image);
+    lua_register(L, "_legacyFindText", legacy_find_text);
     lua_register(L, "_legacyOCR", legacy_ocr);
     lua_register(L, "_legacyScreenshot", legacy_screenshot);
 }
