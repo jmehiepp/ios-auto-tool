@@ -11,12 +11,12 @@ Depends: firmware (>= 15.0), cy+model.iphone, mobilesubstrate
 Homepage: https://jmehiepp.github.io/ios-auto-tool/
 SileoDepiction: https://jmehiepp.github.io/ios-auto-tool/depictions/core.json
 Architecture: iphoneos-arm
-Version: 1.2.0~beta3
+Version: 1.2.0~beta4
 Installed-Size: 1040
-Filename: pool/main/iosautotool-daemon_1.2.0~beta3_iphoneos-arm.deb
-Size: 294298
-MD5sum: 12af65cce0a62c9418b01af64eb242c9
-SHA256: 7458bc196d3ddf54ec0a3134852d971dbc6e3a6305538e2314b1e4d841b7bf97
+Filename: pool/main/iosautotool-daemon_1.2.0~beta4_iphoneos-arm.deb
+Size: 294188
+MD5sum: 9ec1c0706adb292c804a278906461de3
+SHA256: c91e9703a1e34b689d41b914126fb4f276d3fe26b997a072e73d34cee20e307c
 
 Package: com.iosautotool
 Name: iOS Auto Tool
@@ -31,12 +31,12 @@ Depends: firmware (>= 15.0), cy+model.iphone, mobilesubstrate
 Homepage: https://jmehiepp.github.io/ios-auto-tool/
 SileoDepiction: https://jmehiepp.github.io/ios-auto-tool/depictions/core.json
 Architecture: iphoneos-arm64
-Version: 1.2.0~beta3
+Version: 1.2.0~beta4
 Installed-Size: 1040
-Filename: pool/main/iosautotool-daemon_1.2.0~beta3_iphoneos-arm64.deb
-Size: 294402
-MD5sum: 9e96fe0d3381f1be16ac036dc4177987
-SHA256: 6391733d6f4ad1442c8b578900012ec83a680a96cbff227ffa4cd5f59e947401
+Filename: pool/main/iosautotool-daemon_1.2.0~beta4_iphoneos-arm64.deb
+Size: 294260
+MD5sum: 10ef92bc4d1c38da2dba342295647b4c
+SHA256: 12e94f278cf638574ed99c370364bc91807169577498df90aa2ff320d6fa4a73
 
 Package: com.iosautotool
 Name: iOS Auto Tool
@@ -51,10 +51,10 @@ Depends: firmware (>= 15.0), cy+model.iphone, mobilesubstrate
 Homepage: https://jmehiepp.github.io/ios-auto-tool/
 SileoDepiction: https://jmehiepp.github.io/ios-auto-tool/depictions/core.json
 Architecture: iphoneos-arm64e
-Version: 1.2.0~beta3
+Version: 1.2.0~beta4
 Installed-Size: 1040
-Filename: pool/main/iosautotool-daemon_1.2.0~beta3_iphoneos-arm64e.deb
-Size: 294462
-MD5sum: 94e42768d2540b192df6e3fe6a6dbac4
-SHA256: 6798e2acc891b5b7c90b6335529c1f76e30512ac26695dd2a79efdbb679756cb
+Filename: pool/main/iosautotool-daemon_1.2.0~beta4_iphoneos-arm64e.deb
+Size: 294406
+MD5sum: 27dd509b67538f279bf468640ecbca6f
+SHA256: 84f43d8eeb16c323a6346b253985e4fdccdb5e97172c4b38d0821ef54bbfc220
 
