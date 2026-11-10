@@ -1,9 +1,11 @@
 #import "scheduler.h"
 #import "script-runner.h"
 #import "logger.h"
+#import "runtime-paths.h"
+#include <math.h>
 
-#define SCHEDULES_PATH @"/var/mobile/Library/IOSAutoTool/schedules.json"
-#define TICK_SECONDS 30.0
+#define SCHEDULES_PATH [iat_data_directory() stringByAppendingPathComponent:@"schedules.json"]
+#define TICK_SECONDS 1.0
 
 static NSMutableArray *g_jobs = nil;
 static NSString *g_scripts_dir = nil;
@@ -14,6 +16,7 @@ static void ensure_queue(void) {
     static dispatch_once_t once;
     dispatch_once(&once, ^{
         g_queue = dispatch_queue_create("io.iosautotool.scheduler", DISPATCH_QUEUE_SERIAL);
+        g_jobs = [NSMutableArray array];
     });
 }
 
@@ -28,7 +31,7 @@ static void load_jobs(void) {
     NSData *data = [NSData dataWithContentsOfFile:SCHEDULES_PATH];
     if (!data) { g_jobs = [NSMutableArray array]; return; }
     NSArray *arr = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
-    g_jobs = arr ? [arr mutableCopy] : [NSMutableArray array];
+    g_jobs = [arr isKindOfClass:NSArray.class] ? [arr mutableCopy] : [NSMutableArray array];
 }
 
 static NSTimeInterval compute_next_run(NSDictionary *job, NSTimeInterval after) {
@@ -54,23 +57,32 @@ static NSTimeInterval compute_next_run(NSDictionary *job, NSTimeInterval after) 
         comps.second = 0;
         NSDate *candidate = [cal dateFromComponents:comps];
         if ([candidate timeIntervalSince1970] <= after) {
-            candidate = [candidate dateByAddingTimeInterval:86400];
+            candidate = [cal dateByAddingUnit:NSCalendarUnitDay value:1 toDate:candidate options:0];
         }
         return [candidate timeIntervalSince1970];
     }
     return 0;
 }
 
-static void run_script_file(NSString *script_name) {
+static BOOL valid_script_name(id name) {
+    return [name isKindOfClass:NSString.class] && [name hasSuffix:@".lua"] && [name length] > 4 &&
+        ![name hasPrefix:@"."] && [name rangeOfString:@"/"].location == NSNotFound &&
+        [name rangeOfString:@"\\"].location == NSNotFound &&
+        [name rangeOfCharacterFromSet:NSCharacterSet.controlCharacterSet].location == NSNotFound;
+}
+static BOOL run_script_file(NSString *script_name) {
+    if (!valid_script_name(script_name)) return NO;
     NSString *path = [g_scripts_dir stringByAppendingPathComponent:script_name];
+    if (![[[path stringByResolvingSymlinksInPath] stringByDeletingLastPathComponent]
+          isEqualToString:[g_scripts_dir stringByResolvingSymlinksInPath]]) return NO;
     NSString *code = [NSString stringWithContentsOfFile:path
                                                encoding:NSUTF8StringEncoding error:nil];
     if (!code.length) {
         log_warn("scheduler: script file not found: %s", script_name.UTF8String);
-        return;
+        return NO;
     }
     log_info("scheduler: running %s", script_name.UTF8String);
-    script_run(-1, "scheduler", code.UTF8String);
+    return script_run(-1, "scheduler", code.UTF8String);
 }
 
 static void tick(void) {
@@ -79,12 +91,13 @@ static void tick(void) {
         NSTimeInterval now = [[NSDate date] timeIntervalSince1970];
         BOOL changed = NO;
         for (NSUInteger i = 0; i < g_jobs.count; i++) {
+            if (![g_jobs[i] isKindOfClass:NSDictionary.class]) continue;
             NSMutableDictionary *job = [g_jobs[i] mutableCopy];
             if (![job[@"enabled"] boolValue]) continue;
             NSTimeInterval next = [job[@"next_run"] doubleValue];
             if (next <= 0 || next > now) continue;
 
-            run_script_file(job[@"script"]);
+            if (!run_script_file(job[@"script"])) continue;
             job[@"last_run"] = @(now);
 
             if ([job[@"type"] isEqualToString:@"once"]) {
@@ -123,7 +136,22 @@ NSArray *scheduler_list(void) {
 NSString *scheduler_add(NSDictionary *job) {
     NSString *script = job[@"script"];
     NSString *type   = job[@"type"];
-    if (!script.length || !type.length) return nil;
+    if (!valid_script_name(script) || ![type isKindOfClass:NSString.class]) return nil;
+    if ([type isEqualToString:@"interval"] &&
+        (![job[@"interval_minutes"] isKindOfClass:NSNumber.class] || !isfinite([job[@"interval_minutes"] doubleValue]) ||
+         [job[@"interval_minutes"] doubleValue] < 1 || [job[@"interval_minutes"] doubleValue] > 10080 ||
+         [job[@"interval_minutes"] doubleValue] != [job[@"interval_minutes"] integerValue])) return nil;
+    if ([type isEqualToString:@"once"] &&
+        (![job[@"at"] isKindOfClass:NSNumber.class] || !isfinite([job[@"at"] doubleValue]) ||
+         [job[@"at"] doubleValue] <= NSDate.date.timeIntervalSince1970)) return nil;
+    if ([type isEqualToString:@"daily"]) {
+        for (NSString *key in @[@"hour", @"minute"]) {
+            id value = job[key];
+            if (![value isKindOfClass:NSNumber.class] || !isfinite([value doubleValue]) ||
+                [value doubleValue] != [value integerValue] || [value integerValue] < 0 ||
+                [value integerValue] > ([key isEqual:@"hour"] ? 23 : 59)) return nil;
+        }
+    }
     if (![type isEqualToString:@"once"] &&
         ![type isEqualToString:@"interval"] &&
         ![type isEqualToString:@"daily"]) return nil;

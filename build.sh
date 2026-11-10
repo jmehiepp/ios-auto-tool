@@ -16,10 +16,12 @@ xcrun clang -fobjc-arc -fblocks -Ideps/luajit/include tests/lua-runtime-tests.m 
 bash spoof/tests/run-config-tests.sh
 xcrun clang -std=c11 -Wall -Wextra -Werror tests/widget-transport-tests.c -o .build-evidence/widget-transport-tests
 .build-evidence/widget-transport-tests
+xcrun clang -fobjc-arc -fblocks tests/scheduler-tests.m daemon/runtime-paths.m -framework Foundation -framework Security -o .build-evidence/scheduler-tests
+.build-evidence/scheduler-tests
 for file in webide/frontend/*.js; do node --check "$file"; done
 mkdir -p packages
 python3 -c "from pathlib import Path; [p.unlink() for p in Path('packages').glob('*.deb')]"
-for source in spoof/modules/*.m; do cp "$source" "${source%.m}.xm"; done
+python3 scripts/prepare-logos.py
 for scheme in rootful rootless roothide; do
     echo "Building automation ecosystem: $scheme"
     if [[ "$scheme" == roothide ]]; then
