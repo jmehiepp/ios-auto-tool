@@ -17,7 +17,7 @@ static BOOL Fail(NSError **error, NSString *message) {
 static BOOL Number(id value) {
     return [value isKindOfClass:NSNumber.class] && isfinite([value doubleValue]);
 }
-static BOOL Boolean(id value) {
+static BOOL IsBoolean(id value) {
     return Number(value) && ([value doubleValue] == 0 || [value doubleValue] == 1);
 }
 static BOOL String(id value, NSUInteger limit) {
@@ -60,7 +60,7 @@ static BOOL ValidValue(NSString *name, id value) {
     if ([name isEqual:@"screen_scale"]) return Range(value, 0.25, 8);
     if ([name isEqual:@"battery_level"]) return Range(value, -1, 1);
     if ([name isEqual:@"battery_state"]) return Range(value, 0, 3) && [value doubleValue] == [value integerValue];
-    if ([name isEqual:@"proximity"] || [name isEqual:@"canvas"]) return Boolean(value);
+    if ([name isEqual:@"proximity"] || [name isEqual:@"canvas"]) return IsBoolean(value);
     if ([name isEqual:@"gps_accuracy"]) return Range(value, 0, 1000000);
     if (![value isKindOfClass:NSDictionary.class]) return NO;
     NSDictionary *v = value;
@@ -123,7 +123,7 @@ static void ConfigChanged(CFNotificationCenterRef center, void *observer, CFStri
     if (_reloadTimer) dispatch_source_cancel(_reloadTimer);
 }
 + (BOOL)validateConfiguration:(NSDictionary *)configuration error:(NSError **)error {
-    if (![configuration isKindOfClass:NSDictionary.class] || !Boolean(configuration[@"enabled"]) ||
+    if (![configuration isKindOfClass:NSDictionary.class] || !IsBoolean(configuration[@"enabled"]) ||
         ![configuration[@"selectedApps"] isKindOfClass:NSArray.class] ||
         ![configuration[@"modules"] isKindOfClass:NSDictionary.class])
         return Fail(error, @"Expected enabled:boolean, selectedApps:array, modules:dictionary");
@@ -135,7 +135,7 @@ static void ConfigChanged(CFNotificationCenterRef center, void *observer, CFStri
     for (id name in configuration[@"modules"]) {
         id entry = configuration[@"modules"][name];
         if (!String(name, 64) || ![ModuleNames() containsObject:name] ||
-            ![entry isKindOfClass:NSDictionary.class] || !Boolean(entry[@"enabled"]))
+            ![entry isKindOfClass:NSDictionary.class] || !IsBoolean(entry[@"enabled"]))
             return Fail(error, @"Invalid or unsupported module entry");
         id value = entry[@"value"];
         if (value && !ValidValue(name, value))
