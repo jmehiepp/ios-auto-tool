@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <poll.h>
+#include <sys/select.h>
 #include <errno.h>
 #include <stddef.h>
 #include <string.h>
@@ -21,18 +22,25 @@ static long long widget_transport_now_ms(void) {
 }
 
 static int widget_transport_wait(int fd, short events, long long deadline) {
+    if (fd < 0 || fd >= FD_SETSIZE) return EBADF;
     for (;;) {
         long long now = widget_transport_now_ms();
         if (now < 0) return EIO;
         long long remaining = deadline - now;
         if (remaining <= 0) return ETIMEDOUT;
-        struct pollfd item = {fd, events, 0};
-        int result = poll(&item, 1, remaining > INT_MAX ? INT_MAX : (int)remaining);
+        // SpringBoard's sandbox on iOS 15 denies poll (Darwin syscall 230).
+        // select preserves the total deadline without changing host privileges.
+        fd_set reads, writes, errors;
+        FD_ZERO(&reads); FD_ZERO(&writes); FD_ZERO(&errors);
+        if (events & POLLIN) FD_SET(fd, &reads);
+        if (events & POLLOUT) FD_SET(fd, &writes);
+        FD_SET(fd, &errors);
+        struct timeval timeout = {remaining / 1000, (remaining % 1000) * 1000};
+        int result = select(fd + 1, &reads, &writes, &errors, &timeout);
         if (result < 0 && errno == EINTR) continue;
         if (result < 0) return errno;
         if (!result) return ETIMEDOUT;
-        if (item.revents & POLLNVAL) return EBADF;
-        if (item.revents & (events | POLLHUP | POLLERR)) return 0;
+        return 0;
     }
 }
 

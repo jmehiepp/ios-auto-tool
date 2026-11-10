@@ -9,7 +9,7 @@
 
 #define MCP_PROTOCOL_VERSION "2024-11-05"
 #define MCP_SERVER_NAME      "ios-auto-tool"
-#define MCP_SERVER_VERSION   "1.2.0-beta2"
+#define MCP_SERVER_VERSION   "1.2.0-beta3"
 
 // ---------- Tool registry ----------
 
