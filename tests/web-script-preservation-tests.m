@@ -2,6 +2,7 @@
 #import <WebKit/WebKit.h>
 #import "../spoof/web-script-update.h"
 #include <assert.h>
+#include <stdio.h>
 
 static WKUserScript *AppScript(NSString *source) {
     return [[WKUserScript alloc] initWithSource:source injectionTime:WKUserScriptInjectionTimeAtDocumentEnd forMainFrameOnly:YES];

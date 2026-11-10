@@ -29,3 +29,15 @@ Chưa kiểm thử restore dữ liệu trên app cá nhân, clone, toàn bộ ho
 Trên bản công khai: screenshot có nội dung, OCR đọc giờ/ngày, MJPEG có frame, API tạo/đọc/xóa script mới đều HTTP 200. Master Device tắt và danh sách ứng dụng trống. Lua chặn chạy chồng HTTP 409, dừng được vòng lặp và chạy lại sau stop (cùng source engine ở candidate trước đó).
 
 Nguồn đã được thêm vào APT trên iPhone. Trang 404 riêng sửa lỗi HTTP 503 khi thiếu metadata tùy chọn; `Release` có Date và hash trong cùng một paragraph Deb822. Sau sửa, APT update hoàn tất không cảnh báo và nhận `1.2.0~beta2` từ nguồn ở priority 500. Widget còn chờ chủ máy mở khóa trực tiếp sau respring.
+
+## Beta3: widget và Device có đối chứng
+
+Đã mở khóa bằng thao tác nhập qua giao diện theo thông tin chủ máy cung cấp; không lưu mật mã. Widget thực sự được nạp nhưng kernel chặn `poll` (Darwin syscall 230). Chuyển transport sang `select` giữ nguyên timeout và kiểm tra peer. Trên candidate, widget đã liệt kê script, chạy macro mẫu và dừng nó; MCP xác nhận `running=false` và log có `script stopped`/exit 1.
+
+Chế độ `--run-file` cho phép thử trong hai bundle riêng của dự án mà không đăng ký ứng dụng hay mở cổng daemon thứ hai. Bundle được chọn nhận tweak qua loader RootHide thật; bundle đối chứng không được chọn không nạp tweak. Bốn trường hợp — được chọn, không được chọn, master OFF, riêng `device_name` OFF — đều đạt 27 điểm kiểm tra/trường hợp trên candidate. Đây là 20 kiểm tra accessor, lọc danh sách app và các kiểm tra setup/preservation WebKit; không phải 27 chức năng độc lập đã được chứng minh đầy đủ.
+
+Accessor đã quan sát gồm tên/family/model, iOS, IDFV, locale, timezone, screen/native bounds/scale, pin/proximity, carrier/MCC/MNC/country và giá trị của một CLLocation mẫu. Query danh sách ứng dụng được lọc trong fixture. WebKit được kiểm tra source script, document-start và giữ script do app tự thêm; chưa chạy JS trong WebContent hay so pixel canvas/WebGL.
+
+Phép thử WebKit phát hiện `userScripts` và `copy` của nó cùng là view động trên iOS 15: sau remove, cả hai mất nội dung. Giữ từng WKUserScript trong NSMutableArray riêng sửa được lỗi mất script app. Kiểm tra host sử dụng WebKit thật xác nhận thêm/thay/gỡ script Device, giữ nguyên object và metadata script app, không tạo bản trùng.
+
+Fixture dùng bản sao executable của dự án nên có cảnh báo hai định nghĩa SpoofConfig từ cùng source. Đây là giới hạn của host thử, không phải kiểm thử app bên thứ ba hay payload arm64e. GPS dùng đối tượng mẫu, không xác nhận quyền/delivery vị trí. IDFA, Wi-Fi đã cấp quyền, accelerometer/gyro sống, custom user agent và thiết bị khác còn cần kiểm thử. Sau phép thử đã khôi phục master OFF, modules rỗng và whitelist rỗng.

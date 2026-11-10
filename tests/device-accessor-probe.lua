@@ -106,5 +106,5 @@ for name, matches in pairs(checks) do
     if matches ~= field_expected then failed = failed + 1 end
     print('DEVICE_CHECK '..name..' matches_fixture='..tostring(matches)..' expected='..tostring(field_expected))
 end
-print('DEVICE_PROBE total='..total..' failed='..failed..' selected_fixture='..tostring(identifier=='com.iosautotool.deviceprobe'))
+print('DEVICE_PROBE total='..total..' failed='..failed..' selected_fixture='..tostring(identifier=='com.iosautotool.deviceprobe')..' tag='..(os.getenv('IOSAT_PROBE_RUN_TAG') or 'manual'))
 assert(failed == 0, 'Device accessor fixture mismatch')

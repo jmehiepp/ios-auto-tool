@@ -16,9 +16,9 @@ Một gói `com.iosautotool` chứa daemon, widget SpringBoard và addon cấu h
 
 `iphoneos-arm64e` ở đây là kiến trúc gói của RootHide, không phải tuyên bố rằng payload dùng CPU arm64e. Bản này được biên dịch arm64 cho iPhone 6s của chủ dự án. Hành vi injection trên các thiết bị arm64e khác cần kiểm thử riêng.
 
-Build macOS kiểm tra xác thực, Lua thật và cancellation, lưu cấu hình/filter, giao tiếp widget, lịch chạy, profile và sao lưu ứng dụng bằng fixture tạm. Kiểm tra payload đọc lại metadata, Mach-O, entitlements, tài nguyên và bộ lọc injection. Các kiểm tra này không thay thế việc cài/chạy trên iPhone.
+Build macOS có chín nhóm kiểm tra: xác thực, Lua thật và cancellation, cấu hình/filter, profile, giữ script ứng dụng trong WebKit, sao lưu ứng dụng bằng fixture tạm, widget, lịch chạy và Device UI. Kiểm tra payload đọc lại metadata, Mach-O, entitlements, tài nguyên và bộ lọc injection. Các kiểm tra này không thay thế việc cài/chạy trên iPhone.
 
-Đã kết nối SSH qua USB và cài trên iPhone 6s/iOS 15.8.4/RootHide. Kiểm thử đã phát hiện và sửa quyền IOSurface/capture/GPU, sender cảm ứng và giới hạn bộ nhớ Vision. Tap đã đổi tab Sileo, nút Home có tác dụng, screenshot có nội dung, OCR trả chữ/tọa độ, MJPEG có frame và profile lưu/áp dụng/xóa được. Xem [phạm vi kiểm thử thiết bị](docs/DEVICE_TESTING.md); chưa xác nhận toàn bộ hook hoặc thiết bị khác.
+Đã cài/chạy trên iPhone 6s/iOS 15.8.4/RootHide: tap, Home, screenshot/OCR, MJPEG, profile và widget chọn/chạy/dừng macro. Beta3 sửa kết nối widget trong sandbox SpringBoard và giữ script của ứng dụng khi cập nhật Device WebKit. Bộ thử riêng xác nhận getter/cấu hình, whitelist, master OFF và tắt riêng một trường; script WebKit được kiểm tra ở bước thiết lập, chưa phải xác minh pixel render. Xem [phạm vi kiểm thử thiết bị](docs/DEVICE_TESTING.md).
 
 ## Cài qua Sileo
 
@@ -63,6 +63,16 @@ spoof.setMasterEnabled(true)
 ```
 
 Preset chuẩn bị giá trị; ứng dụng và master được chọn riêng. Bộ cấu hình dùng một schema chung cho Web IDE, Lua và MCP. Việc đổi accessor không thay thế phần cứng, baseband hay phiên bản iOS thật.
+
+## Chạy tệp Lua từ terminal
+
+Beta3 có chế độ chạy độc lập, không mở thêm cổng dịch vụ:
+
+```sh
+sudo /Library/IOSAutoTool/iosautotool-daemon --run-file /absolute/path/script.lua
+```
+
+Rootless dùng đường dẫn chương trình `/var/jb/Library/IOSAutoTool/iosautotool-daemon`. Với tệp trong bootstrap RootHide, truyền đường dẫn thật, ví dụ `--run-file "$(jbroot /var/mobile/Library/IOSAutoTool/scripts/hello.lua)"`. Tệp phải là UTF-8 không chứa NUL, tối đa 1 MiB; lỗi Lua trả mã thoát khác 0. Tiến trình độc lập có log JSON và không sử dụng slot chạy script của daemon.
 
 ## MCP
 

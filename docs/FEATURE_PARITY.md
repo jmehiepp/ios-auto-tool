@@ -8,8 +8,8 @@
 | Touch/keyboard | tap/swipe/multi-touch, phím hệ thống, nhập chữ | Đã xác nhận tap chuyển tab Sileo và nút Home; swipe/multi-touch/nhập chữ cần thêm phép thử |
 | Screen/vision | screenshot, OCR/Vision, màu, template image, MJPEG | Chưa có relay H.264/UDP 9001 hay giao thức REMOTE gốc |
 | Lịch và recorder | lịch một lần/theo phút/hằng ngày; record touch từ Web IDE | Chưa record mọi thao tác vật lý toàn hệ thống |
-| Widget | floating picker, chạy/dừng/status qua daemon | Cần kiểm thử SpringBoard và respring trên máy thật |
-| Device | 27 trường, whitelist app, preset/profile, API/Lua/MCP | Hook accessor trong app; thiếu identity daemon/MobileGestalt/sysctl, WebContent/WebCore và nhiều bề mặt khác của gói Device gốc |
+| Widget | floating picker, chạy/dừng/status qua daemon | Đã xác nhận chọn/chạy/dừng từ SpringBoard trên iPhone 6s/RootHide; các thiết bị và hướng màn hình khác chưa thử |
+| Device | 27 trường, whitelist app, preset/profile, API/Lua/MCP | Đã thử accessor và phạm vi trong bundle thử riêng; WebKit ở mức thiết lập script. Chưa thử đầy đủ IDFA, Wi-Fi được cấp quyền, motion, user agent hoặc render WebContent; thiếu nhiều đường identity daemon/MobileGestalt/sysctl và clone của bản gốc |
 | Dữ liệu ứng dụng | snapshot Documents/Library/tmp, restore có rollback | Không phải clone cài độc lập; không có toàn bộ workflow clone/snapshot/keychain của bản gốc |
 | MCP | 26 tools, stdio bridge, auth | Protocol/giao diện riêng, chưa có compatibility layer cho client REMOTE gốc |
 | Đóng gói | rootful/rootless/roothide, APT/Sileo | Biên dịch arm64; runtime/injection trên máy arm64e khác chưa xác minh |
