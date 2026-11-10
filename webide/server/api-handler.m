@@ -413,16 +413,21 @@ void api_handle(struct mg_connection *c, struct mg_http_message *hm,
         if (count <= 0 || strlen(filename) != (size_t)count || strchr(filename, '/') || strchr(filename, '\\') || strcmp(filename, ".") == 0 || strcmp(filename, "..") == 0) {
             json_reply(c, 400, "{\"error\":\"invalid file name\"}"); return;
         }
-        NSString *candidate = [[@(scripts_dir) stringByAppendingPathComponent:@(filename)] stringByResolvingSymlinksInPath];
-        if (![[candidate stringByDeletingLastPathComponent] isEqualToString:[@(scripts_dir) stringByResolvingSymlinksInPath]]) {
+        // Resolve the existing directory first. Foundation can leave the prefix
+        // unresolved when the leaf does not exist (observed on RootHide), which
+        // incorrectly rejected every newly created script.
+        NSString *directory = [@(scripts_dir) stringByResolvingSymlinksInPath];
+        NSString *candidate = [directory stringByAppendingPathComponent:@(filename)];
+        struct stat entry;
+        if (lstat(candidate.fileSystemRepresentation, &entry) == 0 && !S_ISREG(entry.st_mode)) {
             json_reply(c, 400, "{\"error\":\"file outside scripts directory\"}"); return;
         }
         if (mg_match(hm->method, mg_str("GET"), NULL))
-            handle_read_file(c, scripts_dir, filename);
+            handle_read_file(c, directory.fileSystemRepresentation, filename);
         else if (mg_match(hm->method, mg_str("POST"), NULL))
-            handle_save_file(c, scripts_dir, filename, hm);
+            handle_save_file(c, directory.fileSystemRepresentation, filename, hm);
         else if (mg_match(hm->method, mg_str("DELETE"), NULL))
-            handle_delete_file(c, scripts_dir, filename);
+            handle_delete_file(c, directory.fileSystemRepresentation, filename);
         else
             json_reply(c, 405, "{\"error\":\"method not allowed\"}");
 
