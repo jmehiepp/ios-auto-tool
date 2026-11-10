@@ -13,10 +13,26 @@
 #import "../mcp/stdio-bridge.h"
 #include <signal.h>
 #include <unistd.h>
+#include <dlfcn.h>
 
 #define IPC_SOCKET_PATH  "/var/run/iosautotool.sock"
 #define WEBIDE_PORT      8890
 #define MCP_PORT         8765
+
+static void configure_model_memory_budget(void) {
+    // XNU's memorystatus_memlimit_properties_t, in MiB. Some bootstrap launchd
+    // versions ignore per-job JetsamProperties, leaving an 18 MiB fatal limit.
+    typedef struct { int32_t active; uint32_t active_flags;
+                     int32_t inactive; uint32_t inactive_flags; } MemoryLimits;
+    typedef int (*MemoryControl)(uint32_t, pid_t, uint32_t, void *, size_t);
+    MemoryControl control = (MemoryControl)dlsym(RTLD_DEFAULT, "memorystatus_control");
+    MemoryLimits limits = {256, 1, 256, 1}; // fatal, finite limits in both states
+    if (!control || control(7, getpid(), 0, &limits, sizeof(limits)) != 0) {
+        log_warn("Could not configure the 256 MiB Vision memory budget"); return;
+    }
+    if (control(8, getpid(), 0, &limits, sizeof(limits)) == 0)
+        log_info("Model memory budget: active=%d MiB inactive=%d MiB", limits.active, limits.inactive);
+}
 
 int main(int argc, char *argv[]) {
     @autoreleasepool {
@@ -34,6 +50,7 @@ int main(int argc, char *argv[]) {
         }
         if (!iat_access_token()) { fprintf(stderr, "Could not initialize access code.\n"); return 1; }
         log_init();
+        configure_model_memory_budget();
         log_info("iOS Auto Tool daemon v1.2 beta starting");
         NSError *configError = nil;
         SpoofConfig *deviceConfig = [SpoofConfig shared];
