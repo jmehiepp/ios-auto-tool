@@ -58,26 +58,7 @@ gzip -9 -c "$PACKAGES_FILE" > "$REPO_DIR/Packages.gz"
 bzip2 -9 -c "$PACKAGES_FILE" > "$REPO_DIR/Packages.bz2"
 
 # ── Regenerate Release checksums ────────────────────────────────────────────
-RELEASE_FILE="$REPO_DIR/Release"
-
-# Strip any previous checksum blocks
-perl -i -0pe 's/\nMD5Sum:.*//s' "$RELEASE_FILE" 2>/dev/null || true
-
-{
-  echo ""
-  echo "MD5Sum:"
-  for f in Packages Packages.gz Packages.bz2; do
-    hash="$(md5sum "$REPO_DIR/$f" | awk '{print $1}')"
-    size="$(wc -c < "$REPO_DIR/$f" | tr -d ' ')"
-    printf " %s %16s %s\n" "$hash" "$size" "$f"
-  done
-  echo "SHA256:"
-  for f in Packages Packages.gz Packages.bz2; do
-    hash="$(sha256sum_file "$REPO_DIR/$f")"
-    size="$(wc -c < "$REPO_DIR/$f" | tr -d ' ')"
-    printf " %s %16s %s\n" "$hash" "$size" "$f"
-  done
-} >> "$RELEASE_FILE"
+python3 "$REPO_DIR/../scripts/render-release.py" "$REPO_DIR"
 
 echo ""
 echo "Repo updated → $REPO_DIR"
