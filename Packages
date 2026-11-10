@@ -7,16 +7,16 @@ Maintainer: JME
 Author: JME
 Section: Tweaks
 Tag: purpose::automation, compatible_min::ios15.0
-Depends: firmware (>= 15.0), cy+model.iphone
+Depends: firmware (>= 15.0), cy+model.iphone, mobilesubstrate
 Homepage: https://jmehiepp.github.io/ios-auto-tool/
 SileoDepiction: https://jmehiepp.github.io/ios-auto-tool/depictions/core.json
 Architecture: iphoneos-arm
-Version: 1.1.0~beta1
-Installed-Size: 752
-Filename: pool/main/iosautotool-daemon_1.1.0~beta1_iphoneos-arm.deb
-Size: 244944
-MD5sum: fcdf7cd488a7023f88ab13f0716f585f
-SHA256: c89cd7726e1f5b3828d2137c4fe3064dc96d2e773a5ad0e0249ae48f26e56117
+Version: 1.2.0~beta1
+Installed-Size: 1020
+Filename: pool/main/iosautotool-daemon_1.2.0~beta1_iphoneos-arm.deb
+Size: 293176
+MD5sum: 3a27df1d0a9979dea8889a56a28f0eec
+SHA256: facd45664240656d5bc7dc790872291f8bfdc7bf3c57247f837e7b7cf4a74a25
 
 Package: com.iosautotool
 Name: iOS Auto Tool
@@ -27,14 +27,34 @@ Maintainer: JME
 Author: JME
 Section: Tweaks
 Tag: purpose::automation, compatible_min::ios15.0
-Depends: firmware (>= 15.0), cy+model.iphone
+Depends: firmware (>= 15.0), cy+model.iphone, mobilesubstrate
 Homepage: https://jmehiepp.github.io/ios-auto-tool/
 SileoDepiction: https://jmehiepp.github.io/ios-auto-tool/depictions/core.json
 Architecture: iphoneos-arm64
-Version: 1.1.0~beta1
-Installed-Size: 752
-Filename: pool/main/iosautotool-daemon_1.1.0~beta1_iphoneos-arm64.deb
-Size: 244952
-MD5sum: fc0fe933fe797152a933ac163ff30955
-SHA256: 9f4372a837628c63ea4bfa25d4467869dc936a566c818c046fefee5eb384da1d
+Version: 1.2.0~beta1
+Installed-Size: 1020
+Filename: pool/main/iosautotool-daemon_1.2.0~beta1_iphoneos-arm64.deb
+Size: 293086
+MD5sum: 4b1c5548c77d0d2e8c23b9097491c5d9
+SHA256: 82190b510a6d73a6ea1f003231c207e67c5ba606819b205ef443347fb73bf832
+
+Package: com.iosautotool
+Name: iOS Auto Tool
+Description: iOS automation tool with Lua scripting.
+ Write Lua scripts in your browser and automate your jailbroken iPhone.
+ Features: touch injection, screen OCR/image-match, Web IDE, MCP server.
+Maintainer: JME
+Author: JME
+Section: Tweaks
+Tag: purpose::automation, compatible_min::ios15.0
+Depends: firmware (>= 15.0), cy+model.iphone, mobilesubstrate
+Homepage: https://jmehiepp.github.io/ios-auto-tool/
+SileoDepiction: https://jmehiepp.github.io/ios-auto-tool/depictions/core.json
+Architecture: iphoneos-arm64e
+Version: 1.2.0~beta1
+Installed-Size: 1020
+Filename: pool/main/iosautotool-daemon_1.2.0~beta1_iphoneos-arm64e.deb
+Size: 293292
+MD5sum: e48026c5208596cf6aeb2631e15c595f
+SHA256: e69fd72a3ae952a8e9369de3b99b4e3850480b2bde69e795f5860f07b1d6db4b
 

@@ -1,12 +1,24 @@
 {
   "class": "DepictionTabView",
-  "tabs": [{
-    "class": "DepictionStackView",
-    "tabname": "Chi tiết",
-    "views": [
-      {"class": "DepictionHeaderView", "title": "iOS Auto Tool 1.1 beta"},
-      {"class": "DepictionMarkdownView", "markdown": "Bộ lõi tự động hóa iPhone: Web IDE, Lua, touch, screenshot, OCR, MJPEG và MCP. Mỗi thiết bị có mã kết nối riêng.\n\n**Yêu cầu:** iOS 15+, jailbreak Rootful hoặc Rootless. Chưa phát hành gói RootHide.\n\n**Trạng thái:** bản beta; kiểm tra build và cấu trúc gói có sẵn, kiểm thử thao tác trên thiết bị thực còn cần xác nhận."},
-      {"class": "DepictionButtonView", "title": "Hướng dẫn sử dụng", "action": "https://github.com/jmehiepp/ios-auto-tool#readme"}
-    ]
-  }]
+  "tabs": [
+    {
+      "class": "DepictionStackView",
+      "tabname": "Chi tiết",
+      "views": [
+        {
+          "class": "DepictionHeaderView",
+          "title": "iOS Auto Tool 1.2 beta"
+        },
+        {
+          "class": "DepictionMarkdownView",
+          "markdown": "Tự động hóa iPhone: Web IDE, Lua, touch, screenshot, OCR, MJPEG, MCP, widget và profile cấu hình theo ứng dụng.\n\n**Yêu cầu:** iOS 15+, jailbreak Rootful, Rootless hoặc RootHide; payload arm64.\n\n**Trạng thái:** beta. Có kiểm tra build/payload; kiểm thử touch và hook trên iPhone còn chờ xác nhận. Chưa tương đương toàn bộ tính năng iOSAutomate."
+        },
+        {
+          "class": "DepictionButtonView",
+          "title": "Hướng dẫn sử dụng",
+          "action": "https://github.com/jmehiepp/ios-auto-tool#readme"
+        }
+      ]
+    }
+  ]
 }
