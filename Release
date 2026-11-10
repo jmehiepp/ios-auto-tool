@@ -6,12 +6,12 @@ Codename: ios
 Architectures: iphoneos-arm iphoneos-arm64 iphoneos-arm64e
 Components: main
 Description: iOS automation tool with Lua scripting and Web IDE
-Date: Tue, 10 Nov 2026 03:57:15 GMT
+Date: Tue, 10 Nov 2026 06:07:53 GMT
 MD5Sum:
- a1708826c9c1ef9193a6241bffbe8317             2392 Packages
- cf1d2bde6762440d17f2836140d0a9d3              715 Packages.gz
- e28247de44dc635587349c8d93384f19              897 Packages.bz2
+ 75a4d75f6227f8170b1e5a9c35a8a915             2392 Packages
+ 2014ba321ad010fe8d896338d2cc29cd              711 Packages.gz
+ 4ba7578560c34d458ec9006bfce8453a              904 Packages.bz2
 SHA256:
- fb6dfacd85675e1076347ef1669629c590b7eff4c3a6c679c05c99e77b2e96ea             2392 Packages
- 1d218cfcbffc6b2e3691ccfd18419bc92c860c4e7c19781b00ba22adc4072495              715 Packages.gz
- e72694d007c593b7002940e101ec8d76b5a108874710098b603a202f81268440              897 Packages.bz2
+ 8a813e9b5b23e08f2c41c2f7bb98dc5fd8b012460e661f5183ebb2ebe2d58a2c             2392 Packages
+ e5e59cd84d3ec0c4f102e3e0a042dc94bae200d48c66295520185b7ada97d4c7              711 Packages.gz
+ 63513656bbd2eb275d5ec17ea4f07d1e387de21a852106f315b0557d9647bb60              904 Packages.bz2
