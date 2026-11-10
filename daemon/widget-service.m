@@ -19,8 +19,9 @@ extern int proc_pidpath(int pid, void *buffer, uint32_t buffersize);
 
 static NSString *Scripts(void) { return [iat_data_directory() stringByAppendingPathComponent:@"scripts"]; }
 static BOOL ValidName(id name) {
-    return [name isKindOfClass:NSString.class] && [name length] > 4 && [name length] < 256 &&
+    return [name isKindOfClass:NSString.class] && [name length] > 4 && [name lengthOfBytesUsingEncoding:NSUTF8StringEncoding] < 256 &&
         [name hasSuffix:@".lua"] && ![name hasPrefix:@"."] &&
+        [name rangeOfCharacterFromSet:NSCharacterSet.controlCharacterSet].location == NSNotFound &&
         [name rangeOfCharacterFromSet:[NSCharacterSet characterSetWithCharactersInString:@"/\\\n\r"]].location == NSNotFound;
 }
 static NSArray *Names(void) {

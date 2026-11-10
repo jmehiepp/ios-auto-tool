@@ -1,4 +1,5 @@
 #import "shell-exec.h"
+#import "../../daemon/platform-paths.h"
 #import <Foundation/Foundation.h>
 #include <stdlib.h>
 #include <string.h>
@@ -25,8 +26,9 @@ static char *run_command(const char *cmd, int *out_exit_code) {
     posix_spawn_file_actions_addclose(&actions, pipefd[0]);
     posix_spawn_file_actions_addclose(&actions, pipefd[1]);
 
-    char *argv[] = { "/bin/sh", "-c", (char *)cmd, NULL };
-    int rc = posix_spawn(&pid, "/bin/sh", &actions, NULL, argv, environ);
+    const char *shell = IAT_BOOTSTRAP_PATH("/bin/sh");
+    char *argv[] = { (char *)shell, "-c", (char *)cmd, NULL };
+    int rc = posix_spawn(&pid, shell, &actions, NULL, argv, environ);
     posix_spawn_file_actions_destroy(&actions);
     close(pipefd[1]);
 

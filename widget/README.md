@@ -33,4 +33,6 @@ xcrun clang -std=c11 -Wall -Wextra -Werror tests/widget-transport-tests.c -o .bu
 
 Tám trường hợp: fragmented request reads/ACK, ACK rồi peer close, EOF thiếu newline, daemon không ACK, response quá64KiB, partial response kéo dài vượt tổng deadline, request thiếu newline và socket path quá dài. Test không dùng core socket hay quyền root.
 
+Fixture in tên case, kết quả client, elapsed time và lỗi child. Riêng write thứ hai của case slow-partial được phép nhận EPIPE/ECONNRESET sau khi client đã timeout và đóng socket: `usleep` có thể thức trễ trên CI. Byte đầu phải gửi thành công, client vẫn phải trả ETIMEDOUT trong deadline; các lỗi read/write khác, lỗi oversize và child signal đều làm test thất bại. Không đổi transport production để che lỗi fixture.
+
 Host Windows hiện tại chưa có compiler POSIX/macOS, vì vậy không tự gán trạng thái pass cho lượt test này. Parent build sẽ chạy lệnh trên và build UIKit/Logos. Cần kiểm tra trên iPhone: startup không tự chạy; chọn macro có ACK và chạy1 lần; stop cooperative rồi statusfalse; script tự kết thúc cập nhật nút; daemon offline hiển thị lỗi trong3 giây; danh sách tên Unicode; kéo nút và rotation không lệch; menu đóng/mở; hide/show không thay runtime; core socket vẫn0600 và widget0660, peer app thường bị từ chối.

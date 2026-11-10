@@ -21,6 +21,9 @@
 int main(int argc, char *argv[]) {
     @autoreleasepool {
         signal(SIGPIPE, SIG_IGN);
+        NSString *path = [NSString stringWithFormat:@"%s:%s:%s:/usr/bin:/bin:/usr/sbin:/sbin",
+            IAT_BOOTSTRAP_PATH("/usr/bin"), IAT_BOOTSTRAP_PATH("/bin"), IAT_BOOTSTRAP_PATH("/usr/sbin")];
+        setenv("PATH", path.UTF8String, 1);
         if (getuid() != 0) { fprintf(stderr, "Run iosautotool-daemon as root.\n"); return 1; }
         if (argc > 1 && strcmp(argv[1], "--mcp-stdio") == 0) return iat_stdio_bridge();
         if (argc > 1 && strcmp(argv[1], "--access-code") == 0) {
