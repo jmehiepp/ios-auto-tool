@@ -40,6 +40,11 @@ static int widget_transport_wait(int fd, short events, long long deadline) {
         if (result < 0 && errno == EINTR) continue;
         if (result < 0) return errno;
         if (!result) return ETIMEDOUT;
+        // Readiness can win over the timeout when this thread is scheduled late.
+        // The absolute budget still takes precedence over late EOF/data.
+        now = widget_transport_now_ms();
+        if (now < 0) return EIO;
+        if (now >= deadline) return ETIMEDOUT;
         return 0;
     }
 }
@@ -112,6 +117,9 @@ static int widget_transport_exchange(const char *socket_path, const void *reques
         if (result) goto done;
         ssize_t count = recv(fd, (unsigned char *)response + received, capacity - received, 0);
         if (count < 0 && (errno == EINTR || errno == EAGAIN || errno == EWOULDBLOCK)) continue;
+        now = widget_transport_now_ms();
+        if (now < 0) { result = EIO; goto done; }
+        if (now >= deadline) { result = ETIMEDOUT; goto done; }
         if (count <= 0) { result = count < 0 ? errno : EPROTO; goto done; }
         unsigned char *newline = memchr((unsigned char *)response + received, '\n', (size_t)count);
         if (newline) {

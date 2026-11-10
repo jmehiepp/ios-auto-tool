@@ -21,6 +21,8 @@ xcrun clang -fobjc-arc -fblocks -DIAT_APP_CONTROL_TESTING -DIAT_ACCOUNT_TESTING 
 .build-evidence/app-account-tests
 xcrun clang -std=c11 -Wall -Wextra -Werror tests/widget-transport-tests.c -o .build-evidence/widget-transport-tests
 .build-evidence/widget-transport-tests
+xcrun clang -std=c11 -Wall -Wextra -Werror tests/widget-late-wakeup-tests.c -o .build-evidence/widget-late-wakeup-tests
+.build-evidence/widget-late-wakeup-tests
 xcrun clang -fobjc-arc -fblocks tests/scheduler-tests.m daemon/runtime-paths.m -framework Foundation -framework Security -o .build-evidence/scheduler-tests
 .build-evidence/scheduler-tests
 for file in webide/frontend/*.js; do node --check "$file"; done
