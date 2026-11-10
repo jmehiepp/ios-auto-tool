@@ -1,6 +1,5 @@
 #import "ocr.h"
 #import <Vision/Vision.h>
-#import <CoreImage/CoreImage.h>
 #include <string.h>
 #include <stdlib.h>
 
@@ -19,8 +18,11 @@ static NSArray<VNRecognizedTextObservation *> *run_vision(UIImage *image,
                                                           const char *languages)
 {
 
-    CIImage *ci = [CIImage imageWithCGImage:image.CGImage];
+    if (!image.CGImage) return nil;
     VNRecognizeTextRequest *req = [[VNRecognizeTextRequest alloc] init];
+    // A launch daemon has no EAGL display context. Keep preprocessing and
+    // inference on the CPU rather than entering Core Image's GL context path.
+    req.usesCPUOnly = YES;
     req.recognitionLevel   = VNRequestTextRecognitionLevelAccurate;
     req.usesLanguageCorrection = YES;
     NSArray *supported = [VNRecognizeTextRequest supportedRecognitionLanguagesForTextRecognitionLevel:
@@ -31,7 +33,7 @@ static NSArray<VNRecognizedTextObservation *> *run_vision(UIImage *image,
     req.recognitionLanguages = selected.count ? selected : @[@"en-US"];
 
     VNImageRequestHandler *handler = [[VNImageRequestHandler alloc]
-        initWithCIImage:ci options:@{}];
+        initWithCGImage:image.CGImage options:@{}];
     NSError *err = nil;
     if (![handler performRequests:@[req] error:&err]) return nil;
     return req.results ?: @[];

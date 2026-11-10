@@ -19,6 +19,10 @@ launch.write_bytes(plistlib.dumps({
     'ProgramArguments': [prefix + '/Library/IOSAutoTool/iosautotool-daemon'],
     'UserName': 'root', 'GroupName': 'wheel',
     'RunAtLoad': True, 'KeepAlive': True, 'ThrottleInterval': 30,
+    # Vision's models exceed launchd's default 18 MiB daemon allowance on iOS 15.
+    # Keep a finite budget; do not exempt the process from memory pressure.
+    'JetsamProperties': {'MemoryLimit': 256, 'MemoryLimitActive': 256,
+                         'MemoryLimitInactive': 256},
     'WorkingDirectory': '/var/mobile/Library/IOSAutoTool',
     'StandardOutPath': '/var/log/iosautotool/stdout.log',
     'StandardErrorPath': '/var/log/iosautotool/stderr.log',
