@@ -152,7 +152,7 @@ int main(void) { @autoreleasepool {
     fixture_container = [fixture_root stringByAppendingPathComponent:@"containers/fixture-UUID"];
     make_directory(fixture_container);
     NSString *metadata_path = [fixture_container stringByAppendingPathComponent:@".com.apple.mobile_container_manager.metadata.plist"];
-    assert([@{@"MCMMetadataIdentifier":@(fixture_id), @"sentinel":@"preserve"} writeToFile:metadata_path atomically:YES]);
+    assert(([@{@"MCMMetadataIdentifier":@(fixture_id), @"sentinel":@"preserve"} writeToFile:metadata_path atomically:YES]));
     NSData *mcm_before = [NSData dataWithContentsOfFile:metadata_path];
     struct stat before, after;
     assert(lstat(fixture_container.fileSystemRepresentation, &before) == 0);
