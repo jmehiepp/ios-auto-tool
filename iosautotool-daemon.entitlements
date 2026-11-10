@@ -8,6 +8,7 @@
     <key>com.apple.security.iokit-user-client-class</key>
     <array>
         <string>IOSurfaceRootUserClient</string>
+        <string>AGXDeviceUserClient</string>
     </array>
     <key>com.apple.QuartzCore.global-capture</key>
     <true/>
