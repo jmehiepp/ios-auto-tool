@@ -22,7 +22,7 @@ void log_init(void) {
     mkdir(IAT_PATH(LOG_DIR), 0755);
     time_t t = time(NULL);
     char path[4096];
-    snprintf(path, sizeof(path), "%s/run-%ld.log", IAT_PATH(LOG_DIR), (long)t);
+    snprintf(path, sizeof(path), "%s/run-%ld-%d.log", IAT_PATH(LOG_DIR), (long)t, getpid());
     log_file = fopen(path, "w");
 
     pthread_mutex_lock(&log_mutex);

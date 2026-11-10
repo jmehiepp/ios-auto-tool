@@ -14,6 +14,9 @@
 #include <signal.h>
 #include <unistd.h>
 #include <dlfcn.h>
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <errno.h>
 
 #define IPC_SOCKET_PATH  "/var/run/iosautotool.sock"
 #define WEBIDE_PORT      8890
@@ -34,6 +37,31 @@ static void configure_model_memory_budget(void) {
         log_info("Model memory budget: active=%d MiB inactive=%d MiB", limits.active, limits.inactive);
 }
 
+static int run_file(const char *path) {
+    int file = open(path, O_RDONLY | O_NOFOLLOW | O_CLOEXEC);
+    struct stat info;
+    if (file < 0 || fstat(file, &info) || !S_ISREG(info.st_mode) || info.st_size > 1024 * 1024) {
+        if (file >= 0) close(file);
+        fprintf(stderr, "Cannot read a regular Lua file up to 1 MiB.\n"); return 2;
+    }
+    NSMutableData *bytes = [NSMutableData data];
+    char buffer[8192]; ssize_t count;
+    while ((count = read(file, buffer, sizeof(buffer))) > 0) {
+        [bytes appendBytes:buffer length:(NSUInteger)count];
+        if (bytes.length > 1024 * 1024) break;
+    }
+    close(file);
+    NSString *code = [[NSString alloc] initWithData:bytes encoding:NSUTF8StringEncoding];
+    if (count < 0 || bytes.length > 1024 * 1024 || !code || memchr(bytes.bytes, 0, bytes.length)) {
+        fprintf(stderr, "Lua source must be UTF-8, without NUL, up to 1 MiB.\n"); return 2;
+    }
+    log_init(); log_add_client(STDOUT_FILENO);
+    configure_model_memory_budget();
+    lua_bridge_init();
+    // Standalone execution never binds sockets or starts a second daemon.
+    return lua_run_script(code.UTF8String);
+}
+
 int main(int argc, char *argv[]) {
     @autoreleasepool {
         signal(SIGPIPE, SIG_IGN);
@@ -41,6 +69,10 @@ int main(int argc, char *argv[]) {
             IAT_BOOTSTRAP_PATH("/usr/bin"), IAT_BOOTSTRAP_PATH("/bin"), IAT_BOOTSTRAP_PATH("/usr/sbin")];
         setenv("PATH", path.UTF8String, 1);
         if (getuid() != 0) { fprintf(stderr, "Run iosautotool-daemon as root.\n"); return 1; }
+        if (argc > 1 && strcmp(argv[1], "--run-file") == 0) {
+            if (argc != 3) { fprintf(stderr, "Usage: iosautotool-daemon --run-file PATH\n"); return 2; }
+            return run_file(argv[2]);
+        }
         if (argc > 1 && strcmp(argv[1], "--mcp-stdio") == 0) return iat_stdio_bridge();
         if (argc > 1 && strcmp(argv[1], "--access-code") == 0) {
             NSString *token = iat_access_token();
