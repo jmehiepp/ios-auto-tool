@@ -52,7 +52,8 @@ static int run_file(const char *path) {
     }
     close(file);
     NSString *code = [[NSString alloc] initWithData:bytes encoding:NSUTF8StringEncoding];
-    if (count < 0 || bytes.length > 1024 * 1024 || !code || memchr(bytes.bytes, 0, bytes.length)) {
+    if (count < 0 || bytes.length > 1024 * 1024 || !code ||
+        (bytes.length && memchr(bytes.bytes, 0, bytes.length))) {
         fprintf(stderr, "Lua source must be UTF-8, without NUL, up to 1 MiB.\n"); return 2;
     }
     log_init(); log_add_client(STDOUT_FILENO);
