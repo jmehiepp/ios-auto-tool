@@ -145,14 +145,8 @@ static int l_select_apps(lua_State *L) {
 }
 static int l_apply_preset(lua_State *L) {
     const char *name = luaL_checkstring(L, 1);
-    NSDictionary *preset;
-    if (strcmp(name, "iphone14_pro_max") == 0) {
-        preset = @{@"device_model": @"iPhone15,3", @"device_family": @"iPhone", @"ios_version": @"17.2.1",
-                   @"screen_resolution": @{@"w": @430, @"h": @932, @"scale": @3}};
-    } else if (strcmp(name, "iphone13") == 0) {
-        preset = @{@"device_model": @"iPhone14,5", @"device_family": @"iPhone", @"ios_version": @"16.7.2",
-                   @"screen_resolution": @{@"w": @390, @"h": @844, @"scale": @3}};
-    } else return luaL_error(L, "unknown preset");
+    NSDictionary *preset = [SpoofConfig presetNamed:[NSString stringWithUTF8String:name]];
+    if (!preset) return luaL_error(L, "unknown preset");
     NSMutableDictionary *configuration = [[[SpoofConfig shared] getAll] mutableCopy];
     NSMutableDictionary *modules = [configuration[@"modules"] mutableCopy];
     for (NSString *key in preset) modules[key] = @{@"enabled": @YES, @"value": preset[key]};

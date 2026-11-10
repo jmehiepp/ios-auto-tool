@@ -36,12 +36,21 @@ chown root:wheel "$PLIST"
 chmod 644 "$PLIST"
 launchctl unload "$PLIST" 2>/dev/null || true
 launchctl load "$PLIST"
+# Ask the package manager to offer a respring after dpkg has completed.
+finish_fd=${{CYDIA%% *}}
+case "$finish_fd" in
+    [3-9]) printf 'finish:restart\\n' 2>/dev/null >&"$finish_fd" || true ;;
+esac
 exit 0
 '''
 prerm = f'''#!/bin/sh
 if [ "$1" = remove ] || [ "$1" = upgrade ] || [ "$1" = deconfigure ]; then
     launchctl unload "{prefix}/Library/LaunchDaemons/com.iosautotool.daemon.plist" 2>/dev/null || true
 fi
+finish_fd=${{CYDIA%% *}}
+case "$finish_fd" in
+    [3-9]) printf 'finish:restart\\n' 2>/dev/null >&"$finish_fd" || true ;;
+esac
 exit 0
 '''
 for name, text in [('postinst', postinst), ('prerm', prerm)]:

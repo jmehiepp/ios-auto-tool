@@ -93,6 +93,20 @@ static void ConfigChanged(CFNotificationCenterRef center, void *observer, CFStri
     @autoreleasepool { [(__bridge SpoofConfig *)observer reload]; }
 }
 @implementation SpoofConfig
++ (NSDictionary *)presetNamed:(NSString *)name {
+    if (![name isKindOfClass:NSString.class]) return nil;
+    static NSDictionary *presets;
+    static dispatch_once_t once;
+    dispatch_once(&once, ^{
+        presets = @{
+            @"iphone14_pro_max": @{@"device_model":@"iPhone15,3", @"device_family":@"iPhone", @"ios_version":@"17.4.1",
+                @"screen_resolution":@{@"w":@430, @"h":@932, @"scale":@3}, @"locale":@"en_US", @"timezone":@"America/Los_Angeles"},
+            @"iphone13": @{@"device_model":@"iPhone14,5", @"device_family":@"iPhone", @"ios_version":@"16.7.8",
+                @"screen_resolution":@{@"w":@390, @"h":@844, @"scale":@3}, @"locale":@"en_US", @"timezone":@"America/New_York"}
+        };
+    });
+    return presets[name];
+}
 + (instancetype)shared {
     static SpoofConfig *instance;
     static dispatch_once_t once;

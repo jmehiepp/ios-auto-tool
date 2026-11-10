@@ -4,40 +4,50 @@
 #import <lua/lua.h>
 #import <lua/lauxlib.h>
 #include <stdlib.h>
+#include <string.h>
+
+static const char *checked_text(lua_State *L, int index) {
+    size_t length = 0;
+    const char *value = luaL_checklstring(L, index, &length);
+    if (strlen(value) != length) luaL_argerror(L, index, "embedded NUL is not allowed");
+    return value;
+}
 
 static int lua_app_run(lua_State *L) {
-    const char *bid = luaL_checkstring(L, 1);
-    c_app_run(bid);
-    return 0;
+    const char *bid = checked_text(L, 1);
+    if (!c_app_run(bid)) return luaL_error(L, "%s", c_app_last_error());
+    lua_pushboolean(L, 1); return 1;
 }
 
 static int lua_app_kill(lua_State *L) {
-    const char *bid = luaL_checkstring(L, 1);
-    c_app_kill(bid);
-    return 0;
+    const char *bid = checked_text(L, 1);
+    if (!c_app_kill(bid)) return luaL_error(L, "%s", c_app_last_error());
+    lua_pushboolean(L, 1); return 1;
 }
 
 static int lua_app_kill_all(lua_State *L) {
     (void)L;
-    c_app_kill_all();
-    return 0;
+    if (!c_app_kill_all()) return luaL_error(L, "%s", c_app_last_error());
+    lua_pushboolean(L, 1); return 1;
 }
 
 static int lua_clear_switcher(lua_State *L) {
     (void)L;
-    c_clear_switcher();
-    return 0;
+    if (!c_clear_switcher()) return luaL_error(L, "%s", c_app_last_error());
+    lua_pushboolean(L, 1); return 1;
 }
 
 static int lua_get_front_app(lua_State *L) {
     const char *bid = c_get_front_app();
-    lua_pushstring(L, bid ? bid : "");
+    if (!bid) return luaL_error(L, "%s", c_app_last_error());
+    lua_pushstring(L, bid);
     return 1;
 }
 
 static int lua_get_running_apps(lua_State *L) {
     int count = 0;
     AppInfo *apps = c_get_running_apps(&count);
+    if (count < 0) return luaL_error(L, "%s", c_app_last_error());
     lua_createtable(L, count, 0);
     for (int i = 0; i < count; i++) {
         lua_createtable(L, 0, 3);
@@ -51,38 +61,43 @@ static int lua_get_running_apps(lua_State *L) {
 }
 
 static int lua_save_account(lua_State *L) {
-    const char *bid  = luaL_checkstring(L, 1);
-    int         slot = (int)luaL_checkinteger(L, 2);
-    save_account(bid, slot);
-    return 0;
+    const char *bid  = checked_text(L, 1);
+    lua_Integer value = luaL_checkinteger(L, 2);
+    if (value < 1 || value > 9999) return luaL_argerror(L, 2, "slot must be 1...9999");
+    if (!save_account(bid, (int)value)) return luaL_error(L, "%s", account_last_error());
+    lua_pushboolean(L, 1); return 1;
 }
 
 static int lua_switch_account(lua_State *L) {
-    const char *bid  = luaL_checkstring(L, 1);
-    int         slot = (int)luaL_checkinteger(L, 2);
-    switch_account(bid, slot);
-    return 0;
+    const char *bid  = checked_text(L, 1);
+    lua_Integer value = luaL_checkinteger(L, 2);
+    if (value < 1 || value > 9999) return luaL_argerror(L, 2, "slot must be 1...9999");
+    if (!switch_account(bid, (int)value)) return luaL_error(L, "%s", account_last_error());
+    lua_pushboolean(L, 1); return 1;
 }
 
 static int lua_delete_account(lua_State *L) {
-    const char *bid  = luaL_checkstring(L, 1);
-    int         slot = (int)luaL_checkinteger(L, 2);
-    delete_account(bid, slot);
-    return 0;
+    const char *bid  = checked_text(L, 1);
+    lua_Integer value = luaL_checkinteger(L, 2);
+    if (value < 1 || value > 9999) return luaL_argerror(L, 2, "slot must be 1...9999");
+    if (!delete_account(bid, (int)value)) return luaL_error(L, "%s", account_last_error());
+    lua_pushboolean(L, 1); return 1;
 }
 
 static int lua_name_account(lua_State *L) {
-    const char *bid   = luaL_checkstring(L, 1);
-    int         slot  = (int)luaL_checkinteger(L, 2);
-    const char *label = luaL_checkstring(L, 3);
-    name_account(bid, slot, label);
-    return 0;
+    const char *bid   = checked_text(L, 1);
+    lua_Integer value = luaL_checkinteger(L, 2);
+    if (value < 1 || value > 9999) return luaL_argerror(L, 2, "slot must be 1...9999");
+    const char *label = checked_text(L, 3);
+    if (!name_account(bid, (int)value, label)) return luaL_error(L, "%s", account_last_error());
+    lua_pushboolean(L, 1); return 1;
 }
 
 static int lua_list_accounts(lua_State *L) {
-    const char *bid = luaL_checkstring(L, 1);
+    const char *bid = checked_text(L, 1);
     int count = 0;
     AccountSlot *slots = list_accounts(bid, &count);
+    if (count < 0) return luaL_error(L, "%s", account_last_error());
     lua_createtable(L, count, 0);
     for (int i = 0; i < count; i++) {
         lua_createtable(L, 0, 3);
@@ -96,9 +111,9 @@ static int lua_list_accounts(lua_State *L) {
 }
 
 static int lua_clear_keychain(lua_State *L) {
-    const char *bid = luaL_checkstring(L, 1);
-    clear_keychain_for_app(bid);
-    return 0;
+    const char *bid = checked_text(L, 1);
+    if (!clear_keychain_for_app(bid)) return luaL_error(L, "%s", account_last_error());
+    lua_pushboolean(L, 1); return 1;
 }
 
 void register_app_bindings(lua_State *L) {

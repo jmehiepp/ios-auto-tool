@@ -54,6 +54,7 @@ iosautotool-daemon_FILES = \
 	mcp/tools/tool-app.m \
 	mcp/tools/tool-device.m \
 	spoof/spoof-config.m \
+	spoof/device-profiles.m \
 	lua/bindings/bind-spoof.m
 
 iosautotool-daemon_CFLAGS = \

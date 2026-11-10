@@ -24,6 +24,7 @@
 
 @interface SpoofConfig : NSObject
 + (instancetype)shared;
++ (NSDictionary *)presetNamed:(NSString *)name;
 - (BOOL)isEnabled:(NSString *)module;
 - (NSString *)getString:(NSString *)module;
 - (NSNumber *)getNumber:(NSString *)module;

@@ -5,73 +5,73 @@
       "name": "appRun",
       "native_function": "lua_app_run",
       "source": "lua/bindings/bind-app.m",
-      "line": 105
+      "line": 120
     },
     {
       "name": "appKill",
       "native_function": "lua_app_kill",
       "source": "lua/bindings/bind-app.m",
-      "line": 106
+      "line": 121
     },
     {
       "name": "appKillAll",
       "native_function": "lua_app_kill_all",
       "source": "lua/bindings/bind-app.m",
-      "line": 107
+      "line": 122
     },
     {
       "name": "clearSwitcher",
       "native_function": "lua_clear_switcher",
       "source": "lua/bindings/bind-app.m",
-      "line": 108
+      "line": 123
     },
     {
       "name": "getFrontApp",
       "native_function": "lua_get_front_app",
       "source": "lua/bindings/bind-app.m",
-      "line": 109
+      "line": 124
     },
     {
       "name": "getRunningApps",
       "native_function": "lua_get_running_apps",
       "source": "lua/bindings/bind-app.m",
-      "line": 110
+      "line": 125
     },
     {
       "name": "saveAccount",
       "native_function": "lua_save_account",
       "source": "lua/bindings/bind-app.m",
-      "line": 111
+      "line": 126
     },
     {
       "name": "switchAccount",
       "native_function": "lua_switch_account",
       "source": "lua/bindings/bind-app.m",
-      "line": 112
+      "line": 127
     },
     {
       "name": "deleteAccount",
       "native_function": "lua_delete_account",
       "source": "lua/bindings/bind-app.m",
-      "line": 113
+      "line": 128
     },
     {
       "name": "nameAccount",
       "native_function": "lua_name_account",
       "source": "lua/bindings/bind-app.m",
-      "line": 114
+      "line": 129
     },
     {
       "name": "listAccounts",
       "native_function": "lua_list_accounts",
       "source": "lua/bindings/bind-app.m",
-      "line": 115
+      "line": 130
     },
     {
       "name": "clearKeychain",
       "native_function": "lua_clear_keychain",
       "source": "lua/bindings/bind-app.m",
-      "line": 116
+      "line": 131
     },
     {
       "name": "typeText",
@@ -354,6 +354,58 @@
       "native_function": "builtin_sleep",
       "source": "lua/lua-bridge.m",
       "line": 52
+    }
+  ],
+  "table_functions": [
+    {
+      "name": "spoof.enable",
+      "native_function": "l_enable",
+      "source": "lua/bindings/bind-spoof.m"
+    },
+    {
+      "name": "spoof.disable",
+      "native_function": "l_disable",
+      "source": "lua/bindings/bind-spoof.m"
+    },
+    {
+      "name": "spoof.reset",
+      "native_function": "l_reset",
+      "source": "lua/bindings/bind-spoof.m"
+    },
+    {
+      "name": "spoof.reload",
+      "native_function": "l_reload",
+      "source": "lua/bindings/bind-spoof.m"
+    },
+    {
+      "name": "spoof.isEnabled",
+      "native_function": "l_is_enabled",
+      "source": "lua/bindings/bind-spoof.m"
+    },
+    {
+      "name": "spoof.getAll",
+      "native_function": "l_get_all",
+      "source": "lua/bindings/bind-spoof.m"
+    },
+    {
+      "name": "spoof.applyPreset",
+      "native_function": "l_apply_preset",
+      "source": "lua/bindings/bind-spoof.m"
+    },
+    {
+      "name": "spoof.setMasterEnabled",
+      "native_function": "l_set_master",
+      "source": "lua/bindings/bind-spoof.m"
+    },
+    {
+      "name": "spoof.setSelectedApps",
+      "native_function": "l_select_apps",
+      "source": "lua/bindings/bind-spoof.m"
+    },
+    {
+      "name": "spoof.selectedApps",
+      "native_function": "l_selected_apps",
+      "source": "lua/bindings/bind-spoof.m"
     }
   ]
 }

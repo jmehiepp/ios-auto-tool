@@ -8,6 +8,7 @@
 #import "../../engine/touch/recorder.h"
 #import "../../mcp/mcp-tools.h"
 #import "../../spoof/spoof-config.h"
+#import "../../spoof/device-profiles.h"
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 #include <stdio.h>
@@ -311,6 +312,26 @@ static void handle_key(struct mg_connection *c, struct mg_http_message *hm) {
 }
 
 // GET /api/spoof → raw spoof.json content (or {})
+static void handle_device_profiles(struct mg_connection *c, struct mg_http_message *hm) {
+    NSError *error = nil;
+    NSDictionary *result;
+    if (mg_match(hm->method, mg_str("GET"), NULL)) {
+        NSArray *names = [DeviceProfiles namesWithError:&error];
+        result = names ? @{@"profiles":names} : nil;
+    } else if (mg_match(hm->method, mg_str("POST"), NULL)) {
+        NSDictionary *body = parse_json_body(hm);
+        NSString *action = body[@"action"], *name = body[@"name"];
+        BOOL ok = NO;
+        if ([action isEqual:@"save"]) ok = [DeviceProfiles saveCurrentAs:name error:&error];
+        else if ([action isEqual:@"apply"]) ok = [DeviceProfiles applyNamed:name error:&error];
+        else if ([action isEqual:@"delete"]) ok = [DeviceProfiles deleteNamed:name error:&error];
+        result = ok ? @{@"ok":@YES} : nil;
+    } else { json_reply(c, 405, "{\"error\":\"Method not allowed\"}"); return; }
+    if (!result) result = @{@"error":error.localizedDescription ?: @"Invalid profile request"};
+    NSData *data = [NSJSONSerialization dataWithJSONObject:result options:0 error:nil];
+    NSString *json = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+    json_reply(c, result[@"error"] ? 400 : 200, json.UTF8String);
+}
 static void handle_spoof_get(struct mg_connection *c) {
     NSData *data = [NSJSONSerialization dataWithJSONObject:[[SpoofConfig shared] getAll] options:0 error:nil];
     NSString *json = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
@@ -344,27 +365,7 @@ static void handle_spoof_post(struct mg_connection *c, struct mg_http_message *h
 static void handle_spoof_preset(struct mg_connection *c, struct mg_http_message *hm) {
     NSDictionary *body = parse_json_body(hm);
     NSString *name = body[@"name"];
-    static NSDictionary *presets = nil;
-    static dispatch_once_t tok;
-    dispatch_once(&tok, ^{
-        presets = @{
-            @"iphone14_pro_max": @{
-                @"device_model": @"iPhone15,3",
-                @"ios_version":  @"17.4.1",
-                @"screen_resolution": @{@"w":@430, @"h":@932, @"scale":@3},
-                @"locale":       @"en_US",
-                @"timezone":     @"America/Los_Angeles",
-            },
-            @"iphone13": @{
-                @"device_model": @"iPhone14,5",
-                @"ios_version":  @"16.7.8",
-                @"screen_resolution": @{@"w":@390, @"h":@844, @"scale":@3},
-                @"locale":       @"en_US",
-                @"timezone":     @"America/New_York",
-            },
-        };
-    });
-    NSDictionary *preset = [name isKindOfClass:NSString.class] ? presets[name] : nil;
+    NSDictionary *preset = [SpoofConfig presetNamed:name];
     if (!preset) { json_reply(c, 400, "{\"error\":\"unknown preset\"}"); return; }
     SpoofConfig *sc = [SpoofConfig shared];
     NSMutableDictionary *next = [[sc getAll] mutableCopy];
@@ -400,7 +401,9 @@ void api_handle(struct mg_connection *c, struct mg_http_message *hm,
         return;
     }
 
-    if (mg_match(hm->uri, mg_str("/api/files"), NULL) &&
+    if (mg_match(hm->uri, mg_str("/api/device-profiles"), NULL)) {
+        handle_device_profiles(c, hm);
+    } else if (mg_match(hm->uri, mg_str("/api/files"), NULL) &&
         mg_match(hm->method, mg_str("GET"), NULL)) {
         handle_list_files(c, scripts_dir);
 

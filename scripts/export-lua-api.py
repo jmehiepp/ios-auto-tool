@@ -11,7 +11,13 @@ for file in sorted((root / 'lua').rglob('*.m')):
         entries.append({'name': match[1], 'native_function': match[2],
                         'source': file.relative_to(root).as_posix(),
                         'line': text[:match.start()].count('\n') + 1})
+tables = []
+source = root / 'lua/bindings/bind-spoof.m'
+text = source.read_text(encoding='utf-8-sig')
+library = re.search(r'static const luaL_Reg spoof_lib\[\] = \{(.*?)\{NULL, NULL\}', text, re.S)[1]
+for match in re.finditer(r'\{"([^"\n]+)",\s*(\w+)\}', library):
+    tables.append({'name':'spoof.' + match[1], 'native_function':match[2], 'source':source.relative_to(root).as_posix()})
 target = root / 'docs/lua-api.json'
 target.write_text(json.dumps({'scope': 'Static registration inventory; iPhone behavior requires device testing.',
-                              'globals': entries}, indent=2), encoding='utf-8')
-print(f'{len(entries)} Lua globals inventoried')
+                              'globals': entries, 'table_functions': tables}, indent=2), encoding='utf-8')
+print(f'{len(entries)} Lua globals and {len(tables)} table functions inventoried')

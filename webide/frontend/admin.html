@@ -76,6 +76,13 @@
   <textarea id="device-apps" rows="4" style="width:100%;max-width:600px" placeholder="com.example.test"></textarea>
   <p id="device-message" role="status" aria-live="polite"></p>
   <div class="spoof-toolbar">
+    <label>Profile name <input id="device-profile-name" maxlength="64" value="default" placeholder="test_phone"></label>
+    <button class="btn-save" onclick="saveDeviceProfile()">Save profile</button>
+    <select id="device-profile-select" aria-label="Saved device profiles"></select>
+    <button class="btn-primary" onclick="changeDeviceProfile('apply')">Apply profile</button>
+    <button class="btn-reset" onclick="changeDeviceProfile('delete')">Delete saved profile</button>
+  </div>
+  <div class="spoof-toolbar">
     <span>Status: <span id="spoof-status" class="badge badge-gray">unknown</span></span>
     <label>Preset:
       <select id="spoof-preset" onchange="applyPreset(this.value)">

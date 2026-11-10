@@ -29,13 +29,13 @@
     <button class="htab htab-schedule"      onclick="switchTab('schedule');refreshSchedule()">⏰ Schedule</button>
     <button class="htab htab-apps"          onclick="switchTab('apps')">Apps</button>
     <button class="htab htab-device"        onclick="switchTab('device')">Device</button>
-    <button class="htab htab-spoof"         style="display:none" onclick="switchTab('spoof')">Spoof</button>
+    <button class="htab htab-spoof" onclick="location.href='/admin.html?tab=spoof'">Device profiles</button>
   </div>
 
   <span class="header-spacer"></span>
 
   <button class="icon-btn" id="btn-funcs-toggle" title="Toggle functions panel" onclick="toggleFuncs()">⚡</button>
-  <button class="icon-btn" title="Settings">⚙</button>
+  <button class="icon-btn" title="Settings" onclick="location.href='/admin.html'">⚙</button>
 </header>
 
 <!-- ─── TOOLBAR ────────────────────────────────────────────── -->

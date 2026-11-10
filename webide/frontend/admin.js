@@ -245,6 +245,7 @@ async function loadSpoof() {
   try {
     _spoofData = await deviceRequest(undefined, 'GET');
     renderSpoof();
+    await loadDeviceProfiles();
   } catch (e) { deviceMessage(e.message, true); }
 }
 function renderSpoof() {
@@ -276,7 +277,8 @@ async function saveSpoof() {
     await deviceRequest({enabled:document.getElementById('device-enabled').checked, selectedApps, modules});
     await loadSpoof();
     deviceMessage('Saved. Close and reopen selected apps to apply.');
-  } catch (e) { deviceMessage(e.message, true); }
+    return true;
+  } catch (e) { deviceMessage(e.message, true); return false; }
 }
 async function applyPreset(name) {
   if (!name) return;
@@ -292,6 +294,32 @@ async function resetSpoof() {
   catch (e) { deviceMessage(e.message, true); }
 }
 
+async function loadDeviceProfiles() {
+  const value = await deviceRequest(undefined, 'GET', '/api/device-profiles');
+  const select = document.getElementById('device-profile-select'), previous = select.value;
+  select.replaceChildren();
+  for (const name of value.profiles) { const option = document.createElement('option'); option.value = name; option.textContent = name; select.append(option); }
+  if (value.profiles.includes(previous)) select.value = previous;
+}
+async function saveDeviceProfile() {
+  if (!await saveSpoof()) return;
+  try {
+    const name = document.getElementById('device-profile-name').value.trim();
+    await deviceRequest({action:'save', name}, 'POST', '/api/device-profiles');
+    await loadDeviceProfiles(); document.getElementById('device-profile-select').value = name;
+    deviceMessage('Device profile saved.');
+  } catch (e) { deviceMessage(e.message, true); }
+}
+async function changeDeviceProfile(action) {
+  const name = document.getElementById('device-profile-select').value;
+  if (!name || (action === 'delete' && !confirm('Delete saved profile ' + name + '?'))) return;
+  try {
+    await deviceRequest({action, name}, 'POST', '/api/device-profiles');
+    await loadSpoof();
+    deviceMessage(action === 'apply' ? 'Profile applied. Reopen selected apps.' : 'Saved profile deleted.');
+  } catch (e) { deviceMessage(e.message, true); }
+}
+
 // ── Helpers ────────────────────────────────────────────────────────────────
 function esc(s) {
   return String(s)
@@ -304,3 +332,4 @@ function esc(s) {
 
 // ── Init ───────────────────────────────────────────────────────────────────
 loadDashboard();
+if (new URLSearchParams(location.search).get('tab') === 'spoof') switchTab('spoof');
