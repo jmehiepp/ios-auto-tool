@@ -9,6 +9,9 @@ typedef struct {double x,y,w,h;} IATProbeRect;
 typedef struct {double latitude,longitude;} IATProbeCoordinate;
 typedef struct {char sysname[256],nodename[256],release[256],version[256],machine[256];} IATProbeUts;
 int uname(IATProbeUts *);
+int sysctlbyname(const char *,void *,size_t *,void *,size_t);
+int sysctl(int *,unsigned int,void *,size_t *,void *,size_t);
+void *MGCopyAnswer(void *); void CFRelease(void *);
 ]]
 local C, sel = ffi.C, ffi.C.sel_registerName
 local msg = ffi.cast('void *(*)(void *,void *)', C.objc_msgSend)
@@ -39,6 +42,25 @@ checks.ios_version = text(call(device,'systemVersion')) == '99.0.1'
 checks.idfv = text(call(call(device,'identifierForVendor'),'UUIDString')) == '12345678-1234-4321-8765-123456789ABC'
 local system = ffi.new('IATProbeUts[1]')
 checks.device_model = C.uname(system) == 0 and ffi.string(system[0].machine) == 'iPhone999,1'
+local function query(name,mib)
+    local size=ffi.new('size_t[1]',256); local buffer=ffi.new('char[256]')
+    local status
+    if mib then local keys=ffi.new('int[2]',{6,1}); status=C.sysctl(keys,2,buffer,size,nil,0)
+    else status=C.sysctlbyname(name,buffer,size,nil,0) end
+    return status==0 and ffi.string(buffer) or ''
+end
+checks.sysctl_machine = query('hw.machine')=='iPhone999,1'
+checks.sysctl_mib_machine = query(nil,true)=='iPhone999,1'
+checks.sysctl_product_version = query('kern.osproductversion')=='99.0.1'
+local gestalt=ffi.load('/usr/lib/libMobileGestalt.dylib')
+local string=ffi.cast('void *(*)(void *,void *,const char *)',C.objc_msgSend)
+local function answer(key)
+    local value=gestalt.MGCopyAnswer(string(cls('NSString'),sel('stringWithUTF8String:'),key))
+    local result=text(value); if value~=nil then C.CFRelease(value) end; return result
+end
+checks.gestalt_product_type = answer('ProductType')=='iPhone999,1'
+checks.gestalt_product_version = answer('ProductVersion')=='99.0.1'
+checks.gestalt_device_name = answer('DeviceName')=='IOSAT Synthetic Fixture'
 checks.locale = text(call(call(cls('NSLocale'),'currentLocale'),'localeIdentifier')) == 'fr_FR'
 checks.timezone = text(call(call(cls('NSTimeZone'),'localTimeZone'),'name')) == 'Pacific/Honolulu'
 local rect = ffi.cast('IATProbeRect (*)(void *,void *)', C.objc_msgSend)(screen,sel('bounds'))
@@ -102,7 +124,9 @@ local expected = os.getenv('IOSAT_EXPECT_CONFIG') == '1'
 local failed, total = 0, 0
 for name, matches in pairs(checks) do
     total = total + 1
-    local field_expected = name == 'app_script_preserved' or (expected and name ~= os.getenv('IOSAT_EXPECT_DISABLED_MODULE'))
+    local disabled=os.getenv('IOSAT_EXPECT_DISABLED_MODULE')
+    local module = ({gestalt_device_name='device_name'})[name] or name
+    local field_expected = name == 'app_script_preserved' or (expected and module ~= disabled)
     if matches ~= field_expected then failed = failed + 1 end
     print('DEVICE_CHECK '..name..' matches_fixture='..tostring(matches)..' expected='..tostring(field_expected))
 end
