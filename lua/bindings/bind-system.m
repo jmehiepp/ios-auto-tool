@@ -2,6 +2,7 @@
 #import "../../engine/system/shell-exec.h"
 #import "../../engine/system/file-ops.h"
 #import "../../engine/system/http-client.h"
+#import "../../daemon/runtime-paths.h"
 #import <lua/lua.h>
 #import <lua/lauxlib.h>
 #import <Foundation/Foundation.h>
@@ -189,7 +190,8 @@ static int lua_download_file(lua_State *L) {
 // ---------- Path helpers ----------
 
 static int lua_script_dir(lua_State *L) {
-    lua_pushstring(L, SCRIPTS_DIR);
+    NSString *path=[[iat_data_directory() stringByAppendingPathComponent:@"scripts"] stringByResolvingSymlinksInPath];
+    lua_pushstring(L, path.UTF8String);
     return 1;
 }
 static int lua_home_dir(lua_State *L) {
@@ -197,11 +199,19 @@ static int lua_home_dir(lua_State *L) {
     return 1;
 }
 static int lua_tmp_dir(lua_State *L) {
-    lua_pushstring(L, "/tmp");
+    NSString *path=iat_temporary_directory();
+    if (!path) return luaL_error(L,"project temporary directory unavailable");
+    lua_pushstring(L, path.UTF8String);
     return 1;
+}
+static int lua_tmp_name(lua_State *L) {
+    NSString *path=iat_create_temporary_file();
+    if (!path) return luaL_error(L,"cannot create a private temporary file");
+    lua_pushstring(L,path.UTF8String); return 1;
 }
 
 void register_system_bindings(lua_State *L) {
+    lua_getglobal(L,"os"); lua_pushcfunction(L,lua_tmp_name); lua_setfield(L,-2,"tmpname"); lua_pop(L,1);
     lua_register(L, "shell",         lua_shell);
     lua_register(L, "readFile",      lua_read_file);
     lua_register(L, "writeFile",     lua_write_file);

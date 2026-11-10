@@ -15,6 +15,8 @@ xcrun clang -fobjc-arc -fblocks tests/http-auth-tests.m daemon/runtime-paths.m w
 .build-evidence/http-auth-tests
 xcrun clang -fobjc-arc tests/script-source-tests.m webide/server/script-source.m -framework Foundation -o .build-evidence/script-source-tests
 .build-evidence/script-source-tests
+xcrun clang -fobjc-arc -fblocks tests/runtime-path-tests.m daemon/runtime-paths.m -framework Foundation -framework Security -o .build-evidence/runtime-path-tests
+.build-evidence/runtime-path-tests
 xcrun clang -fobjc-arc -fblocks -Ideps/luajit/include tests/lua-runtime-tests.m lua/lua-bridge.m daemon/runtime-paths.m deps/luajit/lib/libluajit-host.a -framework Foundation -framework Security -o .build-evidence/lua-runtime-tests
 .build-evidence/lua-runtime-tests
 xcrun clang -fobjc-arc -fblocks -Ideps/luajit/include tests/data-bindings-tests.m lua/bindings/bind-data.m deps/luajit/lib/libluajit-host.a -framework Foundation -o .build-evidence/data-bindings-tests

@@ -137,49 +137,109 @@
       "name": "screenshot",
       "native_function": "lua_screenshot",
       "source": "lua/bindings/bind-screen.m",
-      "line": 261
+      "line": 448
     },
     {
       "name": "findColor",
       "native_function": "lua_find_color",
       "source": "lua/bindings/bind-screen.m",
-      "line": 262
+      "line": 449
     },
     {
       "name": "findColors",
       "native_function": "lua_find_colors",
       "source": "lua/bindings/bind-screen.m",
-      "line": 263
+      "line": 450
     },
     {
       "name": "getColor",
       "native_function": "lua_get_color",
       "source": "lua/bindings/bind-screen.m",
-      "line": 264
+      "line": 451
     },
     {
       "name": "findImage",
       "native_function": "lua_find_image",
       "source": "lua/bindings/bind-screen.m",
-      "line": 265
+      "line": 452
     },
     {
       "name": "ocr",
       "native_function": "lua_ocr",
       "source": "lua/bindings/bind-screen.m",
-      "line": 266
+      "line": 453
     },
     {
       "name": "ocrDetailed",
       "native_function": "lua_ocr_detailed",
       "source": "lua/bindings/bind-screen.m",
-      "line": 267
+      "line": 454
     },
     {
       "name": "setOcrLanguages",
       "native_function": "lua_set_ocr_languages",
       "source": "lua/bindings/bind-screen.m",
-      "line": 268
+      "line": 455
+    },
+    {
+      "name": "keepScreen",
+      "native_function": "lua_keep_screen",
+      "source": "lua/bindings/bind-screen.m",
+      "line": 456
+    },
+    {
+      "name": "releaseScreen",
+      "native_function": "lua_release_screen",
+      "source": "lua/bindings/bind-screen.m",
+      "line": 457
+    },
+    {
+      "name": "screenGeometry",
+      "native_function": "lua_screen_geometry",
+      "source": "lua/bindings/bind-screen.m",
+      "line": 458
+    },
+    {
+      "name": "_legacyGetColor",
+      "native_function": "legacy_color",
+      "source": "lua/bindings/bind-screen.m",
+      "line": 459
+    },
+    {
+      "name": "_legacyGetColors",
+      "native_function": "legacy_colors",
+      "source": "lua/bindings/bind-screen.m",
+      "line": 460
+    },
+    {
+      "name": "_legacyFindColors",
+      "native_function": "legacy_find_colors",
+      "source": "lua/bindings/bind-screen.m",
+      "line": 461
+    },
+    {
+      "name": "_legacyFindImage",
+      "native_function": "legacy_find_image",
+      "source": "lua/bindings/bind-screen.m",
+      "line": 462
+    },
+    {
+      "name": "_legacyFindText",
+      "native_function": "legacy_find_text",
+      "source": "lua/bindings/bind-screen.m",
+      "line": 463
+    },
+    {
+      "name": "_legacyOCR",
+      "native_function": "legacy_ocr",
+      "source": "lua/bindings/bind-screen.m",
+      "line": 464
+    },
+    {
+      "name": "_legacyScreenshot",
+      "native_function": "legacy_screenshot",
+      "source": "lua/bindings/bind-screen.m",
+      "line": 465
     },
     {
       "name": "shell",
@@ -299,61 +359,159 @@
       "name": "tap",
       "native_function": "lua_tap",
       "source": "lua/bindings/bind-touch.m",
-      "line": 97
+      "line": 105
     },
     {
       "name": "doubleTap",
       "native_function": "lua_double_tap",
       "source": "lua/bindings/bind-touch.m",
-      "line": 98
+      "line": 106
     },
     {
       "name": "longPress",
       "native_function": "lua_long_press",
       "source": "lua/bindings/bind-touch.m",
-      "line": 99
+      "line": 107
     },
     {
       "name": "swipe",
       "native_function": "lua_swipe",
       "source": "lua/bindings/bind-touch.m",
-      "line": 100
+      "line": 108
     },
     {
       "name": "touchDown",
       "native_function": "lua_touch_down",
       "source": "lua/bindings/bind-touch.m",
-      "line": 101
+      "line": 109
     },
     {
       "name": "touchMove",
       "native_function": "lua_touch_move",
       "source": "lua/bindings/bind-touch.m",
-      "line": 102
+      "line": 110
     },
     {
       "name": "touchUp",
       "native_function": "lua_touch_up",
       "source": "lua/bindings/bind-touch.m",
-      "line": 103
+      "line": 111
     },
     {
       "name": "tapText",
       "native_function": "lua_tap_text",
       "source": "lua/bindings/bind-touch.m",
-      "line": 104
+      "line": 112
+    },
+    {
+      "name": "touchReset",
+      "native_function": "lua_touch_reset",
+      "source": "lua/bindings/bind-touch.m",
+      "line": 113
     },
     {
       "name": "log",
       "native_function": "builtin_log",
       "source": "lua/lua-bridge.m",
-      "line": 51
+      "line": 76
     },
     {
       "name": "sleep",
       "native_function": "builtin_sleep",
       "source": "lua/lua-bridge.m",
-      "line": 52
+      "line": 77
+    },
+    {
+      "name": "usleep",
+      "native_function": "builtin_microsleep",
+      "source": "lua/lua-bridge.m",
+      "line": 78
+    },
+    {
+      "name": "monotonicMillis",
+      "native_function": "builtin_clock",
+      "source": "lua/lua-bridge.m",
+      "line": 79
+    },
+    {
+      "name": "jsonEncode",
+      "native_function": "json_encode",
+      "source": "lua/bindings/bind-data.m"
+    },
+    {
+      "name": "jsonDecode",
+      "native_function": "json_decode",
+      "source": "lua/bindings/bind-data.m"
+    },
+    {
+      "name": "md5",
+      "native_function": "md5",
+      "source": "lua/bindings/bind-data.m"
+    },
+    {
+      "name": "_ws_json_encode",
+      "native_function": "json_encode",
+      "source": "lua/bindings/bind-data.m"
+    },
+    {
+      "name": "_ws_json_decode",
+      "native_function": "json_decode",
+      "source": "lua/bindings/bind-data.m"
+    },
+    {
+      "name": "_ws_b64_encode",
+      "native_function": "b64_encode",
+      "source": "lua/bindings/bind-data.m"
+    },
+    {
+      "name": "_ws_b64_decode",
+      "native_function": "b64_decode",
+      "source": "lua/bindings/bind-data.m"
+    },
+    {
+      "name": "_ws_plist_read",
+      "native_function": "plist_read",
+      "source": "lua/bindings/bind-data.m"
+    },
+    {
+      "name": "_ws_plist_write",
+      "native_function": "plist_write",
+      "source": "lua/bindings/bind-data.m"
+    },
+    {
+      "name": "_ws_plist_load",
+      "native_function": "plist_load",
+      "source": "lua/bindings/bind-data.m"
+    },
+    {
+      "name": "_ws_plist_dump",
+      "native_function": "plist_dump",
+      "source": "lua/bindings/bind-data.m"
+    },
+    {
+      "name": "_ws_lfs_mkdir",
+      "native_function": "fs_mkdir",
+      "source": "lua/bindings/bind-data.m"
+    },
+    {
+      "name": "_ws_lfs_rmdir",
+      "native_function": "fs_rmdir",
+      "source": "lua/bindings/bind-data.m"
+    },
+    {
+      "name": "_ws_lfs_attributes",
+      "native_function": "fs_attributes",
+      "source": "lua/bindings/bind-data.m"
+    },
+    {
+      "name": "_ws_lfs_currentdir",
+      "native_function": "fs_currentdir",
+      "source": "lua/bindings/bind-data.m"
+    },
+    {
+      "name": "_ws_lfs_dir",
+      "native_function": "fs_dir",
+      "source": "lua/bindings/bind-data.m"
     }
   ],
   "table_functions": [
@@ -405,6 +563,31 @@
     {
       "name": "spoof.selectedApps",
       "native_function": "l_selected_apps",
+      "source": "lua/bindings/bind-spoof.m"
+    },
+    {
+      "name": "spoof.listProfiles",
+      "native_function": "l_profile_names",
+      "source": "lua/bindings/bind-spoof.m"
+    },
+    {
+      "name": "spoof.saveProfile",
+      "native_function": "l_profile_save",
+      "source": "lua/bindings/bind-spoof.m"
+    },
+    {
+      "name": "spoof.applyProfile",
+      "native_function": "l_profile_apply",
+      "source": "lua/bindings/bind-spoof.m"
+    },
+    {
+      "name": "spoof.deleteProfile",
+      "native_function": "l_profile_delete",
+      "source": "lua/bindings/bind-spoof.m"
+    },
+    {
+      "name": "spoof.renameProfile",
+      "native_function": "l_profile_rename",
       "source": "lua/bindings/bind-spoof.m"
     }
   ]

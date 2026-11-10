@@ -4,6 +4,8 @@
 #include <mach-o/dyld.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <fcntl.h>
+#include <errno.h>
 
 NSString *iat_resource_path(NSString *relative) {
     uint32_t size = 0;
@@ -17,6 +19,26 @@ NSString *iat_resource_path(NSString *relative) {
 NSString *iat_data_directory(void) {
     const char *override = getenv("IAT_DATA_DIR");
     return override && override[0] ? @(override) : IAT_PATH(@"/var/mobile/Library/IOSAutoTool");
+}
+NSString *iat_temporary_directory(void) {
+    iat_prepare_storage();
+    NSString *path=[iat_data_directory() stringByAppendingPathComponent:@"tmp"];
+    if (![NSFileManager.defaultManager createDirectoryAtPath:path withIntermediateDirectories:NO
+            attributes:@{NSFilePosixPermissions:@0700} error:nil]) return nil;
+    path=path.stringByResolvingSymlinksInPath;
+    struct stat info;
+    if (lstat(path.fileSystemRepresentation,&info)!=0 || !S_ISDIR(info.st_mode) ||
+        info.st_uid!=geteuid() || (info.st_mode & 0077)!=0) return nil;
+    return path;
+}
+NSString *iat_create_temporary_file(void) {
+    NSString *directory=iat_temporary_directory(); if (!directory) return nil;
+    char *pattern=strdup([[directory stringByAppendingPathComponent:@"lua-XXXXXX"] fileSystemRepresentation]);
+    if (!pattern) return nil;
+    int fd=mkstemp(pattern);
+    if (fd<0) { free(pattern); return nil; }
+    fcntl(fd,F_SETFD,FD_CLOEXEC); close(fd);
+    NSString *path=@(pattern); free(pattern); return path;
 }
 void iat_prepare_storage(void) {
     for (NSString *subdir in @[@"", @"scripts", @"accounts"]) {

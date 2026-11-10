@@ -16,7 +16,7 @@ Một gói `com.iosautotool` chứa daemon, widget SpringBoard và addon cấu h
 
 `iphoneos-arm64e` ở đây là kiến trúc gói của RootHide, không phải tuyên bố rằng payload dùng CPU arm64e. Bản này được biên dịch arm64 cho iPhone 6s của chủ dự án. Hành vi injection trên các thiết bị arm64e khác cần kiểm thử riêng.
 
-Build macOS có mười nhóm kiểm tra: xác thực, Lua thật và cancellation, cấu hình/filter, profile, giữ script ứng dụng trong WebKit, sao lưu ứng dụng bằng fixture tạm, widget transport, deadline khi đánh thức muộn, lịch chạy và Device UI. Kiểm tra payload đọc lại metadata, Mach-O, entitlements, tài nguyên và bộ lọc injection. Các kiểm tra này không thay thế việc cài/chạy trên iPhone.
+Build macOS có 15 nhóm kiểm tra: xác thực; nguồn script Unicode/NUL/kích thước; đường dẫn tạm; Lua thật và cancellation; module dữ liệu/legacy; cấu hình/filter; profile; giữ script ứng dụng trong WebKit; sao lưu ứng dụng bằng fixture tạm; widget transport; deadline khi đánh thức muộn; buffer truy vấn identity; lịch chạy; Device UI; lựa chọn chế độ script. Kiểm tra payload đọc lại metadata, Mach-O, entitlements, tài nguyên và bộ lọc injection. Các kiểm tra này không thay thế việc cài/chạy trên iPhone.
 
 Đã cài/chạy trên iPhone 6s/iOS 15.8.4/RootHide: tap, Home, screenshot/OCR, MJPEG, profile và widget chọn/chạy/dừng macro. Beta3 sửa kết nối widget trong sandbox SpringBoard và giữ script của ứng dụng khi cập nhật Device WebKit; beta4 sửa thêm hạn chờ khi luồng được đánh thức muộn. Bộ thử riêng xác nhận getter/cấu hình, whitelist, master OFF và tắt riêng một trường; script WebKit được kiểm tra ở bước thiết lập, chưa phải xác minh pixel render. Xem [phạm vi kiểm thử thiết bị](docs/DEVICE_TESTING.md).
 
@@ -49,6 +49,8 @@ log(ocr() or 'Chưa có văn bản')
 ```
 
 Tọa độ dùng logical points. [Inventory API](docs/lua-api.json) được xuất từ source; phần touch/screen/app là các hàm global. Widget cho phép chọn tệp `.lua` đã lưu, chạy, yêu cầu dừng và xem trạng thái; không tự chạy script khi tải tweak. Xem [widget](widget/README.md), [account snapshot](docs/APP_ACCOUNTS.md).
+
+Beta5 có [chế độ iOSAutomate core](docs/LEGACY_LUA.md) với header `--!iosautomate`: thời gian giây, tọa độ pixel và các adapter core. Chọn chế độ trong thanh Run để lưu header vào tệp. Đây là tương thích một phần; API Native vẫn dùng point/ms. Web IDE lưu/chạy được script Unicode, gồm tiếng Việt và emoji.
 
 ## Cấu hình thiết bị và profile
 

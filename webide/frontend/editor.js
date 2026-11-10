@@ -11,7 +11,7 @@ function initEditor() {
     textarea.setAttribute('aria-label', 'Lua script editor');
     textarea.style.cssText = 'box-sizing:border-box;width:100%;height:100%;resize:none;border:0;padding:20px;background:#10131c;color:#e8edff;font:14px/1.6 monospace;outline:none;tab-size:2';
     document.getElementById('editor-container').replaceChildren(textarea);
-    textarea.addEventListener('input', () => { isDirty = true; });
+    textarea.addEventListener('input', () => { isDirty = true; updateCompatibilityMode(textarea.value); });
     textarea.addEventListener('keydown', e => {
       if ((e.ctrlKey || e.metaKey) && e.key === 's') { e.preventDefault(); saveCurrentFile(); }
       if (e.key === 'F5') { e.preventDefault(); runScript(); }
@@ -31,6 +31,7 @@ function initEditor() {
 
   editor.onDidChangeModelContent(() => {
     isDirty = true;
+    updateCompatibilityMode(editor.getValue());
   });
 
   // Keyboard shortcuts

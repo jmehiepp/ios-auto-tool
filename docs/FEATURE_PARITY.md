@@ -4,12 +4,12 @@
 
 | Nhóm | Triển khai trong dự án | Ranh giới còn lại |
 |---|---|---|
-| Lua, Web IDE, tệp, log | LuaJIT interpreter, editor offline, lưu/chạy/dừng, WebSocket log | 59 global + 10 hàm spoof; chưa có đủ 285 tên API gốc hay bảo đảm chạy script cũ nguyên trạng |
+| Lua, Web IDE, tệp, log | LuaJIT interpreter, editor offline, lưu/chạy/dừng, WebSocket log; legacy core theo tệp, JSON/Base64/plist/lfs/MD5 | Inventory có 88 global (gồm helper nội bộ) và 15 hàm spoof; [legacy core](LEGACY_LUA.md) mới hỗ trợ một phần, chưa có đủ 285 tên/hợp đồng API gốc |
 | Touch/keyboard | tap/swipe/multi-touch, phím hệ thống, nhập chữ | Đã xác nhận tap chuyển tab Sileo và nút Home; swipe/multi-touch/nhập chữ cần thêm phép thử |
 | Screen/vision | screenshot, OCR/Vision, màu, template image, MJPEG | Chưa có relay H.264/UDP 9001 hay giao thức REMOTE gốc |
 | Lịch và recorder | lịch một lần/theo phút/hằng ngày; record touch từ Web IDE | Chưa record mọi thao tác vật lý toàn hệ thống |
 | Widget | floating picker, chạy/dừng/status qua daemon | Đã xác nhận chọn/chạy/dừng từ SpringBoard trên iPhone 6s/RootHide; các thiết bị và hướng màn hình khác chưa thử |
-| Device | 27 trường, whitelist app, preset/profile, API/Lua/MCP | Đã thử accessor và phạm vi trong bundle thử riêng; WebKit ở mức thiết lập script. Chưa thử đầy đủ IDFA, Wi-Fi được cấp quyền, motion, user agent hoặc render WebContent; thiếu nhiều đường identity daemon/MobileGestalt/sysctl và clone của bản gốc |
+| Device | 27 trường, whitelist app, preset/profile, API/Lua/MCP; thêm truy vấn hw.machine, kern.osproductversion và một số key MobileGestalt | Đã thử accessor và phạm vi trong bundle thử riêng; WebKit ở mức thiết lập script. Chưa thử đầy đủ IDFA, Wi-Fi được cấp quyền, motion, user agent hoặc render WebContent; các key identity khác, daemon hệ thống và clone còn thiếu |
 | Dữ liệu ứng dụng | snapshot Documents/Library/tmp, restore có rollback | Không phải clone cài độc lập; không có toàn bộ workflow clone/snapshot/keychain của bản gốc |
 | MCP | 26 tools, stdio bridge, auth | Protocol/giao diện riêng, chưa có compatibility layer cho client REMOTE gốc |
 | Đóng gói | rootful/rootless/roothide, APT/Sileo | Biên dịch arm64; runtime/injection trên máy arm64e khác chưa xác minh |
