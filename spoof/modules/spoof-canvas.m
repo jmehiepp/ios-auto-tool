@@ -45,7 +45,10 @@ static NSString *DeviceWebScript(void) {
     NSString *previous = objc_getAssociatedObject(controller, &ScriptSignatureKey);
     if ((!source && !previous) || [source isEqualToString:previous]) return controller;
     // Replace only scripts owned by this addon and preserve the app's scripts.
-    NSArray<WKUserScript *> *oldScripts = [controller.userScripts copy];
+    // On iOS 15 both userScripts and its copy can be live WKNSArray views.
+    // Retain each script in independent Foundation storage before clearing it.
+    NSMutableArray<WKUserScript *> *oldScripts = [NSMutableArray array];
+    for (WKUserScript *script in controller.userScripts) [oldScripts addObject:script];
     [controller removeAllUserScripts];
     for (WKUserScript *script in oldScripts)
         if (![script.source hasPrefix:Marker]) [controller addUserScript:script];
