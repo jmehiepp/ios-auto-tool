@@ -22,6 +22,7 @@ xcrun clang -std=c11 -Wall -Wextra -Werror tests/widget-transport-tests.c -o .bu
 xcrun clang -fobjc-arc -fblocks tests/scheduler-tests.m daemon/runtime-paths.m -framework Foundation -framework Security -o .build-evidence/scheduler-tests
 .build-evidence/scheduler-tests
 for file in webide/frontend/*.js; do node --check "$file"; done
+node tests/admin-device-ui-tests.cjs
 mkdir -p packages
 python3 -c "from pathlib import Path; [p.unlink() for p in Path('packages').glob('*.deb')]"
 python3 scripts/prepare-logos.py
