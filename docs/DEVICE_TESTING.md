@@ -21,3 +21,11 @@ Ngày 10/11/2026: iPhone 6s (`iPhone8,1`), iOS 15.8.4, RootHide/Dopamine. Cài b
 Các quan sát sửa lỗi ban đầu dùng gói candidate và ký lại daemon chẩn đoán tại chỗ. Sau đó đã cài lại gói RootHide build từ `a11d4a4` (Actions `42750700103`, SHA-256 `.deb` `a440eaa0a7639af99c341d37d82ff9525a702f52a8c3341c1ddb50e6e14329be`), không ký lại/chỉnh quyền tại chỗ: daemon tự báo active/inactive 256 MiB, file API tạo/đọc/xóa thành công, screenshot có nội dung màn hình khóa và OCR đọc được giờ/ngày. Tap đã kiểm thử ở candidate trước với cùng mã HID; sau respring máy cần chủ máy mở khóa để tiếp tục kiểm tra giao diện.
 
 Chưa kiểm thử restore dữ liệu trên app cá nhân, clone, toàn bộ hook Device, multi-touch, thiết bị/iOS khác hoặc tính tương thích toàn bộ script cũ. Host fixture tests chỉ xác nhận hợp đồng và rollback trên dữ liệu thử.
+
+## Xác nhận gói công khai beta2
+
+Đã tải lại và cài gói RootHide từ nguồn công khai, build `91d2d9994428d90d9519de5cf2429a959402bb51`, SHA-256 `.deb` `c4147acd6d8e663080c59929fe0033450b5e6f3603ee5092ac4ac7cb69790303`. Sau cài, phần Mach-O `__text` và toàn bộ XML entitlements khớp payload; hash toàn file thay đổi sau quá trình cài của bootstrap. Không ký lại bản công khai để thử.
+
+Trên bản công khai: screenshot có nội dung, OCR đọc giờ/ngày, MJPEG có frame, API tạo/đọc/xóa script mới đều HTTP 200. Master Device tắt và danh sách ứng dụng trống. Lua chặn chạy chồng HTTP 409, dừng được vòng lặp và chạy lại sau stop (cùng source engine ở candidate trước đó).
+
+Nguồn đã được thêm vào APT trên iPhone. Trang 404 riêng sửa lỗi HTTP 503 khi thiếu metadata tùy chọn; `Release` có Date và hash trong cùng một paragraph Deb822. Sau sửa, APT update hoàn tất không cảnh báo và nhận `1.2.0~beta2` từ nguồn ở priority 500. Widget còn chờ chủ máy mở khóa trực tiếp sau respring.
