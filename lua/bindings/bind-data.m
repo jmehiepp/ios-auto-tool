@@ -3,6 +3,10 @@
 #import <CommonCrypto/CommonDigest.h>
 #include <lua/lauxlib.h>
 #include <math.h>
+#include <dirent.h>
+#include <errno.h>
+#include <sys/stat.h>
+#include <unistd.h>
 static char null_sentinel;
 static const char *ARRAY_MT = "IOSAutoTool.Array";
 static id object(lua_State *L, int index, int depth, NSMutableSet *parents, NSString **error) {
@@ -162,6 +166,58 @@ static int module_json(lua_State *L) {
     lua_pushcfunction(L, array); lua_setfield(L, -2, "array");
     lua_pushlightuserdata(L, &null_sentinel); lua_setfield(L, -2, "null"); return 1;
 }
+static const char *path_bytes(lua_State *L, int index) {
+    size_t length; const char *path = luaL_checklstring(L, index, &length);
+    if (!length || memchr(path, 0, length)) luaL_argerror(L, index, "path must be nonempty without NUL");
+    return path;
+}
+static int fs_error(lua_State *L) { return failure(L, @(strerror(errno))); }
+static int fs_mkdir(lua_State *L) {
+    if (mkdir(path_bytes(L, 1), 0755) != 0) return fs_error(L); lua_pushboolean(L, 1); return 1;
+}
+static int fs_rmdir(lua_State *L) {
+    if (rmdir(path_bytes(L, 1)) != 0) return fs_error(L); lua_pushboolean(L, 1); return 1;
+}
+static int fs_currentdir(lua_State *L) {
+    char *path = getcwd(NULL, 0); if (!path) return fs_error(L);
+    lua_pushstring(L, path); free(path); return 1;
+}
+static int fs_attributes(lua_State *L) {
+    struct stat info; if (stat(path_bytes(L, 1), &info) != 0) return fs_error(L);
+    lua_newtable(L);
+    const char *mode = S_ISDIR(info.st_mode) ? "directory" : S_ISREG(info.st_mode) ? "file" : "other";
+    lua_pushstring(L, mode); lua_setfield(L, -2, "mode");
+    lua_pushnumber(L, info.st_size); lua_setfield(L, -2, "size");
+    lua_pushnumber(L, info.st_mtime); lua_setfield(L, -2, "modification");
+    lua_pushnumber(L, info.st_atime); lua_setfield(L, -2, "access");
+    lua_pushnumber(L, info.st_ctime); lua_setfield(L, -2, "change");
+    lua_pushnumber(L, info.st_ino); lua_setfield(L, -2, "ino");
+    lua_pushnumber(L, info.st_nlink); lua_setfield(L, -2, "nlink");
+    lua_pushnumber(L, info.st_uid); lua_setfield(L, -2, "uid");
+    lua_pushnumber(L, info.st_gid); lua_setfield(L, -2, "gid");
+    char permissions[10]; const char *chars = "rwxrwxrwx";
+    for (int i=0;i<9;i++) permissions[i] = info.st_mode & (1 << (8-i)) ? chars[i] : '-';
+    permissions[9]=0; lua_pushstring(L, permissions); lua_setfield(L, -2, "permissions");
+    if (lua_isstring(L, 2)) { lua_pushvalue(L, 2); lua_rawget(L, -2); }
+    return 1;
+}
+static int fs_next(lua_State *L) {
+    int next = (int)lua_tointeger(L, lua_upvalueindex(2)) + 1;
+    lua_pushinteger(L, next); lua_replace(L, lua_upvalueindex(2));
+    lua_rawgeti(L, lua_upvalueindex(1), next); return 1;
+}
+static int fs_dir(lua_State *L) {
+    DIR *directory = opendir(path_bytes(L, 1)); if (!directory) return fs_error(L);
+    NSMutableArray *names = [NSMutableArray array]; struct dirent *entry;
+    errno = 0;
+    while ((entry = readdir(directory))) {
+        NSString *name = @(entry->d_name); if (name) [names addObject:name];
+    }
+    int number = errno; closedir(directory);
+    if (number) { errno = number; return fs_error(L); }
+    [names sortUsingSelector:@selector(compare:)]; push(L, names); lua_pushinteger(L, 0);
+    lua_pushcclosure(L, fs_next, 2); return 1;
+}
 static int module_base64(lua_State *L) {
     lua_newtable(L); lua_pushcfunction(L, b64_encode); lua_setfield(L, -2, "encode");
     lua_pushcfunction(L, b64_decode); lua_setfield(L, -2, "decode"); return 1;
@@ -171,15 +227,28 @@ static int module_plist(lua_State *L) {
     const luaL_Reg lib[] = {{"read",plist_read},{"write",plist_write},{"load",plist_load},{"dump",plist_dump},{NULL,NULL}};
     luaL_register(L, NULL, lib); return 1;
 }
+static int module_lfs(lua_State *L) {
+    lua_newtable(L);
+    const luaL_Reg lib[] = {{"mkdir",fs_mkdir},{"rmdir",fs_rmdir},{"attributes",fs_attributes},
+        {"currentdir",fs_currentdir},{"dir",fs_dir},{NULL,NULL}};
+    luaL_register(L, NULL, lib); return 1;
+}
+static int module_md5(lua_State *L) {
+    lua_newtable(L); lua_pushcfunction(L, md5); lua_setfield(L, -2, "sumhexa"); return 1;
+}
 void register_data_bindings(lua_State *L) {
     luaL_newmetatable(L, ARRAY_MT); lua_pop(L, 1);
     const luaL_Reg functions[] = {{"jsonEncode",json_encode},{"jsonDecode",json_decode},{"md5",md5},
         {"_ws_json_encode",json_encode},{"_ws_json_decode",json_decode},{"_ws_b64_encode",b64_encode},
         {"_ws_b64_decode",b64_decode},{"_ws_plist_read",plist_read},{"_ws_plist_write",plist_write},
-        {"_ws_plist_load",plist_load},{"_ws_plist_dump",plist_dump},{NULL,NULL}};
+        {"_ws_plist_load",plist_load},{"_ws_plist_dump",plist_dump},
+        {"_ws_lfs_mkdir",fs_mkdir},{"_ws_lfs_rmdir",fs_rmdir},{"_ws_lfs_attributes",fs_attributes},
+        {"_ws_lfs_currentdir",fs_currentdir},{"_ws_lfs_dir",fs_dir},{NULL,NULL}};
     lua_pushvalue(L, LUA_GLOBALSINDEX); luaL_register(L, NULL, functions); lua_pop(L, 1);
     lua_getglobal(L, "package"); lua_getfield(L, -1, "preload");
     lua_pushcfunction(L, module_json); lua_setfield(L, -2, "json");
     lua_pushcfunction(L, module_base64); lua_setfield(L, -2, "base64");
-    lua_pushcfunction(L, module_plist); lua_setfield(L, -2, "plist"); lua_pop(L, 2);
+    lua_pushcfunction(L, module_plist); lua_setfield(L, -2, "plist");
+    lua_pushcfunction(L, module_lfs); lua_setfield(L, -2, "lfs");
+    lua_pushcfunction(L, module_md5); lua_setfield(L, -2, "md5"); lua_pop(L, 2);
 }
