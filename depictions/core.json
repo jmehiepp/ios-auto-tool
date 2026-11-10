@@ -7,11 +7,11 @@
       "views": [
         {
           "class": "DepictionHeaderView",
-          "title": "iOS Auto Tool 1.2 beta 4"
+          "title": "iOS Auto Tool 1.2 beta 5"
         },
         {
           "class": "DepictionMarkdownView",
-          "markdown": "Tự động hóa iPhone: Web IDE, Lua, touch, screenshot, OCR, MJPEG, MCP, widget và profile cấu hình theo ứng dụng.\n\n**Yêu cầu:** iOS 15+, jailbreak Rootful, Rootless hoặc RootHide; payload arm64.\n\n**Beta 4:** sửa timeout widget khi hệ thống chậm; gồm sửa kết nối SpringBoard, giữ script của ứng dụng trong Device WebKit và chế độ chạy Lua từ terminal. Đã thử widget chọn/chạy/dừng cùng cấu hình có đối chứng trên iPhone 6s/iOS 15.8.4/RootHide.\n\nXem hướng dẫn để biết phạm vi đã kiểm thử. Chưa tương đương toàn bộ tính năng iOSAutomate hoặc chạy script cũ nguyên trạng."
+          "markdown": "Tự động hóa iPhone: Web IDE, Lua, touch, screenshot, OCR, MJPEG, MCP, widget và profile cấu hình theo ứng dụng.\n\n**Yêu cầu:** iOS 15+, jailbreak Rootful, Rootless hoặc RootHide; payload arm64.\n\n**Beta 5:** thêm chế độ Lua core theo pixel/giây, màu/OCR dạng legacy, module JSON/Base64/plist/lfs/MD5, profile từ Lua và thêm các đường đọc identity theo ứng dụng. Sửa script Unicode và đường dẫn tạm RootHide.\n\nXem hướng dẫn để biết phạm vi đã kiểm thử. Tương thích legacy còn một phần; chưa có toàn bộ async, clone, recorder hoặc giao thức REMOTE gốc."
         },
         {
           "class": "DepictionButtonView",
