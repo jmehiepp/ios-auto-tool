@@ -33,7 +33,7 @@ for deb in sorted(args.directory.glob('*.deb')):
         assert binary[:4] == b'\xcf\xfa\xed\xfe', 'Expected a real thin 64-bit Mach-O'
         assert int.from_bytes(binary[4:8], 'little') == 0x100000c, 'Expected arm64 code'
         assert len(binary) > 100000, 'Suspiciously small daemon payload'
-        for required in ('webide/frontend/index.html', 'webide/frontend/login.html', 'webide/frontend/editor.js', 'lua/stdlib/utils.lua', 'licenses/Mongoose-GPL2.txt', 'licenses/LuaJIT-MIT.txt'):
+        for required in ('webide/frontend/index.html', 'webide/frontend/login.html', 'webide/frontend/editor.js', 'lua/stdlib/utils.lua', 'lua/stdlib/legacy.lua', 'licenses/Mongoose-GPL2.txt', 'licenses/LuaJIT-MIT.txt'):
             assert base + required in members, required
         tweaks = prefix + 'Library/MobileSubstrate/DynamicLibraries/'
         for component in ('iosautotool-spoof', 'iosautotool-widget'):

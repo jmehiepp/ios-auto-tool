@@ -1,6 +1,6 @@
 Package: com.iosautotool
 Name: iOS Auto Tool
-Version: 1.2.0~beta4
+Version: 1.2.0~beta5
 Architecture: iphoneos-arm
 Description: iOS automation tool with Lua scripting.
  Write Lua scripts in your browser and automate your jailbroken iPhone.
