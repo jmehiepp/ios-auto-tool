@@ -31,6 +31,7 @@ xcrun clang -fobjc-arc -fblocks tests/scheduler-tests.m daemon/runtime-paths.m -
 .build-evidence/scheduler-tests
 for file in webide/frontend/*.js; do node --check "$file"; done
 node tests/admin-device-ui-tests.cjs
+node tests/editor-compatibility-tests.cjs
 mkdir -p packages
 python3 -c "from pathlib import Path; [p.unlink() for p in Path('packages').glob('*.deb')]"
 python3 scripts/prepare-logos.py

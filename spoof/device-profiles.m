@@ -245,4 +245,17 @@ static NSDictionary *ReadProfile(int directory, NSString *filename, NSError **er
     CloseProfileScope(scope);
     return ok;
 }
++ (BOOL)renameNamed:(NSString *)name to:(NSString *)newName error:(NSError **)error {
+    if (error) *error=nil;
+    if (!ValidProfileName(name, error) || !ValidProfileName(newName, error)) return NO;
+    ProfileScope scope=OpenProfileScope(error);
+    if (scope.directory < 0) return NO;
+    NSString *source=ProfileFilename(name), *destination=ProfileFilename(newName);
+    BOOL ok=ReadProfile(scope.directory, source, error) != nil;
+    if (ok && ![name isEqual:newName] &&
+        renameatx_np(scope.directory, source.fileSystemRepresentation, scope.directory,
+                     destination.fileSystemRepresentation, RENAME_EXCL) != 0)
+        ok=ProfilePOSIXError(error, @"Rename device profile without replacing another profile", errno);
+    CloseProfileScope(scope); return ok;
+}
 @end

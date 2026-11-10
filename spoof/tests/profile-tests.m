@@ -154,6 +154,17 @@ int main(void) {
         Check(![DeviceProfiles saveCurrentAs:@"Work" error:&error] && error.code==EFBIG,"bound serialized save size");
         Check([[NSData dataWithContentsOfFile:work] isEqual:saved],"oversized save preserves old profile atomically");
         Check([DeviceProfiles applyNamed:@"Work" error:&error],"restore valid profile after rejected oversized save");
+        Check([DeviceProfiles renameNamed:@"Work" to:@"Renamed" error:&error],"rename saved profile");
+        Check([[DeviceProfiles namesWithError:&error] isEqual:@[@"Renamed"]],"renamed profile is listed");
+        Check([DeviceProfiles saveCurrentAs:@"Work" error:&error],"create collision fixture");
+        NSData *renamedData=[NSData dataWithContentsOfFile:[directory stringByAppendingPathComponent:@"Renamed.plist"]];
+        error=nil;
+        Check(![DeviceProfiles renameNamed:@"Work" to:@"Renamed" error:&error] && error.code==EEXIST,"rename refuses collision");
+        Check([[NSData dataWithContentsOfFile:[directory stringByAppendingPathComponent:@"Renamed.plist"]] isEqual:renamedData],"collision preserves destination");
+        error=nil;
+        Check(![DeviceProfiles renameNamed:@"Work" to:@"../Escape" error:&error],"rename rejects traversal");
+        Check([DeviceProfiles applyNamed:@"Renamed" error:&error],"renamed profile can be applied");
+        Check([DeviceProfiles deleteNamed:@"Renamed" error:&error],"delete renamed profile");
         Check([DeviceProfiles deleteNamed:@"Work" error:&error],"delete saved profile");
         Check([[DeviceProfiles namesWithError:&error] isEqual:@[]],"list empty after delete");
         puts("Named Device profile IO tests passed");

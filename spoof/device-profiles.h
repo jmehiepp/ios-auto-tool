@@ -10,4 +10,5 @@ FOUNDATION_EXPORT NSString * const DeviceProfilesErrorDomain;
 + (BOOL)saveCurrentAs:(NSString *)name error:(NSError **)error;
 + (BOOL)applyNamed:(NSString *)name error:(NSError **)error;
 + (BOOL)deleteNamed:(NSString *)name error:(NSError **)error;
++ (BOOL)renameNamed:(NSString *)name to:(NSString *)newName error:(NSError **)error;
 @end

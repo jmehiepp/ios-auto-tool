@@ -325,6 +325,7 @@ static void handle_device_profiles(struct mg_connection *c, struct mg_http_messa
         if ([action isEqual:@"save"]) ok = [DeviceProfiles saveCurrentAs:name error:&error];
         else if ([action isEqual:@"apply"]) ok = [DeviceProfiles applyNamed:name error:&error];
         else if ([action isEqual:@"delete"]) ok = [DeviceProfiles deleteNamed:name error:&error];
+        else if ([action isEqual:@"rename"]) ok = [DeviceProfiles renameNamed:name to:body[@"newName"] error:&error];
         result = ok ? @{@"ok":@YES} : nil;
     } else { json_reply(c, 405, "{\"error\":\"Method not allowed\"}"); return; }
     if (!result) result = @{@"error":error.localizedDescription ?: @"Invalid profile request"};

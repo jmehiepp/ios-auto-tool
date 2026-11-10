@@ -1,0 +1,17 @@
+const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
+const select={value:'native'};
+const context=vm.createContext({document:{addEventListener(){},getElementById(){return select;},querySelectorAll(){return [];}}});
+vm.runInContext(fs.readFileSync('webide/frontend/editor.js','utf8'),context);
+vm.runInContext("let content='sleep(1)'; editor={getValue:()=>content,setValue:v=>content=v,setScrollPosition(){}}",context);
+context.setCompatibilityMode('legacy');
+assert.equal(vm.runInContext('content',context),'--!iosautomate\nsleep(1)');
+context.setCompatibilityMode('legacy');
+assert.equal(vm.runInContext('content',context),'--!iosautomate\nsleep(1)');
+assert.equal(select.value,'legacy');
+context.setCompatibilityMode('native');
+assert.equal(vm.runInContext('content',context),'sleep(1)');
+assert.equal(select.value,'native');
+context.setCurrentFile('old.lua','\uFEFF--!iosautomate\r\nlog(42)');assert.equal(select.value,'legacy');
+context.setCompatibilityMode('native');assert.equal(vm.runInContext('content',context),'log(42)');
+context.setCurrentFile('comment.lua','--!iosautomate-other\nsleep(1)');assert.equal(select.value,'native');
+console.log('Editor per-file compatibility mode tests passed');

@@ -1,5 +1,6 @@
 ﻿#import "bind-spoof.h"
 #import "../../spoof/spoof-config.h"
+#import "../../spoof/device-profiles.h"
 #import <CoreFoundation/CoreFoundation.h>
 #import <lua/lauxlib.h>
 #import <math.h>
@@ -154,10 +155,42 @@ static int l_apply_preset(lua_State *L) {
     // A preset never opts in apps or enables the master switch.
     return Save(L, configuration);
 }
+static NSString *ProfileName(lua_State *L, int index) {
+    size_t length; const char *text = luaL_checklstring(L, index, &length);
+    if (memchr(text, 0, length)) luaL_argerror(L, index, "profile name cannot contain NUL");
+    NSString *name = [[NSString alloc] initWithBytes:text length:length encoding:NSUTF8StringEncoding];
+    if (!name) luaL_argerror(L, index, "profile name must be UTF-8"); return name;
+}
+static int ProfileResult(lua_State *L, BOOL success, NSError *error) {
+    if (!success) return luaL_error(L, "%s", error.localizedDescription.UTF8String ?: "Device profile operation failed");
+    lua_pushboolean(L, 1); return 1;
+}
+static int l_profile_names(lua_State *L) {
+    NSError *error = nil; NSArray *names = [DeviceProfiles namesWithError:&error];
+    if (!names) return ProfileResult(L, NO, error); PushObject(L, names); return 1;
+}
+static int l_profile_save(lua_State *L) {
+    NSError *error=nil; BOOL ok=[DeviceProfiles saveCurrentAs:ProfileName(L,1) error:&error];
+    return ProfileResult(L,ok,error);
+}
+static int l_profile_apply(lua_State *L) {
+    NSError *error=nil; BOOL ok=[DeviceProfiles applyNamed:ProfileName(L,1) error:&error];
+    return ProfileResult(L,ok,error);
+}
+static int l_profile_delete(lua_State *L) {
+    NSError *error=nil; BOOL ok=[DeviceProfiles deleteNamed:ProfileName(L,1) error:&error];
+    return ProfileResult(L,ok,error);
+}
+static int l_profile_rename(lua_State *L) {
+    NSString *name=ProfileName(L,1), *destination=ProfileName(L,2); NSError *error=nil;
+    BOOL ok=[DeviceProfiles renameNamed:name to:destination error:&error]; return ProfileResult(L,ok,error);
+}
 static const luaL_Reg spoof_lib[] = {
     {"enable", l_enable}, {"disable", l_disable}, {"reset", l_reset}, {"reload", l_reload},
     {"isEnabled", l_is_enabled}, {"getAll", l_get_all}, {"applyPreset", l_apply_preset},
     {"setMasterEnabled", l_set_master}, {"setSelectedApps", l_select_apps}, {"selectedApps", l_selected_apps},
+    {"listProfiles",l_profile_names},{"saveProfile",l_profile_save},{"applyProfile",l_profile_apply},
+    {"deleteProfile",l_profile_delete},{"renameProfile",l_profile_rename},
     {NULL, NULL}
 };
 void register_spoof_bindings(lua_State *L) {
