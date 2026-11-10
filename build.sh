@@ -15,6 +15,8 @@ xcrun clang -fobjc-arc -fblocks -Ideps/luajit/include tests/lua-runtime-tests.m 
 .build-evidence/lua-runtime-tests
 bash spoof/tests/run-config-tests.sh
 bash spoof/tests/run-profile-tests.sh
+xcrun clang -fobjc-arc -fblocks tests/web-script-preservation-tests.m spoof/web-script-update.m -framework Foundation -framework WebKit -o .build-evidence/web-script-preservation-tests
+.build-evidence/web-script-preservation-tests
 xcrun clang -fobjc-arc -fblocks -DIAT_APP_CONTROL_TESTING -DIAT_ACCOUNT_TESTING tests/app-account-tests.m engine/app/app-control.m engine/app/multi-account.m mcp/mcp-tools-common.m mcp/tools/tool-app.m -framework Foundation -framework Security -o .build-evidence/app-account-tests
 .build-evidence/app-account-tests
 xcrun clang -std=c11 -Wall -Wextra -Werror tests/widget-transport-tests.c -o .build-evidence/widget-transport-tests

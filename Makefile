@@ -100,7 +100,7 @@ iosautotool-daemon_CODESIGN_FLAGS = -Siosautotool-daemon.entitlements
 include $(THEOS)/makefiles/tool.mk
 
 TWEAK_NAME = iosautotool-spoof iosautotool-widget
-iosautotool-spoof_FILES = spoof/spoof-config.m $(wildcard spoof/modules/*.xm)
+iosautotool-spoof_FILES = spoof/spoof-config.m spoof/web-script-update.m $(wildcard spoof/modules/*.xm)
 iosautotool-spoof_CFLAGS = -fobjc-arc -Wno-deprecated-declarations -Ispoof
 iosautotool-spoof_FRAMEWORKS = Foundation UIKit CoreTelephony CoreMotion CoreLocation WebKit AdSupport SystemConfiguration
 iosautotool-spoof_LIBRARIES = substrate

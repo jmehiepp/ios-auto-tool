@@ -1,9 +1,8 @@
 ﻿#import "../spoof-config.h"
 #import <WebKit/WebKit.h>
+#import "../web-script-update.h"
 #import <objc/runtime.h>
 
-static NSString *const Marker = @"/* IOSAutoTool.Device.Web */";
-static char ScriptSignatureKey;
 static NSString *DeviceWebScript(void) {
     BOOL canvas = spoof_on(@"canvas");
     NSNumber *canvasValue = spoof_num(@"canvas");
@@ -33,7 +32,7 @@ static NSString *DeviceWebScript(void) {
          "p.getParameter=function(n){var s=window.__IOSATDeviceSettings;if(s){"
          "if(n===0x9245&&s.vendor!==null)return s.vendor;"
          "if(n===0x9246&&s.renderer!==null)return s.renderer;}return original.call(this,n);};});"
-         "})();", Marker, literal];
+         "})();", IOSATDeviceWebScriptMarker, literal];
 }
 
 %group IOSATWebGraphics
@@ -42,22 +41,7 @@ static NSString *DeviceWebScript(void) {
     WKUserContentController *controller = %orig;
     if (!controller) return controller;
     NSString *source = DeviceWebScript();
-    NSString *previous = objc_getAssociatedObject(controller, &ScriptSignatureKey);
-    if ((!source && !previous) || [source isEqualToString:previous]) return controller;
-    // Replace only scripts owned by this addon and preserve the app's scripts.
-    // On iOS 15 both userScripts and its copy can be live WKNSArray views.
-    // Retain each script in independent Foundation storage before clearing it.
-    NSMutableArray<WKUserScript *> *oldScripts = [NSMutableArray array];
-    for (WKUserScript *script in controller.userScripts) [oldScripts addObject:script];
-    [controller removeAllUserScripts];
-    for (WKUserScript *script in oldScripts)
-        if (![script.source hasPrefix:Marker]) [controller addUserScript:script];
-    if (source) {
-        WKUserScript *script = [[WKUserScript alloc] initWithSource:source
-            injectionTime:WKUserScriptInjectionTimeAtDocumentStart forMainFrameOnly:NO];
-        [controller addUserScript:script];
-    }
-    objc_setAssociatedObject(controller, &ScriptSignatureKey, source, OBJC_ASSOCIATION_COPY_NONATOMIC);
+    IOSATUpdateDeviceWebScript(controller, source);
     return controller;
 }
 %end
