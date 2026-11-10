@@ -10,6 +10,8 @@
 
 static pthread_mutex_t run_mutex = PTHREAD_MUTEX_INITIALIZER;
 static bool running = false, stop_requested = false;
+static __thread bool current_script_thread;
+bool script_is_current_thread(void) { return current_script_thread; }
 typedef struct { int fd; char *identifier; char *code; } RunContext;
 
 bool script_is_running(void) {
@@ -30,7 +32,9 @@ static void *run_thread(void *argument) {
         RunContext *ctx = argument;
         if (ctx->fd >= 0) log_add_client(ctx->fd);
         log_info("Script started");
+        current_script_thread=true;
         int code = lua_run_script(ctx->code);
+        current_script_thread=false;
         screen_cache_invalidate();
         log_info("Script finished (exit %d)", code);
         if (ctx->fd >= 0) {

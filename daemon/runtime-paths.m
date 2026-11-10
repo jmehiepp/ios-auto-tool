@@ -23,8 +23,10 @@ NSString *iat_data_directory(void) {
 NSString *iat_temporary_directory(void) {
     iat_prepare_storage();
     NSString *path=[iat_data_directory() stringByAppendingPathComponent:@"tmp"];
-    if (![NSFileManager.defaultManager createDirectoryAtPath:path withIntermediateDirectories:NO
-            attributes:@{NSFilePosixPermissions:@0700} error:nil]) return nil;
+    struct stat existing;
+    if (lstat(path.fileSystemRepresentation,&existing)!=0 &&
+        (errno!=ENOENT || ![NSFileManager.defaultManager createDirectoryAtPath:path withIntermediateDirectories:NO
+            attributes:@{NSFilePosixPermissions:@0700} error:nil])) return nil;
     path=path.stringByResolvingSymlinksInPath;
     struct stat info;
     if (lstat(path.fileSystemRepresentation,&info)!=0 || !S_ISDIR(info.st_mode) ||

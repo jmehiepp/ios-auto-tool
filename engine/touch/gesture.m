@@ -5,7 +5,7 @@
 #import "../../daemon/script-runner.h"
 static bool gesture_wait(int milliseconds) {
     while (milliseconds > 0) {
-        if (script_should_stop()) return false;
+        if (script_is_current_thread() && script_should_stop()) return false;
         int step = milliseconds > 20 ? 20 : milliseconds;
         usleep((useconds_t)step * 1000); milliseconds -= step;
     }

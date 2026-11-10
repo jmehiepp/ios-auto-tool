@@ -33,6 +33,8 @@ xcrun clang -std=c11 -Wall -Wextra -Werror tests/widget-late-wakeup-tests.c -o .
 .build-evidence/widget-late-wakeup-tests
 xcrun clang -std=c11 -Wall -Wextra -Werror tests/identity-query-tests.c spoof/identity-query.c -o .build-evidence/identity-query-tests
 .build-evidence/identity-query-tests
+xcrun clang tests/gesture-cancellation-tests.c engine/touch/gesture.m -o .build-evidence/gesture-cancellation-tests
+.build-evidence/gesture-cancellation-tests
 xcrun clang -fobjc-arc -fblocks tests/scheduler-tests.m daemon/runtime-paths.m -framework Foundation -framework Security -o .build-evidence/scheduler-tests
 .build-evidence/scheduler-tests
 for file in webide/frontend/*.js; do node --check "$file"; done
