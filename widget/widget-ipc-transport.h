@@ -116,11 +116,12 @@ static int widget_transport_exchange(const char *socket_path, const void *reques
         result = widget_transport_wait(fd, POLLIN, deadline);
         if (result) goto done;
         ssize_t count = recv(fd, (unsigned char *)response + received, capacity - received, 0);
-        if (count < 0 && (errno == EINTR || errno == EAGAIN || errno == EWOULDBLOCK)) continue;
+        int read_error = count < 0 ? errno : 0;
+        if (count < 0 && (read_error == EINTR || read_error == EAGAIN || read_error == EWOULDBLOCK)) continue;
         now = widget_transport_now_ms();
         if (now < 0) { result = EIO; goto done; }
         if (now >= deadline) { result = ETIMEDOUT; goto done; }
-        if (count <= 0) { result = count < 0 ? errno : EPROTO; goto done; }
+        if (count <= 0) { result = count < 0 ? read_error : EPROTO; goto done; }
         unsigned char *newline = memchr((unsigned char *)response + received, '\n', (size_t)count);
         if (newline) {
             *response_length = (size_t)(newline - (unsigned char *)response);

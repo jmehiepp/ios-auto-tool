@@ -41,3 +41,7 @@ Accessor đã quan sát gồm tên/family/model, iOS, IDFV, locale, timezone, sc
 Phép thử WebKit phát hiện `userScripts` và `copy` của nó cùng là view động trên iOS 15: sau remove, cả hai mất nội dung. Giữ từng WKUserScript trong NSMutableArray riêng sửa được lỗi mất script app. Kiểm tra host sử dụng WebKit thật xác nhận thêm/thay/gỡ script Device, giữ nguyên object và metadata script app, không tạo bản trùng.
 
 Fixture dùng bản sao executable của dự án nên có cảnh báo hai định nghĩa SpoofConfig từ cùng source. Đây là giới hạn của host thử, không phải kiểm thử app bên thứ ba hay payload arm64e. GPS dùng đối tượng mẫu, không xác nhận quyền/delivery vị trí. IDFA, Wi-Fi đã cấp quyền, accelerometer/gyro sống, custom user agent và thiết bị khác còn cần kiểm thử. Sau phép thử đã khôi phục master OFF, modules rỗng và whitelist rỗng.
+
+## Beta4: giữ đúng deadline khi luồng chậm
+
+Publisher beta3 qua chín nhóm kiểm tra, nhưng một job Build độc lập của cùng source phát hiện case không có ACK: luồng được đánh thức sau 161 ms, nhận EOF rồi báo lỗi giao thức thay vì timeout của ngân sách 60 ms. Beta4 kiểm tra lại thời hạn tuyệt đối sau `select` và `recv`, đồng thời giữ errno của recv trước khi đọc clock. Phép thử mới mô phỏng readiness đến sau deadline một cách xác định; publisher phải qua cả mười nhóm kiểm tra trước triển khai.
