@@ -33,7 +33,7 @@ static NSArray *Names(void) {
     }
     return [names sortedArrayUsingSelector:@selector(compare:)];
 }
-static NSDictionary *Handle(NSDictionary *request) {
+static NSDictionary *IATWidgetHandle(NSDictionary *request) {
     id identifier = [request[@"id"] isKindOfClass:NSString.class] ? request[@"id"] : @"";
     NSString *action = request[@"action"];
     if (![action isKindOfClass:NSString.class]) return @{@"id":identifier, @"ok":@NO, @"error":@"Missing action"};
@@ -95,7 +95,7 @@ static void Serve(int client) {
             [frame appendBytes:&byte length:1];
         }
         id request = complete ? [NSJSONSerialization JSONObjectWithData:frame options:0 error:nil] : nil;
-        NSDictionary *result = [request isKindOfClass:NSDictionary.class] ? Handle(request) : @{@"ok":@NO, @"error":@"Invalid frame"};
+        NSDictionary *result = [request isKindOfClass:NSDictionary.class] ? IATWidgetHandle(request) : @{@"ok":@NO, @"error":@"Invalid frame"};
         NSMutableData *response = [[NSJSONSerialization dataWithJSONObject:result options:0 error:nil] mutableCopy];
         [response appendBytes:"\n" length:1];
         const char *bytes = response.bytes; size_t sent = 0;

@@ -1,4 +1,6 @@
 #import "../mcp-tools.h"
+#import "../../spoof/spoof-config.h"
+#import "../../daemon/script-runner.h"
 #import "../../engine/keyboard/text-input.h"
 #import <UIKit/UIKit.h>
 #import <Foundation/Foundation.h>
@@ -53,4 +55,27 @@ NSDictionary *tool_get_clipboard(NSDictionary *args) {
     (void)args;
     NSString *text = c_get_clipboard();
     return mcp_text_result(text ?: @"", NO);
+}
+
+static NSDictionary *DeviceJSONResult(NSDictionary *value) {
+    NSData *data = [NSJSONSerialization dataWithJSONObject:value options:0 error:nil];
+    return mcp_text_result([[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding], NO);
+}
+NSDictionary *tool_device_configuration_get(NSDictionary *args) {
+    (void)args;
+    return DeviceJSONResult([[SpoofConfig shared] getAll]);
+}
+NSDictionary *tool_device_configuration_set(NSDictionary *args) {
+    NSError *error = nil;
+    if (![[SpoofConfig shared] setConfiguration:args[@"configuration"] error:&error])
+        return mcp_error_result(error.localizedDescription ?: @"Invalid configuration");
+    return DeviceJSONResult(@{@"ok":@YES, @"relaunchRequired":@YES});
+}
+NSDictionary *tool_script_status(NSDictionary *args) {
+    (void)args;
+    return DeviceJSONResult(@{@"running":@(script_is_running())});
+}
+NSDictionary *tool_script_stop(NSDictionary *args) {
+    (void)args; script_stop_current();
+    return DeviceJSONResult(@{@"stopRequested":@YES, @"running":@(script_is_running())});
 }

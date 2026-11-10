@@ -9,7 +9,7 @@
 
 #define MCP_PROTOCOL_VERSION "2024-11-05"
 #define MCP_SERVER_NAME      "ios-auto-tool"
-#define MCP_SERVER_VERSION   "1.0.0"
+#define MCP_SERVER_VERSION   "1.2.0-beta1"
 
 // ---------- Tool registry ----------
 
@@ -35,6 +35,10 @@ static ToolEntry s_tools[] = {
     {"app_kill",      tool_app_kill},
     {"get_front_app", tool_get_front_app},
     {"device_info",   tool_device_info},
+    {"device_configuration_get", tool_device_configuration_get},
+    {"device_configuration_set", tool_device_configuration_set},
+    {"script_status", tool_script_status},
+    {"script_stop", tool_script_stop},
     {"set_clipboard", tool_set_clipboard},
     {"get_clipboard", tool_get_clipboard},
     {"http_request",  tool_http_request},
@@ -185,6 +189,20 @@ static NSArray *build_tools_list(void) {
         @"inputSchema": @{@"type":@"object",
           @"properties": @{@"text": prop_str(@"Text to set")},
           @"required": @[@"text"]}},
+
+      @{@"name": @"device_configuration_get",
+        @"description": @"Read the complete app-scoped device configuration",
+        @"inputSchema": @{@"type":@"object", @"properties":@{}}},
+      @{@"name": @"device_configuration_set",
+        @"description": @"Replace device profile. Selected apps must be reopened to apply enabled hooks.",
+        @"inputSchema": @{@"type":@"object", @"required":@[@"configuration"], @"properties":@{
+          @"configuration":@{@"type":@"object", @"required":@[@"enabled",@"selectedApps",@"modules"], @"properties":@{
+            @"enabled":@{@"type":@"boolean"}, @"selectedApps":@{@"type":@"array", @"items":@{@"type":@"string"}},
+            @"modules":@{@"type":@"object"}}}}}},
+      @{@"name": @"script_status", @"description": @"Read whether a Lua script is running",
+        @"inputSchema": @{@"type":@"object", @"properties":@{}}},
+      @{@"name": @"script_stop", @"description": @"Request cancellation; use script_status to confirm completion",
+        @"inputSchema": @{@"type":@"object", @"properties":@{}}},
 
       @{@"name": @"get_clipboard",
         @"description": @"Get current clipboard text",
