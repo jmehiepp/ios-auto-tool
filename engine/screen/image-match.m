@@ -2,6 +2,7 @@
 #import <Accelerate/Accelerate.h>
 #include <stdlib.h>
 #include <math.h>
+#import "../../daemon/script-runner.h"
 
 // Convert RGBA pixel buffer region to grayscale float array (row-major)
 static float *rgba_to_gray_float(const uint8_t *pixels, int stride,
@@ -76,11 +77,14 @@ ImageMatchResult find_image(const uint8_t *screen_pixels, int sw, int sh,
                             UIImage *tmpl, float threshold, CGRect region)
 {
     ImageMatchResult not_found = {{-1, -1}, 0.0f};
+    if (!screen_pixels || sw < 2 || sh < 2 || !tmpl.CGImage || !isfinite(threshold) || threshold < 0 || threshold > 1)
+        return not_found;
 
     // Load template pixels
     int tw, th;
     uint8_t *tmpl_px = uiimage_to_rgba(tmpl, &tw, &th);
     if (!tmpl_px) return not_found;
+    if (tw < 2 || th < 2 || tw > sw || th > sh) { free(tmpl_px); return not_found; }
 
     // Downscale 2x for performance — match at half resolution, report original coords
     int sw2 = sw / 2, sh2 = sh / 2;
@@ -121,6 +125,8 @@ ImageMatchResult find_image(const uint8_t *screen_pixels, int sw, int sh,
     // Determine search bounds
     int rx = 0, ry = 0, rw = sw2, rh = sh2;
     if (!CGRectIsEmpty(region) && !CGRectEqualToRect(region, CGRectZero)) {
+        region = CGRectIntersection(region, CGRectMake(0, 0, sw, sh));
+        if (CGRectIsNull(region) || CGRectIsEmpty(region)) { free(screen_gray); free(tmpl_gray); return not_found; }
         rx = (int)(region.origin.x / 2);
         ry = (int)(region.origin.y / 2);
         rw = (int)(region.size.width / 2);
@@ -131,6 +137,7 @@ ImageMatchResult find_image(const uint8_t *screen_pixels, int sw, int sh,
     int best_x = -1, best_y = -1;
 
     for (int y = ry; y <= ry + rh - th2; y++) {
+        if (script_should_stop()) goto done;
         for (int x = rx; x <= rx + rw - tw2; x++) {
             float score = ncc_at(screen_gray, sw2, tmpl_gray, tw2, th2,
                                  tmpl_sq_sum, x, y);

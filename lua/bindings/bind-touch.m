@@ -6,6 +6,14 @@
 #import <lua/lua.h>
 #import <lua/lauxlib.h>
 
+void reset_touch_bindings(void) { touch_reset_all(); }
+static int lua_touch_reset(lua_State *L) { (void)L; reset_touch_bindings(); return 0; }
+static int duration(lua_State *L, int index, int fallback) {
+    lua_Integer value = luaL_optinteger(L, index, fallback);
+    if (value < 0 || value > 60000) luaL_argerror(L, index, "duration must be 0..60000 milliseconds");
+    return (int)value;
+}
+
 static int lua_tap(lua_State *L) {
     double x = luaL_checknumber(L, 1);
     double y = luaL_checknumber(L, 2);
@@ -23,7 +31,7 @@ static int lua_double_tap(lua_State *L) {
 static int lua_long_press(lua_State *L) {
     double x   = luaL_checknumber(L, 1);
     double y   = luaL_checknumber(L, 2);
-    int dur    = (int)luaL_optinteger(L, 3, 1000);
+    int dur    = duration(L, 3, 1000);
     c_long_press(x, y, dur);
     return 0;
 }
@@ -33,7 +41,7 @@ static int lua_swipe(lua_State *L) {
     double y1  = luaL_checknumber(L, 2);
     double x2  = luaL_checknumber(L, 3);
     double y2  = luaL_checknumber(L, 4);
-    int dur    = (int)luaL_optinteger(L, 5, 300);
+    int dur    = duration(L, 5, 300);
     c_swipe(x1, y1, x2, y2, dur);
     return 0;
 }
@@ -102,4 +110,5 @@ void register_touch_bindings(lua_State *L) {
     lua_register(L, "touchMove",  lua_touch_move);
     lua_register(L, "touchUp",    lua_touch_up);
     lua_register(L, "tapText",    lua_tap_text);
+    lua_register(L, "touchReset", lua_touch_reset);
 }

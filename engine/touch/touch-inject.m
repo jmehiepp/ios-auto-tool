@@ -3,6 +3,9 @@
 #import <UIKit/UIKit.h>
 #import <mach/mach_time.h>
 #include <math.h>
+#include <pthread.h>
+static pthread_mutex_t contact_mutex = PTHREAD_MUTEX_INITIALIZER;
+static struct { double x, y; bool active; } contacts[32];
 
 // IOHIDEvent private API declarations
 typedef struct __IOHIDEventSystemClient *IOHIDEventSystemClientRef;
@@ -102,7 +105,10 @@ static CGSize get_screen_size(void) {
 }
 
 void send_touch_down(double x, double y, uint32_t finger_id) {
+    if (finger_id >= 32) return;
     CGSize s = get_screen_size();
+    pthread_mutex_lock(&contact_mutex);
+    contacts[finger_id].x = x; contacts[finger_id].y = y; contacts[finger_id].active = true;
     double nx = clamp01(x / s.width);
     double ny = clamp01(y / s.height);
     uint64_t ts = mach_absolute_time();
@@ -114,10 +120,14 @@ void send_touch_down(double x, double y, uint32_t finger_id) {
         true, true, 0
     );
     dispatch_hid_event(event, nx, ny, true, 0x27);
+    pthread_mutex_unlock(&contact_mutex);
 }
 
 void send_touch_move(double x, double y, uint32_t finger_id) {
+    if (finger_id >= 32) return;
     CGSize s = get_screen_size();
+    pthread_mutex_lock(&contact_mutex);
+    contacts[finger_id].x = x; contacts[finger_id].y = y;
     double nx = clamp01(x / s.width);
     double ny = clamp01(y / s.height);
     uint64_t ts = mach_absolute_time();
@@ -129,10 +139,14 @@ void send_touch_move(double x, double y, uint32_t finger_id) {
         true, true, 0
     );
     dispatch_hid_event(event, nx, ny, true, 4);
+    pthread_mutex_unlock(&contact_mutex);
 }
 
 void send_touch_up(double x, double y, uint32_t finger_id) {
+    if (finger_id >= 32) return;
     CGSize s = get_screen_size();
+    pthread_mutex_lock(&contact_mutex);
+    contacts[finger_id].active = false;
     double nx = clamp01(x / s.width);
     double ny = clamp01(y / s.height);
     uint64_t ts = mach_absolute_time();
@@ -144,4 +158,13 @@ void send_touch_up(double x, double y, uint32_t finger_id) {
         false, false, 0
     );
     dispatch_hid_event(event, nx, ny, false, 0x27);
+    pthread_mutex_unlock(&contact_mutex);
+}
+void touch_reset_all(void) {
+    for (uint32_t i = 0; i < 32; i++) {
+        pthread_mutex_lock(&contact_mutex);
+        bool active = contacts[i].active; double x = contacts[i].x, y = contacts[i].y;
+        pthread_mutex_unlock(&contact_mutex);
+        if (active) send_touch_up(x, y, i);
+    }
 }

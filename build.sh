@@ -9,10 +9,14 @@ if [[ ! -f deps/luajit/lib/libluajit-5.1.a ]]; then bash deps/build-luajit-arm64
 if [[ ! -f deps/luajit/lib/libluajit-host.a ]] || ! lipo -info deps/luajit/lib/libluajit-host.a | grep -q "$(uname -m)"; then bash deps/build-luajit-arm64.sh; fi
 if ! grep -q 'MG_VERSION "7.14"' deps/mongoose.h; then bash deps/download-mongoose.sh; fi
 mkdir -p .build-evidence
+mkdir -p .build-evidence/lua/stdlib
+cp lua/stdlib/*.lua .build-evidence/lua/stdlib/
 xcrun clang -fobjc-arc -fblocks tests/http-auth-tests.m daemon/runtime-paths.m webide/server/access-control.m deps/mongoose.c -framework Foundation -framework Security -o .build-evidence/http-auth-tests
 .build-evidence/http-auth-tests
 xcrun clang -fobjc-arc -fblocks -Ideps/luajit/include tests/lua-runtime-tests.m lua/lua-bridge.m daemon/runtime-paths.m deps/luajit/lib/libluajit-host.a -framework Foundation -framework Security -o .build-evidence/lua-runtime-tests
 .build-evidence/lua-runtime-tests
+xcrun clang -fobjc-arc -fblocks -Ideps/luajit/include tests/data-bindings-tests.m lua/bindings/bind-data.m deps/luajit/lib/libluajit-host.a -framework Foundation -o .build-evidence/data-bindings-tests
+.build-evidence/data-bindings-tests
 bash spoof/tests/run-config-tests.sh
 bash spoof/tests/run-profile-tests.sh
 xcrun clang -fobjc-arc -fblocks tests/web-script-preservation-tests.m spoof/web-script-update.m -framework Foundation -framework WebKit -o .build-evidence/web-script-preservation-tests

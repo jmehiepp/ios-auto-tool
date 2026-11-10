@@ -14,11 +14,14 @@ void log_info(const char *format, ...) { (void)format; }
 void log_warn(const char *format, ...) { (void)format; }
 void log_error(const char *format, ...) { (void)format; }
 void register_touch_bindings(lua_State *state) { (void)state; }
+void reset_touch_bindings(void) { }
 void register_screen_bindings(lua_State *state) { (void)state; }
+void reset_screen_bindings(void) { }
 void register_app_bindings(lua_State *state) { (void)state; }
 void register_keyboard_bindings(lua_State *state) { (void)state; }
 void register_system_bindings(lua_State *state) { (void)state; }
 void register_spoof_bindings(lua_State *state) { (void)state; }
+void register_data_bindings(lua_State *state) { (void)state; }
 
 static void check(bool condition, const char *name) {
     if (!condition) { fprintf(stderr, "FAIL: %s\n", name); exit(1); }
@@ -52,6 +55,10 @@ int main(void) {
         check(lua_run_script("error('expected')") != 0, "runtime error is reported");
         cancel_test("while true do end");
         cancel_test("sleep(60000)");
+        check(lua_run_script("log(nil); log(false); log({})") == 0, "log accepts Lua values");
+        check(lua_run_script("--!iosautomate\nlocal t=monotonicMillis(); sleep(.03); assert(monotonicMillis()-t>=20); legacyLeak=true") == 0, "legacy directive uses seconds");
+        check(lua_run_script("assert(legacyLeak==nil); local t=monotonicMillis(); sleep(1); assert(monotonicMillis()-t<1000)") == 0, "legacy globals and units do not leak");
+        cancel_test("--!iosautomate\nsleep(60)");
         check(lua_run_script("assert(2+2==4)") == 0, "VM reusable after errors and cancellation");
         check(lua_gettop(lua_bridge_state()) == base, "VM stack restored between runs");
         puts("Lua runtime and cancellation tests passed");

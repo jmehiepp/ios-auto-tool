@@ -28,10 +28,12 @@ void screen_cache_invalidate(void) {
 
 void screen_cache_fill(UIImage *img) {
     screen_cache_invalidate();
+    if (!img.CGImage) return;
 
     int w = (int)img.size.width;
     int h = (int)img.size.height;
-    size_t byte_count = (size_t)(w * h * 4);
+    if (w < 1 || h < 1 || w > 16384 || h > 16384) return;
+    size_t byte_count = (size_t)w * h * 4;
     uint8_t *pixels = malloc(byte_count);
     if (!pixels) return;
 
@@ -152,6 +154,7 @@ UIImage *capture_screen(CGRect region) {
             region.size.width * scale, region.size.height * scale
         );
         CGImageRef cropped = CGImageCreateWithImageInRect(full.CGImage, scaled);
+        if (!cropped) return nil;
         UIImage *result = [UIImage imageWithCGImage:cropped scale:scale
                                         orientation:full.imageOrientation];
         CGImageRelease(cropped);

@@ -2,6 +2,15 @@
 #import "touch-inject.h"
 #import <unistd.h>
 #import <stdlib.h>
+#import "../../daemon/script-runner.h"
+static bool gesture_wait(int milliseconds) {
+    while (milliseconds > 0) {
+        if (script_should_stop()) return false;
+        int step = milliseconds > 20 ? 20 : milliseconds;
+        usleep((useconds_t)step * 1000); milliseconds -= step;
+    }
+    return true;
+}
 
 #define DEFAULT_FINGER 1
 
@@ -19,7 +28,7 @@ void c_double_tap(double x, double y) {
 
 void c_long_press(double x, double y, int duration_ms) {
     send_touch_down(x, y, DEFAULT_FINGER);
-    usleep((useconds_t)duration_ms * 1000);
+    gesture_wait(duration_ms);
     send_touch_up(x, y, DEFAULT_FINGER);
 }
 
@@ -32,7 +41,7 @@ void c_swipe(double x1, double y1, double x2, double y2, int duration_ms) {
 
     send_touch_down(x1, y1, DEFAULT_FINGER);
     for (int i = 1; i <= steps; i++) {
-        usleep((useconds_t)step_delay);
+        if (!gesture_wait((step_delay + 999) / 1000)) break;
         send_touch_move(x1 + dx * i, y1 + dy * i, DEFAULT_FINGER);
     }
     send_touch_up(x2, y2, DEFAULT_FINGER);

@@ -22,6 +22,7 @@ iosautotool-daemon_FILES = \
 	lua/bindings/bind-app.m \
 	lua/bindings/bind-keyboard.m \
 	lua/bindings/bind-system.m \
+	lua/bindings/bind-data.m \
 	engine/touch/touch-inject.m \
 	engine/touch/gesture.m \
 	engine/touch/recorder.m \
