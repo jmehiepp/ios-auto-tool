@@ -9,7 +9,7 @@ Ngày 10/11/2026: iPhone 6s (`iPhone8,1`), iOS 15.8.4, RootHide/Dopamine. Cài b
 - Tap qua API chuyển Sileo từ Nguồn sang Đặc sắc. Thử trước đó với prototype HID chuyển ngược lại. Nút Home đưa máy về màn hình chính.
 - OCR trả chữ và bounding box của màn hình Nguồn. Tiếng Việt chưa chính xác hoàn toàn trên Vision của iOS 15; không suy ra hỗ trợ ngôn ngữ từ tên cấu hình.
 - Profile thử `usb-smoke` được tạo, liệt kê, áp dụng và xóa; master Device vẫn tắt, danh sách app trống.
-- SpringBoard đã được nạp lại để thử widget. Phần chọn/chạy/dừng macro bằng widget đang chờ mở khóa máy để quan sát.
+- SpringBoard đã được nạp lại và mở khóa theo thông tin chủ máy cung cấp. Bản công khai beta4 đã được kiểm tra chọn/chạy/dừng macro bằng widget; chi tiết xác nhận cuối ở bên dưới.
 
 ## Lỗi phát hiện trên máy thật
 
@@ -45,3 +45,11 @@ Fixture dùng bản sao executable của dự án nên có cảnh báo hai đị
 ## Beta4: giữ đúng deadline khi luồng chậm
 
 Publisher beta3 qua chín nhóm kiểm tra, nhưng một job Build độc lập của cùng source phát hiện case không có ACK: luồng được đánh thức sau 161 ms, nhận EOF rồi báo lỗi giao thức thay vì timeout của ngân sách 60 ms. Beta4 kiểm tra lại thời hạn tuyệt đối sau `select` và `recv`, đồng thời giữ errno của recv trước khi đọc clock. Phép thử mới mô phỏng readiness đến sau deadline một cách xác định; publisher phải qua cả mười nhóm kiểm tra trước triển khai.
+
+## Xác nhận cuối trên bản công khai beta4
+
+Đã cài gói RootHide `1.2.0~beta4` từ nguồn công khai, source `03eb230134ca67349bcca2111295c6bcaab8ed57`, SHA-256 `.deb` `84f43d8eeb16c323a6346b253985e4fdccdb5e97172c4b38d0821ef54bbfc220`. Publisher `42767978416` và Build độc lập `42767977099` đều thành công; cả mười nhóm kiểm tra đều đạt. Phần `__text` của daemon và hai tweak sau cài khớp payload; XML entitlements daemon cũng khớp. RootHide thay đổi metadata/chữ ký khi cài nên không dùng hash toàn file sau cài để kết luận mã bị thay đổi.
+
+Trên chính gói công khai, bốn trường hợp Device có đối chứng đều đạt 27 điểm kiểm tra/trường hợp, với các giới hạn fixture và WebKit đã ghi ở trên. Sau respring cuối, widget hiện danh sách, chạy `USB-smoke.lua`, báo đang chạy; MCP xác nhận `running=true`. Dừng bằng nút widget đưa trạng thái về sẵn sàng, MCP `running=false`, log ghi `script stopped` và exit 1, trước khi macro hết thời gian chờ.
+
+APT update riêng nguồn dự án không báo lỗi; installed và candidate đều là beta4 ở priority 500. MJPEG vẫn trả frame sau kiểm tra. Đã xóa script/profile/bundle thử riêng, danh sách script còn `hello.lua`; master Device khôi phục OFF, modules và whitelist rỗng. Không thử restore/xóa dữ liệu ứng dụng cá nhân. Bản beta này vẫn chưa đáp ứng toàn bộ chức năng và giao thức/script cũ.
