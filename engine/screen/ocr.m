@@ -20,8 +20,8 @@ static NSArray<VNRecognizedTextObservation *> *run_vision(UIImage *image,
 
     if (!image.CGImage) return nil;
     VNRecognizeTextRequest *req = [[VNRecognizeTextRequest alloc] init];
-    // A launch daemon has no EAGL display context. Keep preprocessing and
-    // inference on the CPU rather than entering Core Image's GL context path.
+    // Keep inference on the CPU. Vision still uses Core Image preprocessing,
+    // which requires the observed AGXDeviceUserClient grant on iPhone 6s.
     req.usesCPUOnly = YES;
     req.recognitionLevel   = VNRequestTextRecognitionLevelAccurate;
     req.usesLanguageCorrection = YES;

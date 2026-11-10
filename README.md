@@ -18,7 +18,7 @@ Một gói `com.iosautotool` chứa daemon, widget SpringBoard và addon cấu h
 
 Build macOS kiểm tra xác thực, Lua thật và cancellation, lưu cấu hình/filter, giao tiếp widget, lịch chạy, profile và sao lưu ứng dụng bằng fixture tạm. Kiểm tra payload đọc lại metadata, Mach-O, entitlements, tài nguyên và bộ lọc injection. Các kiểm tra này không thay thế việc cài/chạy trên iPhone.
 
-Thiết bị USB được nhận là iPhone 6s, iOS 15.8.4. DVT đã quan sát tiến trình jailbreakd trong RootHide và SpringBoard. SSH chưa mở tại lần kiểm tra; chưa xác nhận touch, screenshot, widget hoặc hook trên thiết bị thật.
+Đã kết nối SSH qua USB và cài trên iPhone 6s/iOS 15.8.4/RootHide. Kiểm thử đã phát hiện và sửa quyền IOSurface/capture/GPU, sender cảm ứng và giới hạn bộ nhớ Vision. Tap đã đổi tab Sileo, nút Home có tác dụng, screenshot có nội dung, OCR trả chữ/tọa độ, MJPEG có frame và profile lưu/áp dụng/xóa được. Xem [phạm vi kiểm thử thiết bị](docs/DEVICE_TESTING.md); chưa xác nhận toàn bộ hook hoặc thiết bị khác.
 
 ## Cài qua Sileo
 
